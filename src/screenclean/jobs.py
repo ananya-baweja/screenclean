@@ -179,6 +179,8 @@ TASK_MODULES: dict[str, str] = {
     "prepare_uhdm": "screenclean.data.prepare_uhdm",
     "tune_notch": "screenclean.baselines.tune",
     "eval": "screenclean.eval.evaluate",
+    "gen_synth": "screenclean.data.synthetic",
+    "sim_realism": "screenclean.data.synthetic",
 }
 
 

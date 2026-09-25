@@ -30,15 +30,12 @@ import numpy as np
 
 from screenclean.data.download import DownloadError, ZipSource, open_zip_source
 from screenclean.data.shards import (
-    add_shard,
-    finished_shards,
+    build_split,
     group_samples,
     index_tar,
     load_manifest,
     read_member,
     sample_id,
-    save_manifest,
-    write_shard,
 )
 from screenclean.data.uhdm import (
     Pair,
@@ -198,48 +195,17 @@ class Preparer:
         make_samples: Callable[[list[str]], Iterator[Sample]],
         params: dict,
     ) -> None:
-        """Write one shard per group of image keys, skipping shards that are already finished."""
-        split_dir = self.out / split
-        manifest = load_manifest(split_dir)
-        if manifest.get("params") not in (None, params):
-            log.warning("%s: settings changed since the last run; rebuilding all shards", split)
-            manifest["shards"] = []
-        manifest.update(split=split, planned_shards=len(groups), params=params)
-        manifest["complete"] = False
-        # A shard counts as done only if its file is intact and it holds exactly the planned images.
-        planned = {f"{split}-{gi:05d}.tar": keys for gi, keys in enumerate(groups)}
-        intact = finished_shards(split_dir, manifest)
-        manifest["shards"] = [
-            s
-            for s in manifest["shards"]
-            if s["name"] in intact and s.get("sources") == planned.get(s["name"])
-        ]
-        done = {s["name"] for s in manifest["shards"]}
-        save_manifest(split_dir, manifest)
-        for gi, keys in enumerate(groups):
-            name = f"{split}-{gi:05d}.tar"
-            if name in done:
-                continue
-            self.check_time()
-            t0 = time.monotonic()
-            local_path = self.tmp / name
-            entry = write_shard(local_path, make_samples(keys))
-            entry["sources"] = keys
-            copy_atomic(local_path, split_dir / name)
-            local_path.unlink()
-            add_shard(split_dir, manifest, entry)
-            log.info(
-                "%s (%d/%d): %d samples, %.0f MB, %.0f s",
-                name,
-                gi + 1,
-                len(groups),
-                entry["samples"],
-                entry["bytes"] / 1e6,
-                time.monotonic() - t0,
-            )
-            self.ctx.progress(f"{split} shard {gi + 1}/{len(groups)} done")
-        manifest["complete"] = True
-        save_manifest(split_dir, manifest)
+        """Write one shard per group of image keys (see :func:`shards.build_split`)."""
+        build_split(
+            self.out / split,
+            split,
+            groups,
+            make_samples,
+            params,
+            self.tmp,
+            before_shard=self.check_time,
+            after_shard=lambda i, n, _: self.ctx.progress(f"{split} shard {i + 1}/{n} done"),
+        )
 
     # ------------------------------------------------------------------ phases
 

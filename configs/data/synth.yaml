@@ -1,0 +1,13 @@
+# Job 0006: synthetic text pairs = rendered pages (render/) photographed by the moire simulator (simulate/).
+sim_config: configs/sim/default.yaml
+drive_out: data/synth_v1          # under the Drive project root
+local_dir: /content/synth_work    # shards are built on local disk, then copied to Drive
+seed: 0
+counts: {train: 6000, val: 300, test: 300}   # each split uses only its own corpus lines
+crops_per_page: 4                 # consecutive crops share a page (each crop is centred near a random text line)
+base_size: [12, 40]               # body font size range (px on the page)
+gt_jpeg_quality: 95
+samples_per_shard: 500
+workers: 2
+stop_margin_min: 10
+drive_gb: 2.5                     # space check (expected use ~1.5-2 GB)
