@@ -1,0 +1,52 @@
+{
+  "attempt": 1,
+  "elapsed_s": 1937.1,
+  "first_shard_stats": {
+    "crops_without_full_lines": 14,
+    "layouts": {
+      "bgr": 97,
+      "pentile": 106,
+      "rgb": 297
+    },
+    "lines_per_crop_mean": 7.6,
+    "n": 500,
+    "scale_quantiles": [
+      0.96,
+      1.04,
+      1.6,
+      2.01,
+      2.62
+    ],
+    "templates": {
+      "chat": 72,
+      "code_dark": 72,
+      "code_light": 72,
+      "doc": 72,
+      "mixed": 68,
+      "slide": 72,
+      "table": 72
+    }
+  },
+  "git_sha": "31e658888dd81fe83f6565e12b61badc43485966",
+  "id": "0006_gen_synth",
+  "minutes": 32.2,
+  "splits": {
+    "test": {
+      "complete": true,
+      "gb": 0.04,
+      "samples": 300
+    },
+    "train": {
+      "complete": true,
+      "gb": 0.83,
+      "samples": 6000
+    },
+    "val": {
+      "complete": true,
+      "gb": 0.04,
+      "samples": 300
+    }
+  },
+  "state": "done",
+  "task": "gen_synth"
+}

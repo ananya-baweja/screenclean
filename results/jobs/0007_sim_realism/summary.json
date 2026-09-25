@@ -1,0 +1,22 @@
+{
+  "UHDM val (real)": {
+    "chroma": 0.2542088151471547,
+    "luma": 4.0247399422347,
+    "n": 64
+  },
+  "attempt": 1,
+  "elapsed_s": 36.5,
+  "git_sha": "31e658888dd81fe83f6565e12b61badc43485966",
+  "id": "0007_sim_realism",
+  "ratio": {
+    "chroma": 1.020306270052488,
+    "luma": 0.11046279013966086
+  },
+  "state": "done",
+  "synthetic": {
+    "chroma": 0.25937084799725585,
+    "luma": 0.4445840036057825,
+    "n": 64
+  },
+  "task": "sim_realism"
+}

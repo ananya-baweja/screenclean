@@ -1,0 +1,30 @@
+2026-09-25 17:52:53,460 INFO screenclean.jobs: Starting 0006_gen_synth (task=gen_synth, runtime=cpu, attempt=1, resuming=False)
+2026-09-25 17:55:29,432 INFO screenclean.data.shards: train-00000.tar (1/12): 500 samples, 76 MB, 155 s
+2026-09-25 17:55:29,433 INFO screenclean.jobs: progress: train shard 1/12 done
+2026-09-25 17:57:53,153 INFO screenclean.data.shards: train-00001.tar (2/12): 500 samples, 73 MB, 144 s
+2026-09-25 17:57:53,153 INFO screenclean.jobs: progress: train shard 2/12 done
+2026-09-25 18:00:18,147 INFO screenclean.data.shards: train-00002.tar (3/12): 500 samples, 77 MB, 145 s
+2026-09-25 18:00:18,149 INFO screenclean.jobs: progress: train shard 3/12 done
+2026-09-25 18:02:38,321 INFO screenclean.data.shards: train-00003.tar (4/12): 500 samples, 74 MB, 140 s
+2026-09-25 18:02:38,321 INFO screenclean.jobs: progress: train shard 4/12 done
+2026-09-25 18:05:12,214 INFO screenclean.data.shards: train-00004.tar (5/12): 500 samples, 74 MB, 154 s
+2026-09-25 18:05:12,215 INFO screenclean.jobs: progress: train shard 5/12 done
+2026-09-25 18:07:35,757 INFO screenclean.data.shards: train-00005.tar (6/12): 500 samples, 73 MB, 144 s
+2026-09-25 18:07:35,759 INFO screenclean.jobs: progress: train shard 6/12 done
+2026-09-25 18:09:50,895 INFO screenclean.data.shards: train-00006.tar (7/12): 500 samples, 75 MB, 135 s
+2026-09-25 18:09:50,896 INFO screenclean.jobs: progress: train shard 7/12 done
+2026-09-25 18:12:16,330 INFO screenclean.data.shards: train-00007.tar (8/12): 500 samples, 74 MB, 145 s
+2026-09-25 18:12:16,330 INFO screenclean.jobs: progress: train shard 8/12 done
+2026-09-25 18:14:43,648 INFO screenclean.data.shards: train-00008.tar (9/12): 500 samples, 75 MB, 147 s
+2026-09-25 18:14:43,649 INFO screenclean.jobs: progress: train shard 9/12 done
+2026-09-25 18:17:03,236 INFO screenclean.data.shards: train-00009.tar (10/12): 500 samples, 75 MB, 140 s
+2026-09-25 18:17:03,236 INFO screenclean.jobs: progress: train shard 10/12 done
+2026-09-25 18:19:32,702 INFO screenclean.data.shards: train-00010.tar (11/12): 500 samples, 75 MB, 149 s
+2026-09-25 18:19:32,703 INFO screenclean.jobs: progress: train shard 11/12 done
+2026-09-25 18:22:10,244 INFO screenclean.data.shards: train-00011.tar (12/12): 500 samples, 74 MB, 158 s
+2026-09-25 18:22:10,245 INFO screenclean.jobs: progress: train shard 12/12 done
+2026-09-25 18:23:35,416 INFO screenclean.data.shards: val-00000.tar (1/1): 300 samples, 43 MB, 85 s
+2026-09-25 18:23:35,417 INFO screenclean.jobs: progress: val shard 1/1 done
+2026-09-25 18:25:08,329 INFO screenclean.data.shards: test-00000.tar (1/1): 300 samples, 43 MB, 93 s
+2026-09-25 18:25:08,330 INFO screenclean.jobs: progress: test shard 1/1 done
+2026-09-25 18:25:10,601 INFO screenclean.jobs: Job 0006_gen_synth ended as done after 1937.1 s

@@ -1,0 +1,15 @@
+{
+  "attempt": 1,
+  "elapsed_min": 32.2,
+  "elapsed_s": 1937.1,
+  "error": null,
+  "finished_utc": "2026-09-25T18:25:10+00:00",
+  "id": "0006_gen_synth",
+  "progress": "test shard 1/1 done",
+  "progress_utc": "2026-09-25T18:25:08+00:00",
+  "runtime": "cpu",
+  "started_utc": "2026-09-25T17:52:53+00:00",
+  "state": "done",
+  "task": "gen_synth",
+  "updated_utc": "2026-09-25T18:25:10+00:00"
+}

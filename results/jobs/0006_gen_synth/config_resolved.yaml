@@ -1,0 +1,30 @@
+job:
+  id: 0006_gen_synth
+  task: gen_synth
+  runtime: cpu
+  config: configs/data/synth.yaml
+  depends_on:
+  - 0002_prepare_uhdm
+  max_minutes: 150
+  resume: true
+  attempt: 1
+  drive_subdir: jobs/0006_gen_synth
+  notes: 6,000 / 300 / 300 simulated text pairs on Drive data/synth_v1 (~1-1.5 h est.)
+config:
+  sim_config: configs/sim/default.yaml
+  drive_out: data/synth_v1
+  local_dir: /content/synth_work
+  seed: 0
+  counts:
+    train: 6000
+    val: 300
+    test: 300
+  crops_per_page: 4
+  base_size:
+  - 12
+  - 40
+  gt_jpeg_quality: 95
+  samples_per_shard: 500
+  workers: 2
+  stop_margin_min: 10
+  drive_gb: 2.5

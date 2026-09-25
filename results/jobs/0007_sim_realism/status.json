@@ -1,0 +1,15 @@
+{
+  "attempt": 1,
+  "elapsed_min": 0.3,
+  "elapsed_s": 36.5,
+  "error": null,
+  "finished_utc": "2026-09-25T18:28:57+00:00",
+  "id": "0007_sim_realism",
+  "progress": "loaded 64 synthetic pairs",
+  "progress_utc": "2026-09-25T18:28:39+00:00",
+  "runtime": "cpu",
+  "started_utc": "2026-09-25T18:28:21+00:00",
+  "state": "done",
+  "task": "sim_realism",
+  "updated_utc": "2026-09-25T18:28:57+00:00"
+}

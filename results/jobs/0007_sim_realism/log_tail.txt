@@ -1,0 +1,17 @@
+2026-09-25 18:28:21,411 INFO screenclean.jobs: Starting 0007_sim_realism (task=sim_realism, runtime=cpu, attempt=1, resuming=False)
+2026-09-25 18:28:22,792 INFO screenclean.utils.drive: staging val-00000.tar (81 MB)
+2026-09-25 18:28:29,153 INFO screenclean.jobs: progress: loaded 64 UHDM val (real) pairs
+2026-09-25 18:28:29,194 INFO screenclean.utils.drive: staging train-00000.tar (76 MB)
+2026-09-25 18:28:29,833 INFO screenclean.utils.drive: staging train-00001.tar (73 MB)
+2026-09-25 18:28:30,870 INFO screenclean.utils.drive: staging train-00002.tar (77 MB)
+2026-09-25 18:28:31,500 INFO screenclean.utils.drive: staging train-00003.tar (74 MB)
+2026-09-25 18:28:32,465 INFO screenclean.utils.drive: staging train-00004.tar (74 MB)
+2026-09-25 18:28:33,178 INFO screenclean.utils.drive: staging train-00005.tar (73 MB)
+2026-09-25 18:28:33,962 INFO screenclean.utils.drive: staging train-00006.tar (75 MB)
+2026-09-25 18:28:34,882 INFO screenclean.utils.drive: staging train-00007.tar (74 MB)
+2026-09-25 18:28:35,256 INFO screenclean.utils.drive: staging train-00008.tar (75 MB)
+2026-09-25 18:28:35,909 INFO screenclean.utils.drive: staging train-00009.tar (75 MB)
+2026-09-25 18:28:36,356 INFO screenclean.utils.drive: staging train-00010.tar (75 MB)
+2026-09-25 18:28:36,887 INFO screenclean.utils.drive: staging train-00011.tar (74 MB)
+2026-09-25 18:28:39,383 INFO screenclean.jobs: progress: loaded 64 synthetic pairs
+2026-09-25 18:28:57,898 INFO screenclean.jobs: Job 0007_sim_realism ended as done after 36.5 s
