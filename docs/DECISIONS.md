@@ -88,3 +88,26 @@ One entry per decision: date, the decision, why, and the alternatives considered
 - **Why:** a published, pretrained model on the same data is the honest bar for our model. The larger
   ESDNet-L checkpoint was not downloadable (Drive quota) when this was set up, and the authors' public demo
   weights were trained on several datasets combined, so they are not used.
+
+## 2026-09-25: Rendered-page text is generated from project word lists
+
+- **Decision:** the 1,500-line corpus (`src/screenclean/render/corpus_en.txt`) is produced by
+  `tools/make_corpus.py` from templates and word lists written for this project: sentences, slide
+  bullets, numbers, prices, dates, e-mail addresses and URLs on the reserved `example.*` domains, code
+  and error messages. It is split 80/10/10 by line (seed 0); benchmark pages use only `test` lines.
+- **Why:** no copyright or privacy questions, full control over the mix of content that people photograph
+  on screens, and synthetic training pages can never contain benchmark text.
+
+## 2026-09-25: Only matplotlib's bundled fonts by default
+
+- **Decision:** pages use DejaVu Sans / Serif / Mono and STIX from matplotlib's package. System fonts are
+  only used if passed explicitly.
+- **Why:** the same fonts exist on every machine (laptop, CI, Colab), so pages are reproducible.
+
+## 2026-09-25: The benchmark pages were checked for readability before any photo
+
+- **Decision:** every line of the 40 clean capture pages was read with Tesseract 5 (single-line mode on
+  a crop). CER: 0.10% at 16–24 px, 0.19% above 24 px, 0.30% below 16 px (the "hard" bucket). The report is
+  `capture_kit/ocr_check.json`.
+- **Why:** if clean pages were hard to read, OCR errors on the photos would come from the layout, not from
+  moiré, and the benchmark would be unfair.

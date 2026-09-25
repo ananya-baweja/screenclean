@@ -66,3 +66,38 @@ def fake_uhdm(tmp_path):
         {"train": "train/train", "test": "test/test", "test_origin": "test_origin/test_origin"},
     )
     return {"src": src, "zip": zip_path, "train_keys": train_keys, "test_keys": test_keys}
+
+
+def synthetic_photo(
+    page: np.ndarray,
+    rng: np.random.Generator,
+    photo_size=(2400, 1600),
+    blur_max=1.5,
+    noise_max=4.0,
+    jpeg_quality=60,
+):
+    """A fake phone photo of ``page``: random perspective, background, blur, noise and JPEG.
+
+    Returns ``(photo uint8 RGB, H_true photo->page)``.
+    """
+    import cv2
+
+    ph, pw = page.shape[:2]
+    W, H = photo_size
+    scale = rng.uniform(0.6, 0.85) * W / pw
+    cx, cy = W / 2 + rng.uniform(-0.08, 0.08) * W, H / 2 + rng.uniform(-0.08, 0.08) * H
+    ang = np.deg2rad(rng.uniform(-8, 8))
+    rot = np.array([[np.cos(ang), -np.sin(ang)], [np.sin(ang), np.cos(ang)]])
+    src = np.array([[0, 0], [pw, 0], [pw, ph], [0, ph]], np.float32)
+    quad = (src - [pw / 2, ph / 2]) * scale @ rot.T + [cx, cy]
+    quad += rng.uniform(-0.05, 0.05, size=(4, 2)) * [pw * scale, ph * scale]  # perspective (tilt)
+    Hp = cv2.getPerspectiveTransform(src, quad.astype(np.float32))
+    bg = np.full((H, W, 3), rng.integers(20, 200, size=3), np.uint8)
+    photo = cv2.warpPerspective(page, Hp, (W, H), dst=bg, borderMode=cv2.BORDER_TRANSPARENT)
+    sigma = rng.uniform(0, blur_max)
+    if sigma > 0.1:
+        photo = cv2.GaussianBlur(photo, (0, 0), sigma)
+    photo = np.clip(photo + rng.normal(0, rng.uniform(0, noise_max), photo.shape), 0, 255).astype(np.uint8)
+    ok, enc = cv2.imencode(".jpg", photo, [cv2.IMWRITE_JPEG_QUALITY, jpeg_quality])
+    photo = cv2.imdecode(enc, cv2.IMREAD_UNCHANGED)
+    return photo, np.linalg.inv(Hp)
