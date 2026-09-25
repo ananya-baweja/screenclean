@@ -216,3 +216,19 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- ScreenClean ---
+# Local secrets (the project uses no tokens; this is only a safety net)
+.secrets/
+*.token
+kaggle.json
+# Data, runs and model weights stay out of the repo (they live on Google Drive)
+data/*
+!data/splits/
+runs/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.tar
+*.zip

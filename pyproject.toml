@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "screenclean"
+version = "0.1.0"
+description = "Turn phone photos of screens into clean, readable pages and searchable text"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy", "opencv-python-headless>=4.8", "pillow", "pyyaml", "scipy", "scikit-image",
+  "tqdm", "pandas", "matplotlib", "jiwer", "rapidfuzz", "reportlab",
+]
+
+[project.optional-dependencies]
+torch   = ["torch", "torchvision"]
+dev     = ["screenclean[torch]", "pytest", "ruff", "nbformat", "pytesseract", "pypdf", "onnx", "onnxruntime", "onnxscript"]
+colab   = ["gdown", "lpips", "tensorboard", "onnx", "onnxruntime", "onnxscript"]  # torch/opencv are preinstalled on Colab
+export  = ["onnx", "onnxruntime", "onnxscript"]
+app     = ["gradio", "onnxruntime", "rapidocr"]
+service = ["fastapi", "uvicorn", "python-multipart", "onnxruntime"]
+
+[project.scripts]
+screenclean = "screenclean.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+screenclean = ["render/*.txt"]
+
+[tool.pytest.ini_options]
+markers = ["slow: takes more than 20 s"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+extend-exclude = ["notebooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
