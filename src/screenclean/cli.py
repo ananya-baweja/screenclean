@@ -5,6 +5,7 @@ Commands so far:
 - ``jobs run``        run the next queued job (used by the Colab runner notebook)
 - ``jobs list``       show the queue and each job's state on Drive
 - ``results ingest``  unpack a downloaded results zip into ``results/jobs/<id>/``
+- ``scan``            photos of screens -> clean upright pages, a searchable PDF and Markdown
 - ``env``             print the environment report as JSON
 """
 
@@ -64,6 +65,73 @@ def _cmd_capture_kit(args: argparse.Namespace) -> int:
     return 0
 
 
+IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"}
+
+
+def expand_inputs(items: list[str]) -> list[Path]:
+    """Files, folders (their images, sorted) and wildcards (``photos/*.jpg``; PowerShell doesn't
+    expand them), without duplicates, in the order given."""
+    import glob
+
+    out: list[Path] = []
+    for item in items:
+        p = Path(item)
+        if p.is_dir():
+            found = sorted(f for f in p.iterdir() if f.suffix.lower() in IMAGE_EXTS)
+        elif any(ch in item for ch in "*?["):
+            found = sorted(Path(f) for f in glob.glob(item) if Path(f).suffix.lower() in IMAGE_EXTS)
+        else:
+            found = [p]
+        out += [f for f in found if f not in out]
+    return out
+
+
+def _cmd_scan(args: argparse.Namespace) -> int:
+    from screenclean.eval import tesseract
+    from screenclean.product.export import searchable_pdf, to_markdown, to_text
+    from screenclean.product.pipeline import scan
+    from screenclean.utils.io import write_image
+
+    photos = expand_inputs(args.inputs)
+    missing = [p for p in photos if not p.is_file()]
+    if missing or not photos:
+        print(
+            f"no such photo(s): {', '.join(map(str, missing))}" if missing else "no photos found",
+            file=sys.stderr,
+        )
+        return 2
+    if args.ocr == "tesseract" and not tesseract.available():
+        print("Tesseract not found: install it or set TESSERACT_CMD (or use --ocr none)", file=sys.stderr)
+        return 2
+    results = []
+    for i, photo in enumerate(photos, 1):
+        res = scan(photo, cleaner=args.cleaner, ocr=args.ocr, mode=args.mode)
+        results.append(res)
+        found = (
+            f"screen found ({res.detection['method']})" if res.detected else "screen NOT found: whole photo"
+        )
+        print(
+            f"[{i}/{len(photos)}] {photo.name}: {found}, {len(res.lines)} lines, {res.timings['total']:.1f} s"
+        )
+        if args.pages:
+            write_image(Path(args.pages) / f"{photo.stem}_page.jpg", res.page, quality=92)
+    title = args.title or "Scanned screens"
+    outputs = {
+        args.pdf: lambda: searchable_pdf(results, title=title),
+        args.md: lambda: to_markdown(results, title).encode("utf-8"),
+        args.txt: lambda: to_text(results).encode("utf-8"),
+        args.json: lambda: json.dumps([r.summary() for r in results], indent=2, ensure_ascii=False).encode(
+            "utf-8"
+        ),
+    }
+    for path, make in outputs.items():
+        if path:
+            Path(path).parent.mkdir(parents=True, exist_ok=True)
+            Path(path).write_bytes(make())
+            print(f"wrote {path}")
+    return 0
+
+
 def _cmd_env(args: argparse.Namespace) -> int:
     from screenclean.utils.env import collect_env
 
@@ -113,6 +181,25 @@ def build_parser() -> argparse.ArgumentParser:
     kit_p.add_argument("--out", default=Path("capture_kit"), type=Path)
     kit_p.set_defaults(func=_cmd_capture_kit)
 
+    scan_p = sub.add_parser(
+        "scan",
+        help="photos of screens -> searchable PDF + Markdown",
+        description="Find the screen in each photo, remove moire, straighten it, read the text. "
+        "Without --pdf/--md/--txt/--json, writes scan.pdf and scan.md here.",
+    )
+    scan_p.add_argument("inputs", nargs="+", help="photos, folders of photos, or wildcards like photos/*.jpg")
+    scan_p.add_argument("--pdf", default=None, help="searchable PDF: one page per photo")
+    scan_p.add_argument("--md", default=None, help="Markdown with the text of every photo")
+    scan_p.add_argument("--txt", default=None, help="plain text")
+    scan_p.add_argument("--json", default=None, help="details per photo: corners, lines with boxes, timings")
+    scan_p.add_argument("--pages", default=None, help="folder for the cleaned, straightened page images")
+    scan_p.add_argument("--cleaner", default="fft_notch_local", choices=["fft_notch_local", "none"])
+    scan_p.add_argument("--ocr", default="tesseract", choices=["tesseract", "none"])
+    scan_p.add_argument("--mode", default="document", choices=["document", "photo"],
+                        help="document: even out lighting and contrast; photo: keep the look")  # fmt: skip
+    scan_p.add_argument("--title", default=None, help="title for the Markdown and PDF")
+    scan_p.set_defaults(func=_cmd_scan)
+
     env_p = sub.add_parser("env", help="print the environment report")
     env_p.add_argument("--repo-root", default=Path("."), type=Path)
     env_p.set_defaults(func=_cmd_env)
@@ -121,6 +208,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.command == "scan" and not any((args.pdf, args.md, args.txt, args.json)):
+        args.pdf, args.md = "scan.pdf", "scan.md"
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
