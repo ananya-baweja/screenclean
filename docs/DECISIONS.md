@@ -111,3 +111,24 @@ One entry per decision: date, the decision, why, and the alternatives considered
   `capture_kit/ocr_check.json`.
 - **Why:** if clean pages were hard to read, OCR errors on the photos would come from the layout, not from
   moiré, and the benchmark would be unfair.
+
+## 2026-09-25: Moiré simulator settings were measured, not guessed
+
+- **Decision:** camera scale (sensor pixels per display pixel) 0.9–3.0 log-uniform, with half of the samples
+  within about 4% of 1 or 2; Gaussian lens blur σ 0.2–0.7 px; phone-style noise reduction (colour σ 1–3 px,
+  brightness σ 0–0.7 px); auto-exposure never brightens a dark screen by more than about 2.9× (35% floor).
+- **Why:** a sweep on a flat white screen showed almost no moiré for the first-guess ranges (scale 0.7–1.6,
+  blur σ up to 1.2): the subpixel pattern repeats about once per sensor pixel, and a σ ≈ 0.8 px blur removes it.
+  Moiré contrast peaked near scale 2 (0.20 at σ 0.2). Comparing residual spectra with real UHDM crops then showed
+  too much fine colour stripe (fixed by noise reduction: colour residual 2.5× → 1.3× UHDM) and too little
+  low-frequency banding (improved by sampling near the resonances, where wide bands form).
+- **Known gap:** UHDM's brightness residual is higher at low frequencies and follows a natural-image 1/f² shape,
+  which suggests it comes from small misalignments in UHDM's pairs rather than from moiré. The simulator isn't
+  tuned to match it. The real test is transfer: a model trained on synthetic pairs only is evaluated on real photos (P8).
+
+## 2026-09-25: Synthetic ground-truth text = whole visible words
+
+- **Decision:** for every synthetic crop, the JSON record keeps, per line, the run of whole words that is fully
+  inside the crop (text + corner positions + photographed font size), measured with the same font the page used.
+- **Why:** crops cut most lines at their edges. Keeping only complete lines left 17 of 24 test crops without any
+  text; visible whole words give about 15 words per crop for OCR scoring.
