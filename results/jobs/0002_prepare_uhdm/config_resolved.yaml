@@ -1,0 +1,41 @@
+job:
+  id: 0002_prepare_uhdm
+  task: prepare_uhdm
+  runtime: cpu
+  config: configs/data/uhdm.yaml
+  depends_on:
+  - 0001_hello
+  max_minutes: 240
+  resume: true
+  attempt: 1
+  drive_subdir: jobs/0002_prepare_uhdm
+  notes: Build UHDM dev100 / val / train shards on Drive (~8 GB), reading images from
+    the pinned mirror zip
+config:
+  source:
+    url: https://huggingface.co/datasets/leegwang/uhdm/resolve/9b06328be55fbc609c6bb1d60ddc3fdab179c4b2/uhdm.zip
+    train_prefix: train/
+    test_prefix: test/
+  drive_out: data/uhdm_v1
+  local_dir: /content/uhdm_work
+  seed: 0
+  crop: 512
+  jpeg_quality: 95
+  stop_margin_min: 10
+  download_workers: 8
+  download_retries: 6
+  download_backoff_s: 5
+  train:
+    n_full: 2
+    n_half: 1
+    pairs_per_shard: 400
+    drive_gb: 6.0
+  val:
+    n_images: 200
+    crops_per_image: 2
+    pairs_per_shard: 200
+    drive_gb: 0.3
+  dev100:
+    n_images: 100
+    pairs_per_shard: 25
+    drive_gb: 2.5

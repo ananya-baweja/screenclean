@@ -1,0 +1,26 @@
+2026-09-25 09:57:18,576 INFO screenclean.jobs: Starting 0002_prepare_uhdm (task=prepare_uhdm, runtime=cpu, attempt=1, resuming=False)
+2026-09-25 09:57:26,228 INFO screenclean.data.prepare_uhdm: source opened: {'location': 'https://huggingface.co/datasets/leegwang/uhdm/resolve/9b06328be55fbc609c6bb1d60ddc3fdab179c4b2/uhdm.zip', 'members': 11000, 'archive_gb': 44.78, 'index_seconds': 7.3}
+2026-09-25 09:57:26,230 INFO screenclean.data.prepare_uhdm: test: 500 pairs (0 unmatched files)
+2026-09-25 09:58:09,421 INFO screenclean.data.prepare_uhdm: dev100-00000.tar (1/4): 25 samples, 332 MB, 43 s
+2026-09-25 09:58:52,334 INFO screenclean.data.prepare_uhdm: dev100-00001.tar (2/4): 25 samples, 280 MB, 43 s
+2026-09-25 09:59:40,374 INFO screenclean.data.prepare_uhdm: dev100-00002.tar (3/4): 25 samples, 327 MB, 48 s
+2026-09-25 10:00:22,597 INFO screenclean.data.prepare_uhdm: dev100-00003.tar (4/4): 25 samples, 317 MB, 42 s
+2026-09-25 10:00:22,630 INFO screenclean.data.prepare_uhdm: train: 4500 pairs (0 unmatched files)
+2026-09-25 10:05:06,955 INFO screenclean.data.prepare_uhdm: val-00000.tar (1/1): 400 samples, 81 MB, 284 s
+2026-09-25 10:13:22,135 INFO screenclean.data.prepare_uhdm: train-00000.tar (1/11): 1200 samples, 255 MB, 495 s
+2026-09-25 10:21:34,593 INFO screenclean.data.prepare_uhdm: train-00001.tar (2/11): 1200 samples, 253 MB, 492 s
+2026-09-25 10:29:50,490 INFO screenclean.data.prepare_uhdm: train-00002.tar (3/11): 1200 samples, 252 MB, 496 s
+2026-09-25 10:38:08,248 INFO screenclean.data.prepare_uhdm: train-00003.tar (4/11): 1200 samples, 256 MB, 498 s
+2026-09-25 10:46:15,185 INFO screenclean.data.prepare_uhdm: train-00004.tar (5/11): 1200 samples, 302 MB, 487 s
+2026-09-25 10:54:10,635 INFO screenclean.data.prepare_uhdm: train-00005.tar (6/11): 1200 samples, 266 MB, 475 s
+2026-09-25 10:57:22,326 WARNING screenclean.data.download: bytes 31846904441-31847949002: HTTP 403 (link refreshed); retry 1 in 5 s
+2026-09-25 11:02:37,404 INFO screenclean.data.prepare_uhdm: train-00006.tar (7/11): 1200 samples, 275 MB, 507 s
+2026-09-25 11:11:23,515 INFO screenclean.data.prepare_uhdm: train-00007.tar (8/11): 1200 samples, 217 MB, 526 s
+2026-09-25 11:20:14,730 INFO screenclean.data.prepare_uhdm: train-00008.tar (9/11): 1200 samples, 221 MB, 531 s
+2026-09-25 11:29:21,928 INFO screenclean.jobs: Starting 0002_prepare_uhdm (task=prepare_uhdm, runtime=cpu, attempt=1, resuming=True)
+2026-09-25 11:29:22,418 INFO screenclean.data.prepare_uhdm: dev100 already complete
+2026-09-25 11:29:27,760 INFO screenclean.data.prepare_uhdm: source opened: {'location': 'https://huggingface.co/datasets/leegwang/uhdm/resolve/9b06328be55fbc609c6bb1d60ddc3fdab179c4b2/uhdm.zip', 'members': 11000, 'archive_gb': 44.78, 'index_seconds': 5.3}
+2026-09-25 11:29:27,776 INFO screenclean.data.prepare_uhdm: train: 4500 pairs (0 unmatched files)
+2026-09-25 11:35:17,270 INFO screenclean.data.prepare_uhdm: train-00009.tar (10/11): 1200 samples, 211 MB, 349 s
+2026-09-25 11:42:03,052 INFO screenclean.data.prepare_uhdm: train-00010.tar (11/11): 900 samples, 177 MB, 406 s
+2026-09-25 11:42:05,685 INFO screenclean.jobs: Job 0002_prepare_uhdm ended as done after 763.8 s

@@ -1,0 +1,12 @@
+{
+  "attempt": 1,
+  "elapsed_s": 763.8,
+  "error": null,
+  "finished_utc": "2026-09-25T11:42:05+00:00",
+  "id": "0002_prepare_uhdm",
+  "runtime": "cpu",
+  "started_utc": "2026-09-25T11:29:21+00:00",
+  "state": "done",
+  "task": "prepare_uhdm",
+  "updated_utc": "2026-09-25T11:42:05+00:00"
+}
