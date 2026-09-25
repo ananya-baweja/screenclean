@@ -1,6 +1,8 @@
 # Job 0005: ESDNet (the UHDM authors' pretrained lightweight model) on UHDM dev100, T4 GPU.
 # Always reported as a *reference*, not as our method. The code is cloned at a pinned commit;
 # the checkpoint (uhdm_checkpoint.pth from the authors' README) is downloaded once and cached on Drive.
+# If Google Drive's download quota blocks it, a hand-made Drive copy ("Copy of uhdm_checkpoint.pth" in
+# My Drive, via File > Make a copy) is picked up instead.
 # Differences from the paper's protocol: fp16 inference (paper: fp32), and tiles if memory runs out.
 split: data/uhdm_v1/dev100
 local_dir: /content/eval_data
@@ -14,8 +16,8 @@ methods:
     repo_sha: fa70a92d3d4f35d5c4e3fa7a54e3b2e5b995f1cd
     weights: {id: 1HT_ubcAYRqzFIJ46XuPhrulJk2YFBIEl, bytes: 23895301}
     weights_cache: models/esdnet_uhdm.pth
-    download_attempts: 5
-    download_wait_s: 60
+    download_attempts: 3
+    download_wait_s: 30
     fp16: true
     tile: 1024
     overlap: 64

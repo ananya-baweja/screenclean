@@ -296,3 +296,36 @@ def test_cli_subprocess_with_worker_processes(tmp_path):
     assert res.stdout.count("JOB FINISHED: 0004_eval") == 1
     rows = list(csv.DictReader((drive / "jobs" / "0004_eval" / "per_image.csv").open()))
     assert len(rows) == 6
+
+
+def test_esdnet_quota_gives_partial_before_copying_data(tmp_path, fake_esdnet, capsys, monkeypatch):
+    from screenclean.baselines import esdnet_ref
+    from screenclean.data.download import DownloadError
+
+    def refuse(*a, **k):
+        raise DownloadError(
+            "ESDNet weights: quota exceeded. " + esdnet_ref.manual_copy_help({"id": "X"}), True
+        )
+
+    monkeypatch.setattr(esdnet_ref, "ensure_weights", refuse)
+    drive = tmp_path / "drive"
+    _make_dev_split(drive, n=2)
+    methods = [{"name": "identity"}, {"name": "esdnet_ref", **fake_esdnet}]
+    repo = _repo(tmp_path, "eval", _eval_cfg(tmp_path, methods), job_id="0005_esdnet")
+    assert jobs.run("auto", drive, repo, tmp_path / "m.txt", runtime="cpu") == 0
+    out = capsys.readouterr().out
+    assert "Download stopped" in out and "Make a copy" in out and "TIME BUDGET REACHED" in out
+    assert jobs.StatusStore(jobs.DriveLayout(drive)).state("0005_esdnet") == "partial"
+    assert not (tmp_path / "local").exists()  # the test images were never staged
+
+
+def test_esdnet_uses_manual_drive_copy(tmp_path, fake_esdnet):
+    from screenclean.baselines.esdnet_ref import ensure_weights
+
+    drive = tmp_path / "MyDrive" / "screenclean"
+    drive.mkdir(parents=True)
+    src = Path(fake_esdnet["weights"]["path"])
+    (drive.parent / "Copy of uhdm_checkpoint.pth").write_bytes(src.read_bytes())
+    spec = {"id": "never-downloaded", "bytes": src.stat().st_size}  # no path: a download would be tried
+    cache = ensure_weights(spec, drive / "models" / "esdnet_uhdm.pth", attempts=1, wait_s=0, drive_root=drive)
+    assert cache.read_bytes() == src.read_bytes()

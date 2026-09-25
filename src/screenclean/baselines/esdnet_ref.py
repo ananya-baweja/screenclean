@@ -41,19 +41,48 @@ def ensure_repo(repo_dir: str | Path, sha: str) -> Path:
     return repo_dir
 
 
-def ensure_weights(spec: dict[str, Any], cache: Path, attempts: int = 5, wait_s: float = 60.0) -> Path:
+WEIGHTS_VIEW_URL = "https://drive.google.com/file/d/{id}/view"
+MANUAL_COPY_NAMES = ("Copy of uhdm_checkpoint.pth", "uhdm_checkpoint.pth")
+
+
+def manual_copy_help(spec: dict[str, Any]) -> str:
+    return (
+        "Workaround: open " + WEIGHTS_VIEW_URL.format(id=spec.get("id", "?")) + " while signed in to Google, "
+        "click the three dots > Make a copy (or File > Make a copy). The copy appears in My Drive as "
+        "'Copy of uhdm_checkpoint.pth'; leave it there and run the notebook again. The job finds it."
+    )
+
+
+def find_manual_copy(drive_root: Path, expected: int) -> Path | None:
+    """A hand-made copy of the checkpoint in My Drive or the project folder, with the right size."""
+    for folder in (drive_root.parent, drive_root, drive_root / "models"):
+        for name in MANUAL_COPY_NAMES:
+            p = folder / name
+            if p.exists() and p.stat().st_size == expected:
+                return p
+    return None
+
+
+def ensure_weights(
+    spec: dict[str, Any], cache: Path, attempts: int = 3, wait_s: float = 30.0, drive_root: Path | None = None
+) -> Path:
     """Get the checkpoint into ``cache`` (on Drive) once, checking its size.
 
-    ``spec`` has ``id`` (public Google Drive file) or ``path`` (local file), plus ``bytes``.
-    Google Drive sometimes answers with a "quota exceeded" page instead of the file, so
-    a few spaced-out attempts are made before giving up with a retry-later error.
+    Looks, in order: the cache; a copy made by hand in Drive (see :func:`manual_copy_help`);
+    ``spec["path"]`` (local file); a download of ``spec["id"]`` from Google Drive. Drive often
+    answers with a "quota exceeded" page for popular files, so a few spaced-out attempts are
+    made before giving up with a retry-later error that explains the manual workaround.
     """
     expected = int(spec["bytes"])
     if cache.exists() and cache.stat().st_size == expected:
         return cache
     cache.parent.mkdir(parents=True, exist_ok=True)
     tmp = cache.with_name(cache.name + ".tmp")
-    if "path" in spec:
+    manual = find_manual_copy(drive_root, expected) if drive_root is not None else None
+    if manual is not None:
+        log.info("using the checkpoint copy found at %s", manual)
+        tmp.write_bytes(manual.read_bytes())
+    elif "path" in spec:
         tmp.write_bytes(Path(spec["path"]).read_bytes())
     else:
         import requests
@@ -66,17 +95,14 @@ def ensure_weights(spec: dict[str, Any], cache: Path, attempts: int = 5, wait_s:
                         f.write(chunk)
                 if tmp.stat().st_size == expected:
                     break
-            log.warning(
-                "weights download attempt %d/%d refused (Drive quota?); waiting %.0f s",
-                attempt,
-                attempts,
-                wait_s,
-            )
+            log.warning("weights download attempt %d/%d refused (Drive quota?)", attempt, attempts)
             if attempt < attempts:
                 time.sleep(wait_s)
         else:
             raise DownloadError(
-                "ESDNet weights: Google Drive keeps refusing the download (quota)", retry_later=True
+                "ESDNet weights: Google Drive refused the download (quota exceeded). "
+                + manual_copy_help(spec),
+                retry_later=True,
             )
     if tmp.stat().st_size != expected:
         raise DownloadError(f"ESDNet weights: expected {expected} bytes, got {tmp.stat().st_size}")
@@ -164,8 +190,9 @@ def build_esdnet(spec: dict[str, Any], drive_root: Path) -> ESDNetRunner:
     weights = ensure_weights(
         spec["weights"],
         drive_root / spec.get("weights_cache", "models/esdnet_uhdm.pth"),
-        attempts=int(spec.get("download_attempts", 5)),
-        wait_s=float(spec.get("download_wait_s", 60)),
+        attempts=int(spec.get("download_attempts", 3)),
+        wait_s=float(spec.get("download_wait_s", 30)),
+        drive_root=drive_root,
     )
     model = load_model(repo, weights, device)
     runner = ESDNetRunner(

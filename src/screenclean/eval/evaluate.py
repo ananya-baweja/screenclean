@@ -28,6 +28,7 @@ import numpy as np
 import yaml
 
 from screenclean.baselines import BASELINES, get_baseline
+from screenclean.data.download import DownloadError
 from screenclean.data.shards import group_samples, index_tar, read_member, source_key
 from screenclean.data.uhdm import decode_pair
 from screenclean.eval.metrics import lpips_distance, psnr, ssim
@@ -203,13 +204,26 @@ def summarize(rows: list[dict[str, Any]], methods: list[dict[str, Any]]) -> dict
 def eval_task(ctx: JobContext) -> TaskResult:
     cfg = ctx.config
     split = cfg["split"]
-    local = Path(cfg.get("local_dir", "/content/eval_data")) / Path(split).name
-    shards = stage_shards(ctx.layout.root / split, local)
-    items = list_items(shards)[: cfg.get("limit")]
     methods = resolve_methods(cfg["methods"], ctx.layout.root)
     labels = [m["label"] for m in methods]
     use_lpips = bool(cfg.get("lpips", False))
     n_samples = int(cfg.get("sample_images", 4))
+    gpu = any(m["name"] == "esdnet_ref" for m in methods)
+    workers = 1 if gpu else int(cfg.get("workers", 2))
+
+    # Build in-process methods first: a missing model file should stop the job before any data is copied.
+    worker = None
+    if workers == 1:
+        try:
+            worker = _Worker(methods, ctx.layout.root, use_lpips)
+        except DownloadError as e:
+            if not e.retry_later:
+                raise
+            return TaskResult("partial", {"split": split, "stopped": str(e)}, f"Download stopped: {e}")
+
+    local = Path(cfg.get("local_dir", "/content/eval_data")) / Path(split).name
+    shards = stage_shards(ctx.layout.root / split, local)
+    items = list_items(shards)[: cfg.get("limit")]
 
     rows_path = ctx.work_dir / "per_image.csv"
     done: dict[str, set[str]] = defaultdict(set)
@@ -227,15 +241,12 @@ def eval_task(ctx: JobContext) -> TaskResult:
         "%d images, methods %s; %d images still to score", len(items), labels, sum(1 for _, p, _ in jobs if p)
     )
 
-    gpu = any(m["name"] == "esdnet_ref" for m in methods)
-    workers = 1 if gpu else int(cfg.get("workers", 2))
     state, message, scored = "done", "", 0
-    pool, worker = None, None
-    if workers > 1:
+    pool = None
+    if worker is None:
         pool = mp.get_context("spawn").Pool(workers, _init_worker, (methods, ctx.layout.root, use_lpips))
         results = pool.imap(_run_in_worker, jobs)
     else:
-        worker = _Worker(methods, ctx.layout.root, use_lpips)
         results = map(worker, jobs)
     try:
         for (it, _, _), (rows, samples) in zip(jobs, results, strict=False):
