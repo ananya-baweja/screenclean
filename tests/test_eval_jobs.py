@@ -258,3 +258,41 @@ def test_tune_notch_picks_settings_and_writes_params(tmp_path, fake_uhdm, capsys
         "fft_notch_local",
     }
     assert len(table) == 1 + 1 + 2 + 8 + 1  # header + identity + chroma + notch grid + local grid
+
+
+def test_cli_subprocess_with_worker_processes(tmp_path):
+    """Run the real ``python -m screenclean jobs run`` command, as Colab does, with 2 spawned workers."""
+    import subprocess
+    import sys
+
+    drive = tmp_path / "drive"
+    _make_dev_split(drive, n=3)
+    repo = _repo(
+        tmp_path, "eval", _eval_cfg(tmp_path, [{"name": "identity"}, {"name": "chroma_lowpass"}], workers=2)
+    )
+    res = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "screenclean",
+            "jobs",
+            "run",
+            "--job",
+            "auto",
+            "--drive-root",
+            str(drive),
+            "--repo-root",
+            str(repo),
+            "--marker",
+            str(tmp_path / "m.txt"),
+            "--runtime",
+            "cpu",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=300,
+    )
+    assert res.returncode == 0, res.stdout + res.stderr
+    assert res.stdout.count("JOB FINISHED: 0004_eval") == 1
+    rows = list(csv.DictReader((drive / "jobs" / "0004_eval" / "per_image.csv").open()))
+    assert len(rows) == 6
