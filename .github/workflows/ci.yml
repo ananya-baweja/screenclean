@@ -18,6 +18,9 @@ jobs:
           python-version: "3.11"
           cache: pip
 
+      - name: Install Tesseract (OCR tests)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends tesseract-ocr
+
       - name: Install CPU PyTorch
         run: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
