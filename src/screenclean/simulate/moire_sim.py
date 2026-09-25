@@ -7,7 +7,7 @@ page->crop homography. Steps (see configs/sim/default.yaml for the ranges):
 1. display: subpixel layout, fill factors, gamma, brightness (``display.py``)
 2. geometry: camera pose -> homography, lens distortion (``camera.py``)
 3. optics + sensor: Gaussian PSF, Bayer point sampling, auto-exposure, noise (``sensor.py``)
-4. ISP: demosaic, white balance, tone curve, sharpening, JPEG (``isp.py``)
+4. ISP: demosaic, white balance, tone curve, noise reduction, sharpening, JPEG (``isp.py``)
 5. ground truth: the clean page under the same geometry, anti-aliased, with nothing else applied.
 
 Everything random comes from ``rng``, so the same seed gives the same pair.
@@ -51,6 +51,8 @@ class SimParams:
     wb_gains: list[float]
     gamma: float
     contrast: float
+    luma_denoise: float
+    chroma_denoise: float
     sharpen: float
     sharpen_sigma: float
     jpeg_quality: int
@@ -85,6 +87,8 @@ def sample_params(rng: np.random.Generator, cfg: dict[str, Any]) -> tuple[SimPar
         wb_gains=[float(g) for g in 1.0 + rng.uniform(-i["wb_jitter"], i["wb_jitter"], 3)],
         gamma=_u(rng, i["gamma"]),
         contrast=_u(rng, i["contrast"]),
+        luma_denoise=_u(rng, i.get("luma_denoise", [0.0, 0.0])),
+        chroma_denoise=_u(rng, i.get("chroma_denoise", [0.0, 0.0])),
         sharpen=_u(rng, i["sharpen"]),
         sharpen_sigma=_u(rng, i["sharpen_sigma"]),
         jpeg_quality=int(round(_u(rng, i["jpeg_quality"]))),
@@ -155,6 +159,7 @@ def simulate(
     rgb = isp.demosaic(raw, params.cfa, params.demosaic)
     rgb = isp.white_balance(rgb, np.array(params.wb_gains))
     rgb = isp.tone(rgb, params.gamma, params.contrast)
+    rgb = isp.denoise(rgb, params.luma_denoise, params.chroma_denoise)
     rgb = isp.sharpen(rgb, params.sharpen, params.sharpen_sigma)
     jpeg_bytes, moire = isp.jpeg(rgb, params.jpeg_quality)
 

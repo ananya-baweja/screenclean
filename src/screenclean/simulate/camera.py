@@ -34,6 +34,25 @@ def _uniform(rng: np.random.Generator, lo_hi) -> float:
     return float(rng.uniform(lo, hi))
 
 
+def sample_scale(rng: np.random.Generator, geo: dict) -> float:
+    """Sensor pixels per display pixel: log-uniform over ``scale``, or (with probability
+    ``resonance_prob``) close to one of ``resonances``.
+
+    Wide, low-frequency moiré bands appear when the display pitch nearly matches the sensor's
+    sampling: about 1 sensor pixel per display pixel (brightness) or 2 (colour: red and blue are
+    sampled every second pixel). Real photos cross these points because the scale changes across
+    the frame.
+    """
+    lo, hi = geo["scale"]
+    centres = geo.get("resonances", [])
+    if centres and rng.random() < float(geo.get("resonance_prob", 0.0)):
+        s = float(centres[int(rng.integers(len(centres)))]) * (
+            1.0 + rng.normal(0.0, geo.get("resonance_rel_sd", 0.04))
+        )
+        return float(np.clip(s, 0.5 * lo, 2.0 * hi))
+    return float(np.exp(rng.uniform(np.log(lo), np.log(hi))))
+
+
 def sample_pose(rng: np.random.Generator, geo: dict, crop: int) -> Pose:
     sw, sh = geo.get("sensor_size", [4000, 3000])
     max_off = np.array([sw - crop, sh - crop]) / 2
@@ -41,7 +60,7 @@ def sample_pose(rng: np.random.Generator, geo: dict, crop: int) -> Pose:
         yaw_deg=float(rng.uniform(-geo["yaw_deg"], geo["yaw_deg"])),
         pitch_deg=float(rng.uniform(-geo["pitch_deg"], geo["pitch_deg"])),
         roll_deg=float(rng.uniform(-geo["roll_deg"], geo["roll_deg"])),
-        scale=float(np.exp(rng.uniform(np.log(geo["scale"][0]), np.log(geo["scale"][1])))),  # log-uniform
+        scale=sample_scale(rng, geo),
         focal_px=float(geo.get("focal_px", 3000)),
         k1=_uniform(rng, geo.get("k1", [0.0, 0.0])),
         crop_offset=tuple(float(v) for v in rng.uniform(-max_off, max_off)),

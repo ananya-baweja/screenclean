@@ -173,3 +173,46 @@ def test_speed_per_512_crop(cfg, page):
         simulate(page, rng, cfg)
         times.append(time.perf_counter() - t0)
     assert np.median(times) < 1.0, times
+
+
+# --------------------------------------------------------------------------- realism
+
+
+def test_radial_spectrum_peaks_at_grating_frequency():
+    from screenclean.simulate.realism import radial_spectrum
+
+    yy, xx = np.mgrid[0:256, 0:256]
+    f0 = 0.125
+    freq, power = radial_spectrum(np.sin(2 * np.pi * f0 * xx).astype(np.float32), n_bins=64)
+    assert abs(freq[int(np.argmax(power))] - f0) < 0.5 / 64 + 1e-9
+
+
+def test_color_matched_residual_ignores_colour_shifts():
+    from screenclean.simulate.realism import color_matched_residual
+
+    gt = np.random.default_rng(0).integers(0, 200, (64, 64, 3)).astype(np.uint8)
+    shifted = np.clip(gt.astype(float) * 1.1 + 12, 0, 255).astype(np.uint8)  # exposure / white-balance change
+    assert np.abs(color_matched_residual(shifted, gt)).mean() < 0.005
+
+
+def test_realism_outputs(tmp_path, cfg, page):
+    from screenclean.simulate import realism
+
+    pairs = [simulate(page, np.random.default_rng(k), cfg)[:2] for k in range(3)]
+    spec = realism.residual_spectra(pairs)
+    assert spec["n"] == 3 and spec["luma"].shape == spec["freq"].shape == spec["chroma"].shape
+    summary = realism.summarize({"a": spec, "b": spec})
+    assert summary["ratio"]["luma"] == pytest.approx(1.0)
+    assert realism.spectra_figure({"sim": spec}, tmp_path / "s.png").stat().st_size > 1000
+    assert realism.pair_grid(pairs, cell=64).shape == (192, 128, 3)
+
+
+def test_scale_sampling_mixture():
+    from screenclean.simulate.camera import sample_scale
+
+    rng = np.random.default_rng(0)
+    geo = {"scale": [0.9, 3.0], "resonances": [1.0, 2.0], "resonance_prob": 0.5, "resonance_rel_sd": 0.04}
+    s = np.array([sample_scale(rng, geo) for _ in range(4000)])
+    near = (np.abs(s - 1) < 0.1) | (np.abs(s - 2) < 0.2)
+    assert 0.5 < near.mean() < 0.75  # half from the resonances plus the log-uniform share that lands nearby
+    assert s.min() > 0.4 and s.max() < 6.1

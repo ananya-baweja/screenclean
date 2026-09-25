@@ -52,6 +52,21 @@ def tone(rgb: np.ndarray, gamma: float, contrast: float) -> np.ndarray:
     return np.clip(0.5 + (x - 0.5) * contrast, 0, 1)
 
 
+def denoise(rgb: np.ndarray, luma_sigma: float, chroma_sigma: float) -> np.ndarray:
+    """Phone-style noise reduction: blur colour (Cr/Cb) strongly and brightness (Y) lightly.
+
+    This removes fine colour speckle and fine colour moiré stripes, while wide moiré bands survive,
+    as in real phone photos.
+    """
+    ycc = cv2.cvtColor(np.clip(rgb, 0, 1).astype(np.float32), cv2.COLOR_RGB2YCrCb)
+    if luma_sigma > 0.05:
+        ycc[..., 0] = cv2.GaussianBlur(ycc[..., 0], (0, 0), luma_sigma)
+    if chroma_sigma > 0.05:
+        for c in (1, 2):
+            ycc[..., c] = cv2.GaussianBlur(ycc[..., c], (0, 0), chroma_sigma)
+    return np.clip(cv2.cvtColor(ycc, cv2.COLOR_YCrCb2RGB), 0, 1)
+
+
 def sharpen(rgb: np.ndarray, amount: float, sigma: float) -> np.ndarray:
     if amount <= 0:
         return rgb

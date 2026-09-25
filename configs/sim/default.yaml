@@ -18,6 +18,11 @@ geometry:
   # (docs/DECISIONS.md) showed moire is strongest near 2 (the subpixel pattern sits at the sensor's
   # Nyquist limit) and almost absent below 1.3 once the lens blurs at all.
   scale: [0.9, 3.0]
+  # Half the samples sit near a resonance (x (1 +- 4%)): there the moire forms wide, low-frequency bands
+  # like in real photos. Found by comparing residual spectra with UHDM (simulate/realism.py).
+  resonances: [1.0, 2.0]
+  resonance_prob: 0.5
+  resonance_rel_sd: 0.04
   focal_px: 3000                 # focal length in sensor pixels (typical phone main camera)
   sensor_size: [4000, 3000]      # full sensor; the crop sits at a random place in it
   k1: [-0.05, 0.05]              # radial lens distortion
@@ -39,6 +44,10 @@ isp:
   wb_jitter: 0.08                # per-channel white-balance error (fraction)
   gamma: [2.0, 2.4]
   contrast: [0.9, 1.2]           # S-curve strength around mid-grey
+  # Phone noise reduction (Gaussian sigma, pixels): colour is blurred strongly, brightness lightly.
+  # Without it, simulated moire had far more fine colour stripes than real photos (see realism check).
+  luma_denoise: [0.0, 0.7]
+  chroma_denoise: [1.0, 3.0]
   sharpen: [0.0, 1.0]            # unsharp-mask amount (phones sharpen, which strengthens moire)
   sharpen_sigma: [0.8, 1.6]
   jpeg_quality: [70, 95]
