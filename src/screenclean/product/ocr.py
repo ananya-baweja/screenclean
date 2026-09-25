@@ -45,15 +45,27 @@ def lines_to_text(lines: list[OcrLine]) -> str:
 
 
 class TesseractOCR:
+    """Tesseract 5 with local (Sauvola) thresholding.
+
+    Tesseract's default global threshold failed on photographed pages: one dark element (a logo,
+    a marker) sets the threshold, and lighter coloured text breaks apart. On simulated photos of the
+    capture-kit pages, Sauvola raised word F1 from 0.68 to 0.80 and was never clearly worse.
+    """
+
     name = "tesseract"
 
-    def __init__(self, lang: str = "eng", psm: int = 3):
-        self.lang, self.psm = lang, psm
+    def __init__(self, lang: str = "eng", psm: int = 3, thresholding: int = 2):
+        self.lang, self.psm, self.thresholding = lang, psm, thresholding
 
     def read(self, page: np.ndarray) -> list[OcrLine]:
         from screenclean.eval.tesseract import ocr_words
 
-        words = ocr_words(prepare_for_ocr(page), psm=self.psm, lang=self.lang)
+        words = ocr_words(
+            prepare_for_ocr(page),
+            psm=self.psm,
+            lang=self.lang,
+            config={"thresholding_method": self.thresholding},
+        )
         groups: dict[tuple[int, int, int], list[dict]] = {}
         for w in words:
             groups.setdefault(w["line"], []).append(w)

@@ -49,11 +49,19 @@ def ocr(image: np.ndarray | Image.Image, psm: int = 3, lang: str = "eng", timeou
 
 
 def ocr_words(
-    image: np.ndarray | Image.Image, psm: int = 3, lang: str = "eng", timeout_s: float = 120
+    image: np.ndarray | Image.Image,
+    psm: int = 3,
+    lang: str = "eng",
+    timeout_s: float = 120,
+    config: dict[str, str | int] | None = None,
 ) -> list[dict]:
     """Words with boxes: dicts with ``text``, ``box`` (x0, y0, x1, y1 pixels), ``conf`` (0-100) and
-    ``line`` (block, paragraph, line numbers), in Tesseract's reading order."""
-    tsv = _run(image, ["--psm", str(psm), "-l", lang, "tsv"], timeout_s)
+    ``line`` (block, paragraph, line numbers), in Tesseract's reading order.
+
+    ``config`` sets Tesseract variables, e.g. ``{"thresholding_method": 2}`` (Sauvola).
+    """
+    extra = [a for k, v in (config or {}).items() for a in ("-c", f"{k}={v}")]
+    tsv = _run(image, ["--psm", str(psm), "-l", lang, *extra, "tsv"], timeout_s)
     words = []
     for row in tsv.splitlines()[1:]:
         parts = row.split("\t")

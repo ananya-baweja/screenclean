@@ -2,8 +2,9 @@
 
 For each page: simulate a whole phone photo of it on a screen (``simulate/scene.py``), run the
 scan pipeline with cleaner "none" and "fft_notch_local", and score the text against the page's
-ground truth (character error rate and word F1). Writes a JSON table and one figure for the docs
-(everything in it is synthetic, so nothing personal).
+ground truth: word F1 (share of words found, in any order) and character error rate (CER; it also
+counts reading order, so tables and chat bubbles read column by column score badly). Writes a JSON
+table and one figure for the docs (everything in it is synthetic, so nothing personal).
 
     python tools/make_scan_demo.py [--n 14] [--out results/checks/scan_demo.json]
                                    [--figure docs/figures/scan_demo.jpg] [--show-page 2]
@@ -41,33 +42,36 @@ def ground_truth(page: dict) -> str:
 
 
 def figure(path: Path, photo, results: dict, row: dict) -> None:
-    fig = plt.figure(figsize=(14, 9.2), dpi=100)
-    grid = fig.add_gridspec(2, 3, height_ratios=[1.15, 1])
-    ax = fig.add_subplot(grid[0, :2])
-    ax.imshow(photo)
-    quad = np.vstack([results["fft_notch_local"].corners, results["fft_notch_local"].corners[:1]])
-    ax.plot(quad[:, 0], quad[:, 1], color="#ff2da0", lw=1.5)
-    ax.set_title("1. Simulated phone photo; the detected screen is outlined")
-    ax2 = fig.add_subplot(grid[0, 2])
-    ax2.imshow(results["fft_notch_local"].page)
-    ax2.set_title("2. Found, cleaned and straightened")
+    fig = plt.figure(figsize=(13, 10.5), dpi=100)
+    grid = fig.add_gridspec(3, 2, height_ratios=[1.25, 0.75, 0.45])
+    main = results["none"]  # the scan command's default
+    a = fig.add_subplot(grid[0, 0])
+    a.imshow(photo)
+    quad = np.vstack([main.corners, main.corners[:1]])
+    a.plot(quad[:, 0], quad[:, 1], color="#ff2da0", lw=1.5)
+    a.set_title("1. Simulated phone photo; the detected screen is outlined")
+    a = fig.add_subplot(grid[0, 1])
+    a.imshow(main.page)
+    a.set_title("2. Found and straightened")
     for i, name in enumerate(CLEANERS):
         page = results[name].page
         h, w = page.shape[:2]
-        crop = page[int(0.16 * h) : int(0.42 * h), int(0.08 * w) : int(0.5 * w)]
+        crop = page[int(0.14 * h) : int(0.40 * h), int(0.08 * w) : int(0.55 * w)]
         a = fig.add_subplot(grid[1, i])
         a.imshow(crop)
         label = "no moiré removal" if name == "none" else "classical moiré removal"
-        a.set_title(f"3{'ab'[i]}. Detail, {label}\nOCR character error rate {row[name]['cer']:.1%}")
-    t = fig.add_subplot(grid[1, 2])
-    t.axis("off")
-    text = results["fft_notch_local"].text.strip().splitlines()
-    snippet = "\n".join(line[:52] + ("…" if len(line) > 52 else "") for line in text[:14])
-    t.text(0, 1, snippet, va="top", ha="left", family="monospace", fontsize=8.5)
-    t.set_title("4. Recognised text (start)")
-    for a in fig.axes[:5]:
+        a.set_title(f"3{'ab'[i]}. Detail, {label}: {row[name]['word_f1']:.0%} of words read correctly")
+    for a in fig.axes:
         a.set_xticks([])
         a.set_yticks([])
+    t = fig.add_subplot(grid[2, :])
+    t.axis("off")
+    lines = [line for line in main.text.strip().splitlines() if line.strip()][:5]
+    snippet = "\n".join(line[:110] + ("…" if len(line) > 110 else "") for line in lines)
+    t.text(0.01, 0.95, snippet, va="top", ha="left", family="monospace", fontsize=9)
+    t.set_title(
+        "4. Recognised text (first lines), also in the PDF's hidden text layer and the Markdown", loc="left"
+    )
     fig.tight_layout()
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, dpi=100, pil_kwargs={"quality": 85})
@@ -80,13 +84,13 @@ def main() -> None:
     ap.add_argument("--n", type=int, default=14, help="first n pages of the kit")
     ap.add_argument("--out", type=Path, default=Path("results/checks/scan_demo.json"))
     ap.add_argument("--figure", type=Path, default=Path("docs/figures/scan_demo.jpg"))
-    ap.add_argument("--show-page", type=int, default=None, help="page id for the figure (default: best gain)")
+    ap.add_argument("--show-page", type=int, default=0, help="page id shown in the figure")
     args = ap.parse_args()
     if not tesseract.available():
         raise SystemExit("Tesseract not found: install it or set TESSERACT_CMD")
 
     meta = json.loads((args.kit / "pages.json").read_text(encoding="utf-8"))
-    rows, shown, best_gain = [], None, -np.inf
+    rows, shown = [], None
     for page in meta["pages"][: args.n]:
         pid = page["page_id"]
         img = read_image(args.kit / "pages" / f"page_{pid:03d}.png")
@@ -110,9 +114,8 @@ def main() -> None:
             for n in CLEANERS
         ]
         print(f"page {pid:2d} {page['template']:10s} " + "  ".join(scores))
-        gain = row["none"]["cer"] - row["fft_notch_local"]["cer"]
-        if (args.show_page == pid) or (args.show_page is None and gain > best_gain):
-            shown, best_gain = (scene.photo, results, row), gain  # the figure's page (one kept in memory)
+        if pid == args.show_page:
+            shown = (scene.photo, results, row)
 
     def mean(name: str, key: str) -> float:
         return round(float(np.mean([r[name][key] for r in rows])), 4)
