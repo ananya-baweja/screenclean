@@ -129,10 +129,15 @@ def load_queue(queue_dir: str | Path) -> list[JobSpec]:
 
 @dataclass
 class TaskResult:
-    """What a task returns: ``done`` or ``partial`` (budget reached, resume later)."""
+    """What a task returns: ``done`` or ``partial`` (budget reached, resume later).
+
+    ``message`` is printed just before the final status line, e.g. to explain why a
+    job stopped early and when to run it again.
+    """
 
     state: str = "done"
     summary: dict[str, Any] = field(default_factory=dict)
+    message: str = ""
 
 
 @dataclass
@@ -156,7 +161,9 @@ TaskFn = Callable[[JobContext], TaskResult]
 TASKS: dict[str, TaskFn] = {}
 
 # Tasks implemented in other modules, imported only when a job needs them.
-TASK_MODULES: dict[str, str] = {}
+TASK_MODULES: dict[str, str] = {
+    "prepare_uhdm": "screenclean.data.prepare_uhdm",
+}
 
 
 def register(name: str) -> Callable[[TaskFn], TaskFn]:
@@ -332,7 +339,7 @@ def run_job(
         root_logger.setLevel(logging.INFO)
 
     started = time.monotonic()
-    state, error, summary = "failed", None, {}
+    state, error, summary, message = "failed", None, {}, ""
     try:
         log.info(
             "Starting %s (task=%s, runtime=%s, attempt=%d, resuming=%s)",
@@ -369,7 +376,7 @@ def run_job(
         result = get_task(spec.task)(ctx)
         if result.state not in ("done", "partial"):
             raise RuntimeError(f"task returned invalid state {result.state!r}")
-        state, summary = result.state, result.summary
+        state, summary, message = result.state, result.summary, result.message
     except Exception as e:  # noqa: BLE001 - any task error must end as a clean 'failed' status
         log.exception("Job %s failed", spec.id)
         error = f"{type(e).__name__}: {e}"
@@ -397,6 +404,8 @@ def run_job(
     )
     atomic_write_text(results_dir / "log_tail.txt", _tail(log_path))
 
+    if message:
+        print(message)
     if state == "partial":
         print(f"TIME BUDGET REACHED — run the notebook again to continue {spec.id}")
         return EXIT_OK

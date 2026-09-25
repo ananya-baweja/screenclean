@@ -87,6 +87,20 @@ def gpu_info() -> dict[str, Any]:
     }
 
 
+def opencv_info() -> dict[str, Any]:
+    """Which OpenCV build actually imports (several can be installed side by side) and ArUco support."""
+    try:
+        import cv2
+    except ImportError as e:
+        return {"importable": False, "error": str(e)}
+    return {
+        "importable": True,
+        "version": cv2.__version__,
+        "path": str(Path(cv2.__file__).parent),
+        "aruco": hasattr(cv2, "aruco") and hasattr(cv2.aruco, "ArucoDetector"),
+    }
+
+
 def collect_env(repo_root: str | Path | None = None, disk_path: str | Path = ".") -> dict[str, Any]:
     """Build the environment report saved with every job as ``env.json``."""
     disk = shutil.disk_usage(disk_path)
@@ -97,7 +111,9 @@ def collect_env(repo_root: str | Path | None = None, disk_path: str | Path = "."
         "cpu_count": os.cpu_count(),
         "ram_gb": total_ram_gb(),
         "disk_free_gb": round(disk.free / 1024**3, 1),
+        "local_disk_free_gb": round(shutil.disk_usage(Path.cwd()).free / 1024**3, 1),
         "gpu": gpu_info(),
         "packages": package_versions(),
+        "opencv": opencv_info(),
         "git_sha": git_sha(repo_root),
     }
