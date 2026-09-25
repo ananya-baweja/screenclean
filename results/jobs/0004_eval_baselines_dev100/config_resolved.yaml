@@ -1,0 +1,28 @@
+job:
+  id: 0004_eval_baselines_dev100
+  task: eval
+  runtime: cpu
+  config: configs/eval/uhdm_dev100_baselines.yaml
+  depends_on:
+  - 0003_tune_notch
+  max_minutes: 150
+  resume: true
+  attempt: 1
+  drive_subdir: jobs/0004_eval_baselines_dev100
+  notes: Input + 3 classical baselines on dev100, full resolution (~1 h)
+config:
+  split: data/uhdm_v1/dev100
+  local_dir: /content/eval_data
+  workers: 2
+  sample_images: 4
+  lpips: false
+  stop_margin_min: 10
+  methods:
+  - name: identity
+    label: Input (no cleaning)
+  - name: chroma_lowpass
+    params_from: params/baselines.yaml
+  - name: fft_notch
+    params_from: params/baselines.yaml
+  - name: fft_notch_local
+    params_from: params/baselines.yaml

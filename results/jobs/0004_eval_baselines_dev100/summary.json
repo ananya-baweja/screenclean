@@ -1,0 +1,74 @@
+{
+  "attempt": 1,
+  "complete": true,
+  "dataset_params": {
+    "format": "original JPEGs",
+    "n_test_pairs": 500,
+    "seed": 0,
+    "source": "UHDM test"
+  },
+  "elapsed_s": 4403.9,
+  "git_sha": "f9e59936d62896c58d6251f45c7edbbd7b52b2b4",
+  "id": "0004_eval_baselines_dev100",
+  "methods": {
+    "Input (no cleaning)": {
+      "n": 100,
+      "name": "identity",
+      "params": {},
+      "params_source": "config",
+      "psnr": 17.09878671921916,
+      "reference": false,
+      "seconds": 0.06113144682010898,
+      "ssim": 0.5033020062436856
+    },
+    "chroma_lowpass": {
+      "n": 100,
+      "name": "chroma_lowpass",
+      "params": {
+        "sigma": 8
+      },
+      "params_source": "params/baselines.yaml (job 0003_tune_notch)",
+      "psnr": 17.130664685425387,
+      "psnr_gain_vs_input": 0.03187796620622805,
+      "reference": false,
+      "seconds": 0.7772432276702966,
+      "ssim": 0.5057266193665805
+    },
+    "fft_notch": {
+      "n": 100,
+      "name": "fft_notch",
+      "params": {
+        "channels": "ycc",
+        "k": 3,
+        "r0": 0.08,
+        "sigma": 4
+      },
+      "params_source": "params/baselines.yaml (job 0003_tune_notch)",
+      "psnr": 17.168803417003073,
+      "psnr_gain_vs_input": 0.07001669778391653,
+      "reference": false,
+      "seconds": 12.666129488400001,
+      "ssim": 0.5044614021615992
+    },
+    "fft_notch_local": {
+      "n": 100,
+      "name": "fft_notch_local",
+      "params": {
+        "channels": "y",
+        "k": 4,
+        "r0": 0.1,
+        "sigma": 2
+      },
+      "params_source": "params/baselines.yaml (job 0003_tune_notch)",
+      "psnr": 17.40854755209661,
+      "psnr_gain_vs_input": 0.30976083287744755,
+      "reference": false,
+      "seconds": 13.72753112463979,
+      "ssim": 0.5321045643561256
+    }
+  },
+  "n_images": 100,
+  "split": "data/uhdm_v1/dev100",
+  "state": "done",
+  "task": "eval"
+}
