@@ -1,12 +1,15 @@
 {
-  "attempt": 1,
-  "elapsed_s": 290.4,
-  "error": "DownloadError: ESDNet weights: Google Drive keeps refusing the download (quota)",
-  "finished_utc": "2026-09-25T14:59:37+00:00",
+  "attempt": 2,
+  "elapsed_min": 28.1,
+  "elapsed_s": 1686.9,
+  "error": null,
+  "finished_utc": "2026-09-25T15:57:49+00:00",
   "id": "0005_esdnet_ref_dev100",
+  "progress": "image 100/100 (test/0477)",
+  "progress_utc": "2026-09-25T15:57:49+00:00",
   "runtime": "gpu",
-  "started_utc": "2026-09-25T14:54:47+00:00",
-  "state": "failed",
+  "started_utc": "2026-09-25T15:29:42+00:00",
+  "state": "done",
   "task": "eval",
-  "updated_utc": "2026-09-25T14:59:37+00:00"
+  "updated_utc": "2026-09-25T15:57:49+00:00"
 }

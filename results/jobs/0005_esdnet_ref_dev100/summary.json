@@ -1,8 +1,47 @@
 {
-  "attempt": 1,
-  "elapsed_s": 290.4,
-  "git_sha": "f9e59936d62896c58d6251f45c7edbbd7b52b2b4",
+  "attempt": 2,
+  "complete": true,
+  "dataset_params": {
+    "format": "original JPEGs",
+    "n_test_pairs": 500,
+    "seed": 0,
+    "source": "UHDM test"
+  },
+  "elapsed_s": 1686.9,
+  "git_sha": "e7a730838981b9ed53ca3daaa0b08155413ac750",
   "id": "0005_esdnet_ref_dev100",
-  "state": "failed",
+  "methods": {
+    "ESDNet (reference)": {
+      "fp16": true,
+      "inference_modes": {
+        "full": 100
+      },
+      "lpips": 0.2695940890721977,
+      "n": 100,
+      "name": "esdnet_ref",
+      "parameters": 5934156,
+      "params": {},
+      "params_source": "config",
+      "psnr": 21.757258742290983,
+      "psnr_gain_vs_input": 4.658472023071816,
+      "reference": true,
+      "seconds": 1.1563920163799595,
+      "ssim": 0.788103473273901
+    },
+    "Input (no cleaning)": {
+      "lpips": 0.5200741575658321,
+      "n": 100,
+      "name": "identity",
+      "params": {},
+      "params_source": "config",
+      "psnr": 17.09878671921916,
+      "reference": false,
+      "seconds": 0.03672084226996049,
+      "ssim": 0.5033020062436856
+    }
+  },
+  "n_images": 100,
+  "split": "data/uhdm_v1/dev100",
+  "state": "done",
   "task": "eval"
 }

@@ -7,7 +7,7 @@ job:
   - 0002_prepare_uhdm
   max_minutes: 60
   resume: true
-  attempt: 1
+  attempt: 2
   drive_subdir: jobs/0005_esdnet_ref_dev100
   notes: ESDNet reference on dev100 with LPIPS (T4, ~30 min)
 config:
@@ -26,8 +26,8 @@ config:
       id: 1HT_ubcAYRqzFIJ46XuPhrulJk2YFBIEl
       bytes: 23895301
     weights_cache: models/esdnet_uhdm.pth
-    download_attempts: 5
-    download_wait_s: 60
+    download_attempts: 3
+    download_wait_s: 30
     fp16: true
     tile: 1024
     overlap: 64
