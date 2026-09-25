@@ -1,0 +1,34 @@
+2026-09-25 14:54:47,583 INFO screenclean.jobs: Starting 0005_esdnet_ref_dev100 (task=eval, runtime=gpu, attempt=1, resuming=False)
+2026-09-25 14:54:49,058 INFO screenclean.utils.drive: staging dev100-00000.tar (332 MB)
+2026-09-25 14:54:57,589 INFO screenclean.utils.drive: staging dev100-00001.tar (280 MB)
+2026-09-25 14:55:07,501 INFO screenclean.utils.drive: staging dev100-00002.tar (327 MB)
+2026-09-25 14:55:13,749 INFO screenclean.utils.drive: staging dev100-00003.tar (317 MB)
+2026-09-25 14:55:22,496 INFO screenclean.eval.evaluate: 100 images, methods ['Input (no cleaning)', 'ESDNet (reference)']; 100 images still to score
+2026-09-25 14:55:28,572 WARNING screenclean.baselines.esdnet_ref: weights download attempt 1/5 refused (Drive quota?); waiting 60 s
+2026-09-25 14:56:30,538 WARNING screenclean.baselines.esdnet_ref: weights download attempt 2/5 refused (Drive quota?); waiting 60 s
+2026-09-25 14:57:33,702 WARNING screenclean.baselines.esdnet_ref: weights download attempt 3/5 refused (Drive quota?); waiting 60 s
+2026-09-25 14:58:35,415 WARNING screenclean.baselines.esdnet_ref: weights download attempt 4/5 refused (Drive quota?); waiting 60 s
+2026-09-25 14:59:37,990 WARNING screenclean.baselines.esdnet_ref: weights download attempt 5/5 refused (Drive quota?); waiting 60 s
+2026-09-25 14:59:37,990 ERROR screenclean.jobs: Job 0005_esdnet_ref_dev100 failed
+Traceback (most recent call last):
+  File "/content/screenclean/src/screenclean/jobs.py", line 392, in run_job
+    result = get_task(spec.task)(ctx)
+  File "/content/screenclean/src/screenclean/eval/evaluate.py", line 238, in eval_task
+    worker = _Worker(methods, ctx.layout.root, use_lpips)
+  File "/content/screenclean/src/screenclean/eval/evaluate.py", line 96, in __init__
+    self.fns = {m["label"]: build_fn(m, drive_root) for m in methods}
+                            ~~~~~~~~^^^^^^^^^^^^^^^
+  File "/content/screenclean/src/screenclean/eval/evaluate.py", line 76, in build_fn
+    return build_esdnet(method, drive_root)
+  File "/content/screenclean/src/screenclean/baselines/esdnet_ref.py", line 164, in build_esdnet
+    weights = ensure_weights(
+        spec["weights"],
+    ...<2 lines>...
+        wait_s=float(spec.get("download_wait_s", 60)),
+    )
+  File "/content/screenclean/src/screenclean/baselines/esdnet_ref.py", line 78, in ensure_weights
+    raise DownloadError(
+        "ESDNet weights: Google Drive keeps refusing the download (quota)", retry_later=True
+    )
+screenclean.data.download.DownloadError: ESDNet weights: Google Drive keeps refusing the download (quota)
+2026-09-25 14:59:37,993 INFO screenclean.jobs: Job 0005_esdnet_ref_dev100 ended as failed after 290.4 s

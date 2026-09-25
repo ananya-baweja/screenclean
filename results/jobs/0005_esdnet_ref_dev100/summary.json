@@ -1,0 +1,8 @@
+{
+  "attempt": 1,
+  "elapsed_s": 290.4,
+  "git_sha": "f9e59936d62896c58d6251f45c7edbbd7b52b2b4",
+  "id": "0005_esdnet_ref_dev100",
+  "state": "failed",
+  "task": "eval"
+}

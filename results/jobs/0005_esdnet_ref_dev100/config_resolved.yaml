@@ -1,0 +1,33 @@
+job:
+  id: 0005_esdnet_ref_dev100
+  task: eval
+  runtime: gpu
+  config: configs/eval/esdnet_dev100.yaml
+  depends_on:
+  - 0002_prepare_uhdm
+  max_minutes: 60
+  resume: true
+  attempt: 1
+  drive_subdir: jobs/0005_esdnet_ref_dev100
+  notes: ESDNet reference on dev100 with LPIPS (T4, ~30 min)
+config:
+  split: data/uhdm_v1/dev100
+  local_dir: /content/eval_data
+  sample_images: 4
+  lpips: true
+  stop_margin_min: 10
+  methods:
+  - name: identity
+    label: Input (no cleaning)
+  - name: esdnet_ref
+    label: ESDNet (reference)
+    repo_sha: fa70a92d3d4f35d5c4e3fa7a54e3b2e5b995f1cd
+    weights:
+      id: 1HT_ubcAYRqzFIJ46XuPhrulJk2YFBIEl
+      bytes: 23895301
+    weights_cache: models/esdnet_uhdm.pth
+    download_attempts: 5
+    download_wait_s: 60
+    fp16: true
+    tile: 1024
+    overlap: 64
