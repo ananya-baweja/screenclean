@@ -85,7 +85,7 @@ def _read_rows(path: Path) -> list[dict[str, Any]]:
 def _append_rows(path: Path, rows: list[dict[str, Any]]) -> None:
     new = not path.exists()
     with open(path, "a", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=FIELDS)
+        w = csv.DictWriter(f, fieldnames=FIELDS, lineterminator="\n")
         if new:
             w.writeheader()
         w.writerows(rows)
@@ -167,7 +167,7 @@ def tune_notch_task(ctx: JobContext) -> TaskResult:
         atomic_write_text(ctx.results_dir / "baselines_params.yaml", yaml.safe_dump(params, sort_keys=False))
         log.info("best settings: %s", best)
     with open(ctx.results_dir / "tune_table.csv", "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
+        w = csv.writer(f, lineterminator="\n")
         w.writerow(["method", "params", "psnr_mean", "n"])
         for m, entries in sorted(table.items()):
             for e in entries:

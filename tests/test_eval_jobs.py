@@ -136,6 +136,7 @@ def test_eval_resumes_without_duplicates(tmp_path, capsys, monkeypatch):
     assert jobs.run("auto", drive, repo, tmp_path / "m.txt", runtime="cpu") == 0
     rows = list(csv.DictReader(rows_file.open()))
     assert len(rows) == 10 and len({(r["key"], r["method"]) for r in rows}) == 10
+    assert b"\r" not in rows_file.read_bytes()  # LF line endings
 
 
 def test_eval_with_two_worker_processes(tmp_path, capsys):

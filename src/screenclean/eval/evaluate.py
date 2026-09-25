@@ -162,7 +162,7 @@ def read_rows(path: Path) -> list[dict[str, Any]]:
 def append_rows(path: Path, rows: list[dict[str, Any]]) -> None:
     new = not path.exists()
     with open(path, "a", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=FIELDS)
+        w = csv.DictWriter(f, fieldnames=FIELDS, lineterminator="\n")
         if new:
             w.writeheader()
         w.writerows(rows)
