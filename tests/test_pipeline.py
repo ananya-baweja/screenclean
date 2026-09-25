@@ -119,6 +119,8 @@ def test_scan_reads_a_simulated_photo_with_tesseract():
     assert np.median(page.image) > 128  # a light page
     cfg = {"area_frac": [0.6, 0.7], "blur_prob": 0.0, "portrait_prob": 0.0}
     scene = make_scene(page.image, np.random.default_rng(3), out_size=(2000, 1500), ss=1, cfg=cfg)
-    res = scan(scene.photo)  # classical moiré cleaner (without it, CER was 14% on this photo)
+    res = scan(scene.photo)
     assert res.detected and res.lines and all(0 <= ln.conf <= 1 for ln in res.lines)
     assert cer(page.text(), res.text) < 0.05
+    cleaned = scan(scene.photo, cleaner="fft_notch_local")
+    assert cer(page.text(), cleaned.text) < 0.05

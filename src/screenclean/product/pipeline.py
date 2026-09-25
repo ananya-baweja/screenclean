@@ -100,7 +100,7 @@ def _clean_region(img: np.ndarray, corners: np.ndarray, cleaner, margin: int = 3
 
 def scan(
     image: np.ndarray | str | Path,
-    cleaner: str | Callable[[np.ndarray], np.ndarray] = "fft_notch_local",
+    cleaner: str | Callable[[np.ndarray], np.ndarray] = "none",
     ocr: Any = "tesseract",
     mode: str = "document",
     corners: np.ndarray | None = None,
@@ -108,6 +108,10 @@ def scan(
     max_side: int | None = 4000,
 ) -> ScanResult:
     """Scan one photo (an RGB array, or a file path: EXIF orientation is applied).
+
+    The default cleaner is "none" until the trained model arrives: the classical notch filter
+    lowered OCR accuracy on average (it mistakes regular text layouts, like code, for moiré; see
+    docs/DECISIONS.md). ``cleaner="fft_notch_local"`` still runs it.
 
     ``corners`` skips detection (e.g. corners the user dragged in the app). ``mode="document"``
     flattens the lighting and stretches contrast; ``"photo"`` keeps the page as photographed.

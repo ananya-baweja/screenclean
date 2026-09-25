@@ -193,7 +193,12 @@ def build_parser() -> argparse.ArgumentParser:
     scan_p.add_argument("--txt", default=None, help="plain text")
     scan_p.add_argument("--json", default=None, help="details per photo: corners, lines with boxes, timings")
     scan_p.add_argument("--pages", default=None, help="folder for the cleaned, straightened page images")
-    scan_p.add_argument("--cleaner", default="fft_notch_local", choices=["fft_notch_local", "none"])
+    scan_p.add_argument(
+        "--cleaner",
+        default="none",
+        choices=["none", "fft_notch_local"],
+        help="moire removal before straightening (the classical filter can hurt text; the model comes later)",
+    )
     scan_p.add_argument("--ocr", default="tesseract", choices=["tesseract", "none"])
     scan_p.add_argument("--mode", default="document", choices=["document", "photo"],
                         help="document: even out lighting and contrast; photo: keep the look")  # fmt: skip
