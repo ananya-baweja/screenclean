@@ -1,0 +1,10 @@
+id: 0002_prepare_uhdm
+task: prepare_uhdm
+runtime: cpu
+config: configs/data/uhdm.yaml
+depends_on: [0001_hello]
+max_minutes: 240
+resume: true
+attempt: 1
+drive_subdir: jobs/0002_prepare_uhdm
+notes: "Build UHDM dev100 / val / train shards on Drive (~8 GB), reading images from the pinned mirror zip"

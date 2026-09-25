@@ -17,7 +17,7 @@ One entry per decision: date, the decision, why, and the alternatives considered
   for Drive. Nothing in the code or CI reads an API token or secret.
 - **Why:** simpler and safer. There are no credentials to leak, rotate or store in notebooks.
 - **Alternatives:** GitHub or Kaggle tokens stored as Colab secrets (rejected: extra risk for little gain).
-  The Kaggle mirror of UHDM needs an API token, so the official download links are used instead.
+  The Kaggle mirror of UHDM needs an API token, so it is not used.
 
 ## 2026-09-25: Images are float32 RGB in [0, 1] internally
 
@@ -25,3 +25,37 @@ One entry per decision: date, the decision, why, and the alternatives considered
   boundaries, and EXIF orientation is always applied when a photo is read.
 - **Why:** one convention avoids silent channel-order and scaling bugs. Phone photos are often stored
   rotated, with an orientation tag.
+
+## 2026-09-25: UHDM is read from a pinned public mirror, one image at a time
+
+- **Decision:** the dataset job reads UHDM from a public Hugging Face mirror of the full release
+  (`leegwang/uhdm`, one 45 GB zip, pinned to revision `9b06328`). It reads only the zip's table of contents
+  up front, then fetches each image with an HTTP range request and checks its CRC-32. Nothing is extracted to disk.
+- **Why:** the official Google Drive files were over their shared download quota (plain downloads refused),
+  and the single-file training archive the original download script points to has been replaced by 18
+  byte-split parts. The mirror was checked against the official archives: identical file sizes for spot-checked
+  images, and 1.2 MB of image bytes compared byte for byte. It has 4,500 train and 500 test pairs, with no
+  unmatched files. Random access also means a resumed job only fetches the images it still needs, and Colab's
+  local disk size doesn't matter.
+- **Alternatives:** official Drive files with "retry tomorrow" (can stall for days); the Kaggle mirror (needs an
+  API token); streaming all 18 parts through `tar` (needs the quota, and a restart re-downloads everything).
+
+## 2026-09-25: UHDM `test` split for evaluation; `test_origin` not used
+
+- **Decision:** evaluate on `test` (500 pairs). `dev100` is a fixed sample of 100 of them (sorted keys, seed 0)
+  used during development; the full 500 are used once for the final numbers.
+- **Why:** `test` is what the paper's evaluation code uses. `test_origin` is kept out so there is exactly one test set.
+
+## 2026-09-25: Validation = 200 held-out training images (seed 0)
+
+- **Decision:** sort the 4,500 training keys and sample 200 with seed 0 as validation (2 fixed 512 crops each).
+  Training uses the other 4,300, with 2 random 512 crops at full scale plus 1 at half scale per image.
+- **Why:** model selection and tuning need data that isn't the test set. Fixed crops make validation numbers
+  comparable across runs. The half-scale crop shows the model coarser moiré at the same crop size.
+
+## 2026-09-25: Datasets stored as plain tar shards, read in place
+
+- **Decision:** crops are stored as ~500 MB uncompressed tar files with a `manifest.json` (sizes, sha1, source
+  images). Training copies the shards to local disk and reads samples by byte offset, without extracting them.
+- **Why:** copying a few large files over the Drive mount is far faster than thousands of small ones.
+  Reading in place avoids an extraction step and doubling the disk use.

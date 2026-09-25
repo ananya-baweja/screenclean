@@ -33,6 +33,12 @@ The model is compared with classical signal-processing baselines (chroma low-pas
 and a published reference model. The evaluation focuses on **OCR accuracy on real phone photos of
 screens**. See [docs/USE_CASES.md](docs/USE_CASES.md) for the user stories and target metrics.
 
+## Data
+
+- **UHDM** (ECCV 2022): 5,000 real 4K pairs of screen photos with and without moiré.
+  [Paper](https://arxiv.org/abs/2207.09935) · [code and official data links](https://github.com/CVMI-Lab/UHDM).
+  Read from a pinned public mirror; see [docs/DECISIONS.md](docs/DECISIONS.md). Images are never stored in this repo.
+
 ## Repository layout
 
 | Path | Contents |
