@@ -1,0 +1,15 @@
+{
+  "attempt": 1,
+  "cpu_count": 2,
+  "disk_free_gb": 14.9,
+  "drive_write_read_ok": true,
+  "elapsed_s": 0.1,
+  "git_sha": "eb31cff5c93194ec728cc16b4eec1be666671c46",
+  "gpu": null,
+  "id": "0001_hello",
+  "python": "3.13.15",
+  "ram_gb": 12.7,
+  "state": "done",
+  "task": "hello",
+  "torch": "2.11.0+cpu"
+}

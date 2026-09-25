@@ -1,0 +1,12 @@
+job:
+  id: 0001_hello
+  task: hello
+  runtime: cpu
+  config: null
+  depends_on: []
+  max_minutes: 10
+  resume: false
+  attempt: 1
+  drive_subdir: jobs/0001_hello
+  notes: 'Smoke test: environment report plus a Drive write/read check'
+config: {}

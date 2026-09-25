@@ -1,0 +1,3 @@
+2026-09-25 08:37:50,292 INFO screenclean.jobs: Starting 0001_hello (task=hello, runtime=cpu, attempt=1, resuming=False)
+2026-09-25 08:37:50,352 INFO screenclean.jobs: Drive write/read OK: /content/drive/MyDrive/screenclean/jobs/0001_hello/hello_probe.txt
+2026-09-25 08:37:50,373 INFO screenclean.jobs: Job 0001_hello ended as done after 0.1 s
