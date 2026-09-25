@@ -1,0 +1,24 @@
+2026-09-25 12:27:40,089 INFO screenclean.jobs: Starting 0003_tune_notch (task=tune_notch, runtime=cpu, attempt=1, resuming=False)
+2026-09-25 12:27:41,777 INFO screenclean.baselines.tune: tuning on 20 validation images (20 left); grid sizes {'chroma_lowpass': 4, 'fft_notch': 54, 'fft_notch_local': 6}
+2026-09-25 12:33:48,261 INFO screenclean.jobs: progress: image 1/20 scored
+2026-09-25 12:33:48,326 INFO screenclean.jobs: progress: image 2/20 scored
+2026-09-25 12:39:30,779 INFO screenclean.jobs: progress: image 3/20 scored
+2026-09-25 12:39:34,623 INFO screenclean.jobs: progress: image 4/20 scored
+2026-09-25 12:45:06,612 INFO screenclean.jobs: progress: image 5/20 scored
+2026-09-25 12:45:07,431 INFO screenclean.jobs: progress: image 6/20 scored
+2026-09-25 12:50:50,989 INFO screenclean.jobs: progress: image 7/20 scored
+2026-09-25 12:50:54,395 INFO screenclean.jobs: progress: image 8/20 scored
+2026-09-25 12:56:30,484 INFO screenclean.jobs: progress: image 9/20 scored
+2026-09-25 12:56:32,332 INFO screenclean.jobs: progress: image 10/20 scored
+2026-09-25 13:03:42,177 INFO screenclean.jobs: progress: image 11/20 scored
+2026-09-25 13:03:49,827 INFO screenclean.jobs: progress: image 12/20 scored
+2026-09-25 13:11:26,213 INFO screenclean.jobs: progress: image 13/20 scored
+2026-09-25 13:11:27,280 INFO screenclean.jobs: progress: image 14/20 scored
+2026-09-25 13:19:03,698 INFO screenclean.jobs: progress: image 15/20 scored
+2026-09-25 13:19:16,407 INFO screenclean.jobs: progress: image 16/20 scored
+2026-09-25 13:26:48,741 INFO screenclean.jobs: progress: image 17/20 scored
+2026-09-25 13:26:50,098 INFO screenclean.jobs: progress: image 18/20 scored
+2026-09-25 13:34:22,758 INFO screenclean.jobs: progress: image 19/20 scored
+2026-09-25 13:34:28,960 INFO screenclean.jobs: progress: image 20/20 scored
+2026-09-25 13:34:29,062 INFO screenclean.baselines.tune: best settings: {'identity': {'params': {}, 'psnr_mean': 15.39351141002398}, 'chroma_lowpass': {'params': {'sigma': 8}, 'psnr_mean': 15.408992561543633}, 'fft_notch': {'params': {'channels': 'ycc', 'k': 3, 'r0': 0.08, 'sigma': 4}, 'psnr_mean': 15.408886818642634}, 'fft_notch_local': {'params': {'channels': 'y', 'k': 4, 'r0': 0.1, 'sigma': 2}, 'psnr_mean': 15.586457845187152}}
+2026-09-25 13:34:29,120 INFO screenclean.jobs: Job 0003_tune_notch ended as done after 4009.0 s

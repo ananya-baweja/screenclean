@@ -1,0 +1,15 @@
+{
+  "attempt": 1,
+  "elapsed_min": 66.8,
+  "elapsed_s": 4009.0,
+  "error": null,
+  "finished_utc": "2026-09-25T13:34:29+00:00",
+  "id": "0003_tune_notch",
+  "progress": "image 20/20 scored",
+  "progress_utc": "2026-09-25T13:34:28+00:00",
+  "runtime": "cpu",
+  "started_utc": "2026-09-25T12:27:40+00:00",
+  "state": "done",
+  "task": "tune_notch",
+  "updated_utc": "2026-09-25T13:34:29+00:00"
+}

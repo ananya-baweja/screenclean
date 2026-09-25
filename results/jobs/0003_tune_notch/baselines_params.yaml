@@ -1,0 +1,16 @@
+created_utc: '2026-09-25T13:34:29+00:00'
+job: 0003_tune_notch
+n_images: 20
+selection: mean PSNR on validation images
+chroma_lowpass:
+  sigma: 8
+fft_notch:
+  channels: ycc
+  k: 3
+  r0: 0.08
+  sigma: 4
+fft_notch_local:
+  channels: y
+  k: 4
+  r0: 0.1
+  sigma: 2

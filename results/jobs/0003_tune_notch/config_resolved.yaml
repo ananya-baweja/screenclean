@@ -1,0 +1,55 @@
+job:
+  id: 0003_tune_notch
+  task: tune_notch
+  runtime: cpu
+  config: configs/baselines/tune.yaml
+  depends_on:
+  - 0002_prepare_uhdm
+  max_minutes: 150
+  resume: true
+  attempt: 1
+  drive_subdir: jobs/0003_tune_notch
+  notes: Pick chroma low-pass / FFT notch settings on 20 validation images (~1-1.5
+    h)
+config:
+  data_config: configs/data/uhdm.yaml
+  val_list: data/splits/uhdm_val.txt
+  n_images: 20
+  seed: 0
+  workers: 2
+  stop_margin_min: 10
+  grids:
+    chroma_lowpass:
+      sigma:
+      - 1
+      - 2
+      - 4
+      - 8
+    fft_notch:
+      r0:
+      - 0.02
+      - 0.04
+      - 0.08
+      k:
+      - 3
+      - 4
+      - 6
+      sigma:
+      - 1
+      - 2
+      - 4
+      channels:
+      - y
+      - ycc
+    fft_notch_local:
+      r0:
+      - 0.1
+      k:
+      - 3
+      - 4
+      - 6
+      sigma:
+      - 1
+      - 2
+      channels:
+      - y

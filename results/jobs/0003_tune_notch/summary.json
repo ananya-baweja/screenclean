@@ -1,0 +1,62 @@
+{
+  "attempt": 1,
+  "best": {
+    "chroma_lowpass": {
+      "params": {
+        "sigma": 8
+      },
+      "psnr_mean": 15.408992561543633
+    },
+    "fft_notch": {
+      "params": {
+        "channels": "ycc",
+        "k": 3,
+        "r0": 0.08,
+        "sigma": 4
+      },
+      "psnr_mean": 15.408886818642634
+    },
+    "fft_notch_local": {
+      "params": {
+        "channels": "y",
+        "k": 4,
+        "r0": 0.1,
+        "sigma": 2
+      },
+      "psnr_mean": 15.586457845187152
+    },
+    "identity": {
+      "params": {},
+      "psnr_mean": 15.39351141002398
+    }
+  },
+  "elapsed_s": 4009.0,
+  "git_sha": "f9e59936d62896c58d6251f45c7edbbd7b52b2b4",
+  "id": "0003_tune_notch",
+  "identity_psnr": 15.39351141002398,
+  "n_images": 20,
+  "state": "done",
+  "task": "tune_notch",
+  "val_keys": [
+    "train/pair_00/0077",
+    "train/pair_00/0142",
+    "train/pair_01/0133",
+    "train/pair_15/0135",
+    "train/pair_19/0035",
+    "train/pair_21/0049",
+    "train/pair_25/0156",
+    "train/pair_25/0257",
+    "train/pair_27/0008",
+    "train/pair_27/0083",
+    "train/pair_mi_05/0041",
+    "train/pair_mi_05/0067",
+    "train/pair_mi_06/0073",
+    "train/pair_mi_09/0016",
+    "train/pair_mi_11/0003",
+    "train/pair_mi_11/0005",
+    "train/pair_mi_13/0158",
+    "train/pair_mi_23/0058",
+    "train/pair_mi_23/0107",
+    "train/pair_mi_23/0178"
+  ]
+}
