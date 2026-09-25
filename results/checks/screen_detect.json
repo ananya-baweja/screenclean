@@ -1,0 +1,430 @@
+{
+  "n": 200,
+  "success_rule": "every corner within 3% of the image diagonal",
+  "overall": {
+    "success": 0.83,
+    "n": 200
+  },
+  "not_found": 23,
+  "found_but_wrong": 11,
+  "median_mean_corner_err_pct_diag": 0.0253,
+  "median_err_when_successful_pct_diag": 0.0214,
+  "seconds_mean": 0.849,
+  "seconds_max": 2.555,
+  "template": {
+    "chat": {
+      "success": 0.857,
+      "n": 28
+    },
+    "code_dark": {
+      "success": 0.552,
+      "n": 29
+    },
+    "code_light": {
+      "success": 1.0,
+      "n": 29
+    },
+    "doc": {
+      "success": 0.793,
+      "n": 29
+    },
+    "mixed": {
+      "success": 0.857,
+      "n": 28
+    },
+    "slide": {
+      "success": 0.862,
+      "n": 29
+    },
+    "table": {
+      "success": 0.893,
+      "n": 28
+    }
+  },
+  "theme": {
+    "dark": {
+      "success": 0.577,
+      "n": 71
+    },
+    "light": {
+      "success": 0.969,
+      "n": 129
+    }
+  },
+  "failures": [
+    {
+      "i": 1,
+      "template": "doc",
+      "theme": "dark",
+      "detected": true,
+      "method": "frame",
+      "success": false,
+      "mean_err": 0.0216,
+      "max_err": 0.0602,
+      "seconds": 0.586
+    },
+    {
+      "i": 8,
+      "template": "doc",
+      "theme": "light",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.3445,
+      "max_err": 0.4849,
+      "seconds": 0.3469
+    },
+    {
+      "i": 9,
+      "template": "code_dark",
+      "theme": "dark",
+      "detected": true,
+      "method": "frame",
+      "success": false,
+      "mean_err": 0.1929,
+      "max_err": 0.2662,
+      "seconds": 0.3359
+    },
+    {
+      "i": 16,
+      "template": "code_dark",
+      "theme": "dark",
+      "detected": true,
+      "method": "frame",
+      "success": false,
+      "mean_err": 0.0277,
+      "max_err": 0.0459,
+      "seconds": 1.3764
+    },
+    {
+      "i": 21,
+      "template": "slide",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.1672,
+      "max_err": 0.2622,
+      "seconds": 0.2484
+    },
+    {
+      "i": 23,
+      "template": "code_dark",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.2047,
+      "max_err": 0.2873,
+      "seconds": 0.5791
+    },
+    {
+      "i": 37,
+      "template": "code_dark",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.3018,
+      "max_err": 0.447,
+      "seconds": 0.0502
+    },
+    {
+      "i": 43,
+      "template": "doc",
+      "theme": "dark",
+      "detected": true,
+      "method": "frame",
+      "success": false,
+      "mean_err": 0.027,
+      "max_err": 0.043,
+      "seconds": 0.272
+    },
+    {
+      "i": 55,
+      "template": "mixed",
+      "theme": "dark",
+      "detected": true,
+      "method": "lines",
+      "success": false,
+      "mean_err": 0.0179,
+      "max_err": 0.0431,
+      "seconds": 1.145
+    },
+    {
+      "i": 56,
+      "template": "slide",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.1906,
+      "max_err": 0.2313,
+      "seconds": 0.4421
+    },
+    {
+      "i": 58,
+      "template": "code_dark",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.2722,
+      "max_err": 0.3673,
+      "seconds": 0.2561
+    },
+    {
+      "i": 60,
+      "template": "table",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.2078,
+      "max_err": 0.2352,
+      "seconds": 0.4625
+    },
+    {
+      "i": 62,
+      "template": "mixed",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.2634,
+      "max_err": 0.3531,
+      "seconds": 0.3869
+    },
+    {
+      "i": 75,
+      "template": "chat",
+      "theme": "light",
+      "detected": true,
+      "method": "lines",
+      "success": false,
+      "mean_err": 0.0161,
+      "max_err": 0.0347,
+      "seconds": 0.3059
+    },
+    {
+      "i": 77,
+      "template": "slide",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.1769,
+      "max_err": 0.229,
+      "seconds": 0.1883
+    },
+    {
+      "i": 78,
+      "template": "doc",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.1247,
+      "max_err": 0.1637,
+      "seconds": 0.3909
+    },
+    {
+      "i": 79,
+      "template": "code_dark",
+      "theme": "dark",
+      "detected": true,
+      "method": "lines",
+      "success": false,
+      "mean_err": 0.0381,
+      "max_err": 0.0478,
+      "seconds": 1.1302
+    },
+    {
+      "i": 89,
+      "template": "chat",
+      "theme": "light",
+      "detected": true,
+      "method": "lines",
+      "success": false,
+      "mean_err": 0.0265,
+      "max_err": 0.0501,
+      "seconds": 0.4447
+    },
+    {
+      "i": 95,
+      "template": "table",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.1481,
+      "max_err": 0.1845,
+      "seconds": 0.0663
+    },
+    {
+      "i": 98,
+      "template": "slide",
+      "theme": "light",
+      "detected": true,
+      "method": "lines",
+      "success": false,
+      "mean_err": 0.0225,
+      "max_err": 0.0828,
+      "seconds": 0.4747
+    },
+    {
+      "i": 109,
+      "template": "table",
+      "theme": "dark",
+      "detected": true,
+      "method": "frame+peel",
+      "success": false,
+      "mean_err": 0.0211,
+      "max_err": 0.0473,
+      "seconds": 0.403
+    },
+    {
+      "i": 121,
+      "template": "code_dark",
+      "theme": "dark",
+      "detected": true,
+      "method": "frame",
+      "success": false,
+      "mean_err": 0.0271,
+      "max_err": 0.04,
+      "seconds": 0.3708
+    },
+    {
+      "i": 128,
+      "template": "code_dark",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.2775,
+      "max_err": 0.4064,
+      "seconds": 0.2328
+    },
+    {
+      "i": 131,
+      "template": "chat",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.2461,
+      "max_err": 0.2885,
+      "seconds": 0.2532
+    },
+    {
+      "i": 132,
+      "template": "mixed",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.3201,
+      "max_err": 0.4764,
+      "seconds": 0.3488
+    },
+    {
+      "i": 139,
+      "template": "mixed",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.2364,
+      "max_err": 0.3095,
+      "seconds": 0.3686
+    },
+    {
+      "i": 142,
+      "template": "code_dark",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.3071,
+      "max_err": 0.3609,
+      "seconds": 0.188
+    },
+    {
+      "i": 145,
+      "template": "chat",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.1825,
+      "max_err": 0.244,
+      "seconds": 0.612
+    },
+    {
+      "i": 149,
+      "template": "code_dark",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.224,
+      "max_err": 0.2696,
+      "seconds": 0.3905
+    },
+    {
+      "i": 156,
+      "template": "code_dark",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.0919,
+      "max_err": 0.1187,
+      "seconds": 0.1848
+    },
+    {
+      "i": 176,
+      "template": "doc",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.2406,
+      "max_err": 0.3491,
+      "seconds": 0.2186
+    },
+    {
+      "i": 184,
+      "template": "code_dark",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.2365,
+      "max_err": 0.2535,
+      "seconds": 0.2977
+    },
+    {
+      "i": 197,
+      "template": "doc",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.1614,
+      "max_err": 0.234,
+      "seconds": 0.3572
+    },
+    {
+      "i": 198,
+      "template": "code_dark",
+      "theme": "dark",
+      "detected": false,
+      "method": "none",
+      "success": false,
+      "mean_err": 0.27,
+      "max_err": 0.3261,
+      "seconds": 0.1947
+    }
+  ]
+}

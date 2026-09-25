@@ -1,0 +1,270 @@
+{
+  "what": "capture-kit pages on simulated screens, photographed by the scene simulator, then scanned",
+  "scene": {
+    "out_size": [
+      3200,
+      2400
+    ],
+    "area_frac": [
+      0.45,
+      0.75
+    ]
+  },
+  "pages": 14,
+  "mean": {
+    "none": {
+      "cer": 0.3576,
+      "word_f1": 0.7508,
+      "seconds": 6.5871
+    },
+    "fft_notch_local": {
+      "cer": 0.4336,
+      "word_f1": 0.7038,
+      "seconds": 12.0607
+    }
+  },
+  "detected": {
+    "none": 11,
+    "fft_notch_local": 11
+  },
+  "rows": [
+    {
+      "page_id": 0,
+      "template": "slide",
+      "base_size": 19,
+      "none": {
+        "detected": true,
+        "cer": 0.0,
+        "word_f1": 1.0,
+        "seconds": 3.64
+      },
+      "fft_notch_local": {
+        "detected": true,
+        "cer": 0.0,
+        "word_f1": 1.0,
+        "seconds": 6.94
+      }
+    },
+    {
+      "page_id": 1,
+      "template": "doc",
+      "base_size": 19,
+      "none": {
+        "detected": true,
+        "cer": 0.0047,
+        "word_f1": 0.9683,
+        "seconds": 3.71
+      },
+      "fft_notch_local": {
+        "detected": true,
+        "cer": 0.0153,
+        "word_f1": 0.9018,
+        "seconds": 6.86
+      }
+    },
+    {
+      "page_id": 2,
+      "template": "code_dark",
+      "base_size": 12,
+      "none": {
+        "detected": true,
+        "cer": 0.411,
+        "word_f1": 0.636,
+        "seconds": 5.42
+      },
+      "fft_notch_local": {
+        "detected": true,
+        "cer": 0.9006,
+        "word_f1": 0.1386,
+        "seconds": 7.88
+      }
+    },
+    {
+      "page_id": 3,
+      "template": "code_light",
+      "base_size": 16,
+      "none": {
+        "detected": true,
+        "cer": 0.1446,
+        "word_f1": 0.7093,
+        "seconds": 5.75
+      },
+      "fft_notch_local": {
+        "detected": true,
+        "cer": 0.3223,
+        "word_f1": 0.5189,
+        "seconds": 11.78
+      }
+    },
+    {
+      "page_id": 4,
+      "template": "table",
+      "base_size": 23,
+      "none": {
+        "detected": false,
+        "cer": 0.6246,
+        "word_f1": 0.9212,
+        "seconds": 10.9
+      },
+      "fft_notch_local": {
+        "detected": false,
+        "cer": 0.6997,
+        "word_f1": 0.8554,
+        "seconds": 20.1
+      }
+    },
+    {
+      "page_id": 5,
+      "template": "chat",
+      "base_size": 14,
+      "none": {
+        "detected": true,
+        "cer": 0.6518,
+        "word_f1": 0.0925,
+        "seconds": 5.16
+      },
+      "fft_notch_local": {
+        "detected": true,
+        "cer": 1.0,
+        "word_f1": 0.0,
+        "seconds": 10.06
+      }
+    },
+    {
+      "page_id": 6,
+      "template": "mixed",
+      "base_size": 15,
+      "none": {
+        "detected": true,
+        "cer": 0.4412,
+        "word_f1": 0.94,
+        "seconds": 4.23
+      },
+      "fft_notch_local": {
+        "detected": true,
+        "cer": 0.4387,
+        "word_f1": 0.8539,
+        "seconds": 8.79
+      }
+    },
+    {
+      "page_id": 7,
+      "template": "slide",
+      "base_size": 30,
+      "none": {
+        "detected": true,
+        "cer": 0.0367,
+        "word_f1": 0.9457,
+        "seconds": 5.11
+      },
+      "fft_notch_local": {
+        "detected": true,
+        "cer": 0.0367,
+        "word_f1": 0.9457,
+        "seconds": 9.18
+      }
+    },
+    {
+      "page_id": 8,
+      "template": "doc",
+      "base_size": 18,
+      "none": {
+        "detected": false,
+        "cer": 0.6209,
+        "word_f1": 0.9246,
+        "seconds": 11.13
+      },
+      "fft_notch_local": {
+        "detected": false,
+        "cer": 0.5869,
+        "word_f1": 0.8866,
+        "seconds": 20.26
+      }
+    },
+    {
+      "page_id": 9,
+      "template": "code_dark",
+      "base_size": 13,
+      "none": {
+        "detected": false,
+        "cer": 0.9714,
+        "word_f1": 0.0314,
+        "seconds": 10.49
+      },
+      "fft_notch_local": {
+        "detected": false,
+        "cer": 0.8954,
+        "word_f1": 0.0704,
+        "seconds": 19.52
+      }
+    },
+    {
+      "page_id": 10,
+      "template": "code_light",
+      "base_size": 18,
+      "none": {
+        "detected": true,
+        "cer": 0.0484,
+        "word_f1": 0.8588,
+        "seconds": 3.79
+      },
+      "fft_notch_local": {
+        "detected": true,
+        "cer": 0.0675,
+        "word_f1": 0.8333,
+        "seconds": 7.12
+      }
+    },
+    {
+      "page_id": 11,
+      "template": "table",
+      "base_size": 22,
+      "none": {
+        "detected": true,
+        "cer": 0.6677,
+        "word_f1": 0.539,
+        "seconds": 10.96
+      },
+      "fft_notch_local": {
+        "detected": true,
+        "cer": 0.0383,
+        "word_f1": 0.8966,
+        "seconds": 17.94
+      }
+    },
+    {
+      "page_id": 12,
+      "template": "chat",
+      "base_size": 20,
+      "none": {
+        "detected": true,
+        "cer": 0.0,
+        "word_f1": 1.0,
+        "seconds": 4.27
+      },
+      "fft_notch_local": {
+        "detected": true,
+        "cer": 0.4942,
+        "word_f1": 1.0,
+        "seconds": 9.26
+      }
+    },
+    {
+      "page_id": 13,
+      "template": "mixed",
+      "base_size": 18,
+      "none": {
+        "detected": true,
+        "cer": 0.3837,
+        "word_f1": 0.944,
+        "seconds": 7.66
+      },
+      "fft_notch_local": {
+        "detected": true,
+        "cer": 0.5746,
+        "word_f1": 0.9518,
+        "seconds": 13.16
+      }
+    }
+  ]
+}

@@ -132,3 +132,54 @@ One entry per decision: date, the decision, why, and the alternatives considered
   inside the crop (text + corner positions + photographed font size), measured with the same font the page used.
 - **Why:** crops cut most lines at their edges. Keeping only complete lines left 17 of 24 test crops without any
   text; visible whole words give about 15 words per crop for OCR scoring.
+
+## 2026-09-26: Screen detection is classical, accepts both polarities, and peels bezels
+
+- **Decision:** the detector (P5.1) snaps each side of a candidate quadrilateral to the strongest straight edge
+  nearby (median brightness step along the whole side, so a faint but long edge wins), accepts "inside
+  brighter" and "inside darker" screens, and looks just inside the device outline for a display behind a thin
+  ring without text (the bezel). Candidates must have the real shape of a screen (aspect 0.4-2.6).
+- **Why:** on dark-mode pages the bezel is often *brighter* than the page, because it reflects the room. The
+  first version assumed a bright screen and found none of the dark code pages.
+- **Result** (200 synthetic photos, `results/checks/screen_detect.json`): 97% found on light pages, 58% on
+  dark-mode pages, 83% overall; the P5.1 target was 90%. When found, the median corner error is 0.02% of the
+  image diagonal; 0.85 s per photo on a laptop CPU. Most dark-mode misses have a page edge that is truly
+  invisible (a step of 0-3 grey levels); then the scan uses the whole photo.
+- **Next steps for the gap:** the web app lets users drag the corners (P11); a small learned corner model trained
+  on these synthetic photos is the planned stretch goal. Tuning more rules on the same 200 photos stopped helping
+  (the last three changes moved the score by -1.5 to +0.5 points).
+
+## 2026-09-26: Synthetic photos place the screen by moving it in 3D
+
+- **Decision:** `simulate/scene.py` keeps the camera's optical axis at the image centre and moves the screen
+  sideways in 3D to place it in the frame.
+- **Why:** the first version shifted the image instead, which is like an off-centre lens. The aspect-ratio
+  estimate (which assumes a centred optical axis, as in real phones) was then off by 2.5% (median) and up to 83%.
+  After the fix it is exact on true corners, and 0.2% (median) with 2 px of corner noise.
+
+## 2026-09-26: Clean before warping, only the screen's area
+
+- **Decision:** the scan pipeline removes moiré on the original photo, restricted to the screen's bounding box
+  plus 32 px, and then warps. Where the warp shrinks the image, it blurs first by σ = 0.5·√(1/s² − 1).
+- **Why:** warping resamples, and resampling a moiré photo can fold it into new patterns; cleaners are built for
+  photos as cameras take them. The bounding box saves time on large photos.
+
+## 2026-09-26: Searchable PDFs with reportlab; Tesseract runs in CI
+
+- **Decision:** the PDF is the page image plus an invisible text layer (render mode 3), made with reportlab (BSD)
+  and the DejaVu Sans font from matplotlib, so non-ASCII text survives. CI installs Tesseract from Ubuntu (5.3;
+  5.5 on the laptop) so OCR tests run there too, with tolerant thresholds.
+- **Why:** AGPL libraries such as PyMuPDF are avoided (plan C11). Standard PDF fonts only cover Latin-1.
+
+## 2026-09-26: Scan without the classical moiré filter by default (until the model is ready)
+
+- **Decision:** `scan` uses `--cleaner none` by default; `--cleaner fft_notch_local` still runs the tuned
+  local notch filter. OCR uses Tesseract with local (Sauvola) thresholding.
+- **Why:** on 14 simulated photos of capture-kit pages (`results/checks/scan_demo.json`), the notch filter
+  lowered word F1 from 0.75 to 0.70 and raised CER from 0.36 to 0.43. It rescued a table (word F1 0.54 → 0.90)
+  but damaged code (0.64 → 0.14): regular line spacing and monospace columns are periodic, so a notch filter
+  removes them as if they were moiré. The filter was tuned for PSNR on UHDM (+0.31 dB), not for text.
+  Tesseract's default global threshold also failed on photographed pages (one dark element such as a
+  corner marker sets it and lighter coloured text breaks apart); Sauvola raised word F1 from 0.68 to 0.80.
+- **Consequence:** this is the case for the learned model. P8 measures OCR with and without it on the same pages.
+

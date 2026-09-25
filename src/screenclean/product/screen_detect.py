@@ -26,9 +26,9 @@ Classical pipeline, on a grey copy downscaled to about 1000 px:
 6. **Refine** the winner on a sharper copy (up to 2000 px) for sub-pixel corners.
 7. **Nothing found:** return the whole image with ``detected=False``; the app lets users drag corners.
 
-On 200 synthetic photos (``simulate/scene.py``): 95% found on light pages, 59% on dark-mode pages,
-where the page edge is often truly invisible against the bezel; median corner error 0.03% of the
-image diagonal when found.
+On 200 synthetic photos (``simulate/scene.py``, ``tools/check_screen_detect.py``): 97% found on light
+pages, 58% on dark-mode pages, where the page edge is often truly invisible against the bezel; median
+corner error 0.02% of the image diagonal when found.
 """
 
 from __future__ import annotations
