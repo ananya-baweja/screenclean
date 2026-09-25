@@ -47,6 +47,14 @@ def _cmd_results_ingest(args: argparse.Namespace) -> int:
     return status
 
 
+def _cmd_tables(args: argparse.Namespace) -> int:
+    from screenclean.eval.tables import build_tables
+
+    for path in build_tables(args.repo_root):
+        print(f"wrote {path}")
+    return 0
+
+
 def _cmd_env(args: argparse.Namespace) -> int:
     from screenclean.utils.env import collect_env
 
@@ -87,6 +95,10 @@ def build_parser() -> argparse.ArgumentParser:
     ing_p.add_argument("--forbid", default=None, help="regex that must not appear in any file (ignores case)")
     ing_p.add_argument("--overwrite", action="store_true", help="replace an existing results folder")
     ing_p.set_defaults(func=_cmd_results_ingest)
+
+    tab_p = sub.add_parser("tables", help="rebuild results/tables/*.md from ingested job results")
+    tab_p.add_argument("--repo-root", default=Path("."), type=Path)
+    tab_p.set_defaults(func=_cmd_tables)
 
     env_p = sub.add_parser("env", help="print the environment report")
     env_p.add_argument("--repo-root", default=Path("."), type=Path)

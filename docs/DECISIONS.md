@@ -59,3 +59,32 @@ One entry per decision: date, the decision, why, and the alternatives considered
   images). Training copies the shards to local disk and reads samples by byte offset, without extracting them.
 - **Why:** copying a few large files over the Drive mount is far faster than thousands of small ones.
   Reading in place avoids an extraction step and doubling the disk use.
+
+## 2026-09-25: Classical baselines are tuned on validation images only
+
+- **Decision:** chroma low-pass and the two FFT notch filters get their settings from a small grid search
+  on 20 held-out validation images at full resolution, scored by mean PSNR. The chosen settings are saved
+  with the job that picked them, and the evaluation reports where each method's settings came from.
+- **Why:** a fair baseline needs reasonable settings, but choosing them on the test images would inflate
+  their scores.
+- **Note:** a first check on real UHDM photos showed the classical filters change PSNR by only a few
+  hundredths of a dB. Much of the difference between a UHDM moiré photo and its ground truth is global
+  colour and brightness shift, which frequency filters can't correct.
+
+## 2026-09-25: Notch filtering uses the periodic + smooth decomposition
+
+- **Decision:** before the FFT, each channel is split into a periodic part and a smooth part (Moisan, 2011).
+  Only the periodic part is notch-filtered; the smooth part is added back unchanged.
+- **Why:** the FFT treats the image as if it wrapped around, so the jump between opposite edges creates a
+  bright cross in the spectrum that looks like "peaks". Without the decomposition, the filter damaged clean
+  images (34 dB); with it, a clean image passes through almost untouched (65 dB in the unit test).
+
+## 2026-09-25: ESDNet reference: official weights, fp16, cached on Drive
+
+- **Decision:** the reference is the authors' lightweight ESDNet with their UHDM checkpoint, code pinned
+  at commit `fa70a92`. Inference follows their test script (pad to a multiple of 32 with their padding colour,
+  full resolution, first output), in fp16 on a T4, with tiled inference only if memory runs out (counted in
+  the results). The checkpoint is downloaded once and cached on Drive.
+- **Why:** a published, pretrained model on the same data is the honest bar for our model. The larger
+  ESDNet-L checkpoint was not downloadable (Drive quota) when this was set up, and the authors' public demo
+  weights were trained on several datasets combined, so they are not used.
