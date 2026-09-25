@@ -1,0 +1,15 @@
+# Job 0003: choose classical-baseline settings on 20 held-out validation images (never the test set).
+# Best settings (by mean PSNR) are saved to <drive root>/params/baselines.yaml for the evaluation job.
+data_config: configs/data/uhdm.yaml
+val_list: data/splits/uhdm_val.txt
+n_images: 20
+seed: 0
+workers: 2
+stop_margin_min: 10
+# Grid sizes were set from a timing run on one 12 MP validation photo: about 100 s per image on a
+# laptop CPU, so roughly 1-1.5 h on Colab's 2 CPUs. Local notching on all 3 channels (ycc) was 3x slower
+# than Y only, and wasn't better in that run, so the local grid uses Y only.
+grids:
+  chroma_lowpass: {sigma: [1, 2, 4, 8]}
+  fft_notch: {r0: [0.02, 0.04, 0.08], k: [3, 4, 6], sigma: [1, 2, 4], channels: [y, ycc]}
+  fft_notch_local: {r0: [0.1], k: [3, 4, 6], sigma: [1, 2], channels: [y]}

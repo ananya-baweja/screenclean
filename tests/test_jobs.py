@@ -214,3 +214,12 @@ def test_cli_jobs_run_and_list(repo, tmp_path, capsys):
     assert "JOB FINISHED: 0001_hello" in capsys.readouterr().out
     assert cli.main(["jobs", "list", "--drive-root", str(drive_root), "--repo-root", str(repo)]) == 0
     assert "0001_hello" in capsys.readouterr().out
+
+
+def test_committed_job_configs_load():
+    import yaml
+
+    for spec in jobs.load_queue(REPO_ROOT / "jobs" / "queue"):
+        if spec.config:
+            cfg = yaml.safe_load((REPO_ROOT / spec.config).read_text(encoding="utf-8"))
+            assert isinstance(cfg, dict), spec.id

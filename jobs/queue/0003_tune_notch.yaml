@@ -1,0 +1,10 @@
+id: 0003_tune_notch
+task: tune_notch
+runtime: cpu
+config: configs/baselines/tune.yaml
+depends_on: [0002_prepare_uhdm]
+max_minutes: 150
+resume: true
+attempt: 1
+drive_subdir: jobs/0003_tune_notch
+notes: "Pick chroma low-pass / FFT notch settings on 20 validation images (~1-1.5 h)"

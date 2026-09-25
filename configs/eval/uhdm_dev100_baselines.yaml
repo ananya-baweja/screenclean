@@ -1,0 +1,14 @@
+# Job 0004: classical baselines on UHDM dev100 (100 full-resolution test pairs), CPU.
+# Tuned settings come from job 0003 via <drive root>/params/baselines.yaml.
+# LPIPS is skipped on CPU (too slow at 4K); the final evaluation (P9) adds it on GPU.
+split: data/uhdm_v1/dev100
+local_dir: /content/eval_data
+workers: 2
+sample_images: 4
+lpips: false
+stop_margin_min: 10
+methods:
+  - {name: identity, label: "Input (no cleaning)"}
+  - {name: chroma_lowpass, params_from: params/baselines.yaml}
+  - {name: fft_notch, params_from: params/baselines.yaml}
+  - {name: fft_notch_local, params_from: params/baselines.yaml}
