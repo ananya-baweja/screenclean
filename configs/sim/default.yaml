@@ -1,0 +1,49 @@
+# Moire simulator: every sample draws its parameters uniformly from these ranges
+# (lists of two numbers = [low, high]; other lists = choices). See src/screenclean/simulate/.
+crop: 512                        # output size (sensor pixels)
+
+display:
+  layouts: {rgb: 0.6, bgr: 0.2, pentile: 0.2}   # subpixel layout -> probability
+  supersample: 4                 # raster samples per display pixel and axis
+  fill_x: [0.6, 0.9]             # lit fraction of each subpixel stripe's width (the rest is black matrix)
+  fill_y: [0.75, 0.95]           # lit fraction of each pixel row's height
+  gamma: 2.2                     # page values are sRGB-like; the screen emits linear light
+  brightness: [0.7, 1.0]
+
+geometry:
+  yaw_deg: 25                    # camera turned left/right up to +-25 degrees
+  pitch_deg: 25                  # up/down
+  roll_deg: 5                    # rotation around the lens axis
+  # Sensor pixels per display pixel at the crop centre, drawn log-uniformly. A sweep on a white screen
+  # (docs/DECISIONS.md) showed moire is strongest near 2 (the subpixel pattern sits at the sensor's
+  # Nyquist limit) and almost absent below 1.3 once the lens blurs at all.
+  scale: [0.9, 3.0]
+  focal_px: 3000                 # focal length in sensor pixels (typical phone main camera)
+  sensor_size: [4000, 3000]      # full sensor; the crop sits at a random place in it
+  k1: [-0.05, 0.05]              # radial lens distortion
+
+optics:
+  psf_sigma: [0.2, 0.7]          # Gaussian lens blur (sensor pixels); phone lenses are sharp. More blur = weaker moire
+  pixel_aperture: 0.9            # light-sensitive fraction of each sensor pixel (box filter)
+
+sensor:
+  cfa: [RGGB, BGGR]              # Bayer colour-filter layouts
+  exposure_percentile: 98        # auto-exposure: this percentile of the scene maps to...
+  exposure_target: [0.75, 0.95]  # ...this level
+  exposure_floor: 0.35           # ...but never assume the scene is darker than 35% of screen white (dark mode)
+  photons: [150, 3000]           # photons at full scale (lower = noisier, i.e. darker scene)
+  read_noise: [0.0005, 0.006]    # Gaussian read noise (fraction of full scale)
+
+isp:
+  demosaic: [bilinear, ea, vng]  # OpenCV demosaicing algorithms
+  wb_jitter: 0.08                # per-channel white-balance error (fraction)
+  gamma: [2.0, 2.4]
+  contrast: [0.9, 1.2]           # S-curve strength around mid-grey
+  sharpen: [0.0, 1.0]            # unsharp-mask amount (phones sharpen, which strengthens moire)
+  sharpen_sigma: [0.8, 1.6]
+  jpeg_quality: [70, 95]
+
+ground_truth:
+  # The target is the clean page under the same geometry, resampled with anti-aliasing:
+  # no subpixels, blur, noise, colour processing or JPEG.
+  jpeg_quality: 95               # stored as JPEG with 4:4:4 chroma
