@@ -1,0 +1,38 @@
+# UHDM: 5,000 real 4K moire/clean pairs (4,500 train / 500 test).
+# Paper: "Towards Efficient and Scale-Robust Ultra-High-Definition Image Demoireing" (ECCV 2022),
+# https://github.com/CVMI-Lab/UHDM
+#
+# Source: a public Hugging Face mirror of the full release (train, test, test_origin in one zip),
+# pinned to a fixed revision. The official Google Drive files are frequently over their download
+# quota. Spot checks against the official archives matched byte for byte (see docs/DECISIONS.md).
+# Used for research only; the images are never committed to this repository.
+
+source:
+  url: https://huggingface.co/datasets/leegwang/uhdm/resolve/9b06328be55fbc609c6bb1d60ddc3fdab179c4b2/uhdm.zip
+  train_prefix: train/           # members look like train/train/pair_22/0254_gt.jpg -> key train/pair_22/0254
+  test_prefix: test/             # members look like test/test/0254_gt.jpg -> key test/0254
+
+drive_out: data/uhdm_v1          # under the Drive project root
+local_dir: /content/uhdm_work    # Colab local disk, only used to build each shard before copying it to Drive
+seed: 0
+crop: 512
+jpeg_quality: 95                 # 4:4:4 chroma, so thin coloured detail survives
+stop_margin_min: 10              # stop this long before the job's time budget ends
+download_workers: 8              # images fetched in parallel
+download_retries: 6
+download_backoff_s: 5
+
+train:
+  n_full: 2                      # random 512 crops at full resolution
+  n_half: 1                      # random 512 crops from the image downscaled x0.5 (INTER_AREA)
+  pairs_per_shard: 400           # images per shard (~500 MB)
+  drive_gb: 6.0                  # space check before writing
+val:
+  n_images: 200                  # training images held out for validation
+  crops_per_image: 2
+  pairs_per_shard: 200
+  drive_gb: 0.3
+dev100:
+  n_images: 100                  # fixed full-resolution test pairs for development
+  pairs_per_shard: 25
+  drive_gb: 2.5

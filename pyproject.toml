@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
   "numpy", "opencv-python-headless>=4.8", "pillow", "pyyaml", "scipy", "scikit-image",
-  "tqdm", "pandas", "matplotlib", "jiwer", "rapidfuzz", "reportlab",
+  "tqdm", "pandas", "matplotlib", "jiwer", "rapidfuzz", "reportlab", "requests",
 ]
 
 [project.optional-dependencies]
