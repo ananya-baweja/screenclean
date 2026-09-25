@@ -177,6 +177,8 @@ TASKS: dict[str, TaskFn] = {}
 # Tasks implemented in other modules, imported only when a job needs them.
 TASK_MODULES: dict[str, str] = {
     "prepare_uhdm": "screenclean.data.prepare_uhdm",
+    "tune_notch": "screenclean.baselines.tune",
+    "eval": "screenclean.eval.evaluate",
 }
 
 

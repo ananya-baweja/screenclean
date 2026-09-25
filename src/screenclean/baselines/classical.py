@@ -14,6 +14,8 @@ Every function has the form ``fn(img, **params) -> img`` on float32 RGB in [0, 1
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+
 import cv2
 import numpy as np
 from scipy import fft as sfft
@@ -74,28 +76,54 @@ def periodic_smooth(u: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return (u - s).astype(np.float32), s
 
 
+class NotchSpectrum:
+    """Everything about one channel's spectrum that doesn't depend on the notch settings.
+
+    Computed once, then :meth:`peaks` and :meth:`filtered` can be called for many
+    settings, which makes a parameter search cheap.
+    """
+
+    def __init__(self, ch: np.ndarray, bg_size: int = 9):
+        h, w = ch.shape
+        self.shape = (h, w)
+        self.periodic, self.smooth = periodic_smooth(ch)
+        self.mean = float(self.periodic.mean())
+        self.spec = sfft.fftshift(sfft.fft2(self.periodic - self.mean, workers=-1))
+        logmag = np.log1p(np.abs(self.spec)).astype(np.float32)
+        self.resid = logmag - _median_background(logmag, bg_size)
+        self.med = float(np.median(self.resid))
+        self.mad = float(np.median(np.abs(self.resid - self.med))) * 1.4826 + 1e-6
+        yy, xx = np.ogrid[:h, :w]
+        radius = np.sqrt(((yy - h // 2) / (h / 2)) ** 2 + ((xx - w // 2) / (w / 2)) ** 2)
+        self.radius = radius.astype(np.float32)
+        self.local_max = self.resid == maximum_filter(self.resid, size=5)
+
+    def peaks(self, r0: float = 0.08, k: float = 6.0, max_peaks: int = 100) -> list[tuple[int, int]]:
+        """Peak positions: local maxima more than ``k`` robust SDs (MAD) above the background, outside ``r0``.
+
+        ``r0`` is the protected radius around zero frequency, as a fraction of the half
+        spectrum; the image's own coarse structure lives there.
+        """
+        cand = (self.resid > self.med + k * self.mad) & (self.radius > r0) & self.local_max
+        ys, xs = np.nonzero(cand)
+        order = np.argsort(-self.resid[ys, xs])[:max_peaks]
+        return [(int(ys[i]), int(xs[i])) for i in order]
+
+    def filtered(self, peaks: list[tuple[int, int]], sigma: float) -> np.ndarray:
+        """The channel with the given peaks notched out (smooth edge part added back unchanged)."""
+        if not peaks:
+            return (self.periodic + self.smooth).astype(np.float32)
+        spec = self.spec * notch_mask(self.shape, peaks, sigma)
+        out = np.real(sfft.ifft2(sfft.ifftshift(spec), workers=-1)) + self.mean + self.smooth
+        return out.astype(np.float32)
+
+
 def find_peaks(
     ch: np.ndarray, r0: float = 0.08, k: float = 6.0, bg_size: int = 9, max_peaks: int = 100
 ) -> tuple[np.ndarray, list[tuple[int, int]]]:
-    """Centred spectrum of one channel and the moiré peak positions in it.
-
-    ``r0`` is the protected radius around zero frequency, as a fraction of the half
-    spectrum (the image's own coarse structure lives there). A peak must exceed the
-    local median background by ``k`` robust standard deviations (MAD).
-    """
-    h, w = ch.shape
-    spec = sfft.fftshift(sfft.fft2(ch - ch.mean(), workers=-1))
-    logmag = np.log1p(np.abs(spec)).astype(np.float32)
-    resid = logmag - _median_background(logmag, bg_size)
-    med = float(np.median(resid))
-    mad = float(np.median(np.abs(resid - med))) * 1.4826 + 1e-6
-    cy, cx = h // 2, w // 2
-    yy, xx = np.ogrid[:h, :w]
-    radius = np.sqrt(((yy - cy) / (h / 2)) ** 2 + ((xx - cx) / (w / 2)) ** 2)
-    candidates = (resid > med + k * mad) & (radius > r0) & (resid == maximum_filter(resid, size=5))
-    ys, xs = np.nonzero(candidates)
-    order = np.argsort(-resid[ys, xs])[:max_peaks]
-    return spec, [(int(ys[i]), int(xs[i])) for i in order]
+    """Centred spectrum of one channel's periodic part, and the moiré peak positions in it."""
+    sp = NotchSpectrum(ch, bg_size)
+    return sp.spec, sp.peaks(r0, k, max_peaks)
 
 
 def notch_mask(shape: tuple[int, int], peaks: list[tuple[int, int]], sigma: float) -> np.ndarray:
@@ -123,17 +151,9 @@ def notch_channel(
     bg_size: int = 9,
     max_peaks: int = 100,
 ) -> np.ndarray:
-    """Remove periodic peaks from one channel (float32 2-D array).
-
-    Only the periodic component is filtered; the smooth edge component is added back unchanged.
-    """
-    periodic, smooth = periodic_smooth(ch)
-    spec, peaks = find_peaks(periodic, r0, k, bg_size, max_peaks)
-    if not peaks:
-        return ch.astype(np.float32, copy=True)
-    filtered = spec * notch_mask(ch.shape, peaks, sigma)
-    out = np.real(sfft.ifft2(sfft.ifftshift(filtered), workers=-1)) + periodic.mean() + smooth
-    return out.astype(np.float32)
+    """Remove periodic peaks from one channel (float32 2-D array)."""
+    sp = NotchSpectrum(ch, bg_size)
+    return sp.filtered(sp.peaks(r0, k, max_peaks), sigma)
 
 
 def _channels(channels: str) -> tuple[int, ...]:
@@ -187,3 +207,26 @@ def fft_notch_local(
                 wsum[y : y + tile, x : x + tile] += wb
         padded[..., c] = acc / np.maximum(wsum, 1e-8)
     return _to_rgb(padded[pad : pad + ycc.shape[0], pad : pad + ycc.shape[1]])
+
+
+def fft_notch_grid(
+    img: np.ndarray, combos: list[dict], bg_size: int = 9, max_peaks: int = 100
+) -> Iterator[tuple[dict, np.ndarray]]:
+    """Yield ``(params, output)`` of :func:`fft_notch` for many settings, reusing each channel's spectrum.
+
+    Each combo has ``r0``, ``k``, ``sigma`` and ``channels``. This gives the same outputs as calling
+    ``fft_notch`` once per combo, but computes the expensive FFTs only once per channel.
+    """
+    ycc = _to_ycc(img)
+    spectra: dict[int, NotchSpectrum] = {}
+    peak_cache: dict[tuple[int, float, float], list[tuple[int, int]]] = {}
+    for params in combos:
+        out = ycc.copy()
+        for c in _channels(params["channels"]):
+            if c not in spectra:
+                spectra[c] = NotchSpectrum(ycc[..., c], bg_size)
+            pk = (c, params["r0"], params["k"])
+            if pk not in peak_cache:
+                peak_cache[pk] = spectra[c].peaks(params["r0"], params["k"], max_peaks)
+            out[..., c] = spectra[c].filtered(peak_cache[pk], params["sigma"])
+        yield params, _to_rgb(out)

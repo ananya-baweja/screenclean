@@ -96,3 +96,18 @@ def test_periodic_smooth_decomposition():
     np.testing.assert_allclose(p + s, u, atol=1e-5)
     # the periodic part has (almost) no jump across the wrap-around edges
     assert np.abs(p[0] - p[-1]).mean() < np.abs(u[0] - u[-1]).mean()
+
+
+def test_fft_notch_grid_matches_single_calls():
+    from screenclean.baselines.classical import fft_notch, fft_notch_grid
+
+    img = add_grating(smooth_image(64, 96), color=(1.0, -0.5, 0.3))
+    combos = [
+        {"r0": r0, "k": k, "sigma": s, "channels": ch}
+        for r0 in (0.05, 0.1)
+        for k in (4.0, 6.0)
+        for s in (1.0, 3.0)
+        for ch in ("y", "ycc")
+    ]
+    for params, out in fft_notch_grid(img, combos):
+        np.testing.assert_allclose(out, fft_notch(img, **params), atol=1e-6)
