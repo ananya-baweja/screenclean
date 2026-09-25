@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import re
+import shutil
 import zipfile
 from pathlib import Path, PurePosixPath
 
@@ -85,7 +86,8 @@ def ingest_zip(
         raise IngestError(f"{zip_path.name} is {size} bytes, over the {max_bytes}-byte limit")
     job_id = zip_path.stem
     dest = Path(repo_root) / "results" / "jobs" / job_id
-    if dest.exists() and any(dest.iterdir()) and not overwrite:
+    replace = dest.exists() and any(dest.iterdir())
+    if replace and not overwrite:
         raise IngestError(f"{dest} already exists (pass overwrite=True to replace it)")
     forbid = re.compile(forbid_pattern, re.IGNORECASE) if forbid_pattern else None
 
@@ -100,6 +102,8 @@ def ingest_zip(
                 hit = forbid.search(text)
                 if hit:
                     raise IngestError(f"forbidden text {hit.group(0)!r} in {m.filename}")
+        if replace:  # all checks passed: drop the old results so no stale files remain
+            shutil.rmtree(dest)
         for m in members:
             target = dest / _safe_member(m.filename)
             target.parent.mkdir(parents=True, exist_ok=True)

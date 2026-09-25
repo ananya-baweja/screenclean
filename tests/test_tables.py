@@ -67,3 +67,5 @@ def test_tables_merge_jobs_and_mark_reference(tmp_path, capsys):
     assert "40 (partial)" in text and "`0005_esdnet_ref_dev100`" in text
     assert "| fft_notch | 17.30 | +0.20 |" in text
     assert "**fft_notch**: k=4 (from params/x)" in text
+    assert "**ESDNet (reference)**: authors' pretrained weights" in text
+    assert "40 images at full resolution" in text

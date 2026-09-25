@@ -24,7 +24,10 @@ def test_pack_and_ingest_roundtrip(tmp_path):
     assert (dest / "figs" / "a.png").exists()
     with pytest.raises(rz.IngestError, match="already exists"):
         rz.ingest_zip(zp, repo)
+    (dest / "stale_from_old_attempt.txt").write_text("old")
     rz.ingest_zip(zp, repo, overwrite=True)
+    assert not (dest / "stale_from_old_attempt.txt").exists()  # overwrite replaces the whole folder
+    assert (dest / "summary.json").exists()
 
 
 def test_pack_skips_files_over_limit(tmp_path):

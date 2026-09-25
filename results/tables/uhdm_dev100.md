@@ -20,4 +20,4 @@ Settings:
 - **fft_notch_local**: channels=y, k=4, r0=0.1, sigma=2 (from params/baselines.yaml (job 0003_tune_notch))
 - **fft_notch**: channels=ycc, k=3, r0=0.08, sigma=4 (from params/baselines.yaml (job 0003_tune_notch))
 - **chroma_lowpass**: sigma=8 (from params/baselines.yaml (job 0003_tune_notch))
-- **ESDNet (reference)**: defaults (from config); inference: {'full': 100}
+- **ESDNet (reference)**: authors' pretrained weights, 5.93 M parameters, fp16; 100 images at full resolution

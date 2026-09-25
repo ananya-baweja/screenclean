@@ -80,8 +80,16 @@ def render(rows: list[dict[str, Any]], split_name: str) -> str:
                 f"{k}={v}"
                 for k, v in sorted(r.get("params", {}).items() if isinstance(r.get("params"), dict) else [])
             )
-            extra = f"; inference: {r['inference_modes']}" if r.get("inference_modes") else ""
-            lines.append(f"- **{r['label']}**: {params or 'defaults'} (from {r['params_source']}){extra}")
+            if r.get("reference"):
+                modes = r.get("inference_modes", {})
+                runs = [f"{modes['full']} images at full resolution"] if modes.get("full") else []
+                runs += [f"{modes['tiled']} in tiles (GPU memory)"] if modes.get("tiled") else []
+                lines.append(
+                    f"- **{r['label']}**: authors' pretrained weights, {r.get('parameters', 0) / 1e6:.2f} M "
+                    f"parameters, {'fp16' if r.get('fp16') else 'fp32'}; {', '.join(runs) or 'n/a'}"
+                )
+                continue
+            lines.append(f"- **{r['label']}**: {params or 'defaults'} (from {r['params_source']})")
     return "\n".join(lines) + "\n"
 
 
