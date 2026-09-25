@@ -1,0 +1,10 @@
+id: 0007_sim_realism
+task: sim_realism
+runtime: cpu
+config: configs/sim/realism.yaml
+depends_on: [0006_gen_synth]
+max_minutes: 30
+resume: false
+attempt: 1
+drive_subdir: jobs/0007_sim_realism
+notes: "Residual spectra: synthetic vs UHDM val (~5-10 min)"

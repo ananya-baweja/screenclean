@@ -1,0 +1,10 @@
+id: 0006_gen_synth
+task: gen_synth
+runtime: cpu
+config: configs/data/synth.yaml
+depends_on: [0002_prepare_uhdm]
+max_minutes: 150
+resume: true
+attempt: 1
+drive_subdir: jobs/0006_gen_synth
+notes: "6,000 / 300 / 300 simulated text pairs on Drive data/synth_v1 (~1-1.5 h est.)"

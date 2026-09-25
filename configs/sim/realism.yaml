@@ -1,0 +1,5 @@
+# Job 0007: compare the synthetic training set with real UHDM validation crops (residual spectra + grids).
+real_split: data/uhdm_v1/val
+sim_split: data/synth_v1/train
+n_pairs: 64
+local_dir: /content/realism_work
