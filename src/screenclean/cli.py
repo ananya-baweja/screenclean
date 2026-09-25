@@ -55,6 +55,15 @@ def _cmd_tables(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_capture_kit(args: argparse.Namespace) -> int:
+    from screenclean.render.capture_kit import build_kit
+
+    meta = build_kit(args.out)
+    n_lines = sum(len(p["lines"]) for p in meta["pages"])
+    print(f"wrote {len(meta['pages'])} pages ({n_lines} text lines) to {args.out}")
+    return 0
+
+
 def _cmd_env(args: argparse.Namespace) -> int:
     from screenclean.utils.env import collect_env
 
@@ -99,6 +108,10 @@ def build_parser() -> argparse.ArgumentParser:
     tab_p = sub.add_parser("tables", help="rebuild results/tables/*.md from ingested job results")
     tab_p.add_argument("--repo-root", default=Path("."), type=Path)
     tab_p.set_defaults(func=_cmd_tables)
+
+    kit_p = sub.add_parser("capture-kit", help="build the capture kit (pages with markers + slideshow)")
+    kit_p.add_argument("--out", default=Path("capture_kit"), type=Path)
+    kit_p.set_defaults(func=_cmd_capture_kit)
 
     env_p = sub.add_parser("env", help="print the environment report")
     env_p.add_argument("--repo-root", default=Path("."), type=Path)

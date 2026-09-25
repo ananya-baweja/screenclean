@@ -1,0 +1,280 @@
+{
+ "bucket": {
+  "hard (<16 px)": {
+   "cer": 0.003,
+   "lines": 373,
+   "chars": 11661
+  },
+  "large (>24 px)": {
+   "cer": 0.0019,
+   "lines": 186,
+   "chars": 5374
+  },
+  "normal (16-24 px)": {
+   "cer": 0.001,
+   "lines": 826,
+   "chars": 27512
+  }
+ },
+ "template": {
+  "chat": {
+   "cer": 0.0,
+   "lines": 60,
+   "chars": 2508
+  },
+  "code_dark": {
+   "cer": 0.0029,
+   "lines": 312,
+   "chars": 7125
+  },
+  "code_light": {
+   "cer": 0.0008,
+   "lines": 242,
+   "chars": 5964
+  },
+  "doc": {
+   "cer": 0.0003,
+   "lines": 151,
+   "chars": 11947
+  },
+  "mixed": {
+   "cer": 0.0025,
+   "lines": 164,
+   "chars": 8389
+  },
+  "slide": {
+   "cer": 0.0,
+   "lines": 73,
+   "chars": 3433
+  },
+  "table": {
+   "cer": 0.0044,
+   "lines": 383,
+   "chars": 5181
+  }
+ },
+ "font": {
+  "DejaVuSans": {
+   "cer": 0.0003,
+   "lines": 354,
+   "chars": 18042
+  },
+  "DejaVuSans-Bold": {
+   "cer": 0.0,
+   "lines": 50,
+   "chars": 1932
+  },
+  "DejaVuSans-Oblique": {
+   "cer": 0.0,
+   "lines": 31,
+   "chars": 1332
+  },
+  "DejaVuSansMono": {
+   "cer": 0.0023,
+   "lines": 540,
+   "chars": 12301
+  },
+  "DejaVuSansMono-Bold": {
+   "cer": 0.0013,
+   "lines": 74,
+   "chars": 2979
+  },
+  "DejaVuSerif": {
+   "cer": 0.0004,
+   "lines": 145,
+   "chars": 2351
+  },
+  "DejaVuSerif-Bold": {
+   "cer": 0.0,
+   "lines": 13,
+   "chars": 249
+  },
+  "STIXGeneral": {
+   "cer": 0.0064,
+   "lines": 167,
+   "chars": 5188
+  },
+  "STIXGeneralBol": {
+   "cer": 0.0058,
+   "lines": 11,
+   "chars": 173
+  }
+ },
+ "worst_lines": [
+  {
+   "cer": 1.0,
+   "page": 9,
+   "size": 13,
+   "gt": " 81",
+   "ocr": "sl"
+  },
+  {
+   "cer": 0.5,
+   "page": 39,
+   "size": 23,
+   "gt": "C,",
+   "ocr": "CG,"
+  },
+  {
+   "cer": 0.5,
+   "page": 25,
+   "size": 17,
+   "gt": "C,",
+   "ocr": "Cc,"
+  },
+  {
+   "cer": 0.333,
+   "page": 2,
+   "size": 12,
+   "gt": "205",
+   "ocr": "205,"
+  },
+  {
+   "cer": 0.125,
+   "page": 34,
+   "size": 13,
+   "gt": "12:47 PM",
+   "ocr": "(12:47 PM"
+  },
+  {
+   "cer": 0.1,
+   "page": 39,
+   "size": 23,
+   "gt": "infoteam@example.org",
+   "ocr": "infoteam @ example.org"
+  },
+  {
+   "cer": 0.1,
+   "page": 32,
+   "size": 15,
+   "gt": "+1 555 936",
+   "ocr": "+1555 936"
+  },
+  {
+   "cer": 0.1,
+   "page": 18,
+   "size": 17,
+   "gt": "infoteam@example.org",
+   "ocr": "infoteam@ example.org,"
+  },
+  {
+   "cer": 0.1,
+   "page": 18,
+   "size": 17,
+   "gt": "app checks",
+   "ocr": "app checks."
+  },
+  {
+   "cer": 0.1,
+   "page": 4,
+   "size": 23,
+   "gt": "+1 555 339",
+   "ocr": "+1555 339"
+  },
+  {
+   "cer": 0.08,
+   "page": 18,
+   "size": 17,
+   "gt": "research-labs@example.net",
+   "ocr": "research-labs @ example.net"
+  },
+  {
+   "cer": 0.08,
+   "page": 18,
+   "size": 17,
+   "gt": "research-labs@example.net",
+   "ocr": "research-labs @ example.net"
+  },
+  {
+   "cer": 0.077,
+   "page": 18,
+   "size": 17,
+   "gt": "Phone: +1 555",
+   "ocr": "Phone: +1555"
+  },
+  {
+   "cer": 0.067,
+   "page": 2,
+   "size": 12,
+   "gt": "if labels > 89:",
+   "ocr": "if labels > 89"
+  },
+  {
+   "cer": 0.067,
+   "page": 2,
+   "size": 12,
+   "gt": "if labels > 89:",
+   "ocr": "if labels > 89"
+  },
+  {
+   "cer": 0.067,
+   "page": 2,
+   "size": 12,
+   "gt": "if labels > 89:",
+   "ocr": "if labels > 89"
+  },
+  {
+   "cer": 0.067,
+   "page": 2,
+   "size": 12,
+   "gt": "if batch > 477:",
+   "ocr": "if batch > 477"
+  },
+  {
+   "cer": 0.067,
+   "page": 2,
+   "size": 12,
+   "gt": "if batch > 477:",
+   "ocr": "if batch > 477"
+  },
+  {
+   "cer": 0.061,
+   "page": 39,
+   "size": 23,
+   "gt": "Reply-To: office-data@example.net",
+   "ocr": "Reply-To: office-data @ example.net"
+  },
+  {
+   "cer": 0.057,
+   "page": 39,
+   "size": 23,
+   "gt": "Contact: report-careers@example.com",
+   "ocr": "Contact: report-careers @ example.com"
+  },
+  {
+   "cer": 0.057,
+   "page": 39,
+   "size": 23,
+   "gt": "Contact: report-careers@example.com",
+   "ocr": "Contact: report-careers @ example.com"
+  },
+  {
+   "cer": 0.054,
+   "page": 6,
+   "size": 15,
+   "gt": "questions to labs-library@example.net",
+   "ocr": "questions to labs-library @ example.net"
+  },
+  {
+   "cer": 0.05,
+   "page": 37,
+   "size": 28,
+   "gt": "export BATCH_SIZE=11",
+   "ocr": "export BATCH _SIZE=11"
+  },
+  {
+   "cer": 0.05,
+   "page": 24,
+   "size": 26,
+   "gt": "export BATCH_SIZE=11",
+   "ocr": "export BATCH _SIZE=11"
+  },
+  {
+   "cer": 0.048,
+   "page": 37,
+   "size": 28,
+   "gt": "export BATCH_SIZE=268",
+   "ocr": "export BATCH SIZE=268"
+  }
+ ]
+}
