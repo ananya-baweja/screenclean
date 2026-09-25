@@ -196,15 +196,29 @@ def test_build_small_kit(tmp_path):
 
 
 def test_committed_kit_matches_generator(tmp_path):
-    """The committed kit must match the generator exactly (rebuild: `python -m screenclean capture-kit`)."""
+    """The committed kit must match the generator (rebuild: `python -m screenclean capture-kit`).
+
+    Text, fonts and sizes must be identical; boxes may differ by 1 px and pixels slightly, since
+    FreeType builds on different systems can round glyph edges differently.
+    """
     from pathlib import Path
+
+    from screenclean.utils.io import read_image
 
     kit = Path(__file__).resolve().parents[1] / "capture_kit"
     committed = json.loads((kit / "pages.json").read_text(encoding="utf-8"))
-    fresh = build_kit(tmp_path / "kit")
-    assert committed == json.loads(json.dumps(fresh))
-    from screenclean.utils.io import read_image
-
+    fresh = json.loads(json.dumps(build_kit(tmp_path / "kit")))
+    assert len(committed["pages"]) == len(fresh["pages"]) == 40
+    for old, new in zip(committed["pages"], fresh["pages"], strict=True):
+        assert [(ln["text"], ln["font"], ln["size"]) for ln in old["lines"]] == [
+            (ln["text"], ln["font"], ln["size"]) for ln in new["lines"]
+        ], f"page {old['page_id']}: text changed"
+        for a, b in zip(old["lines"], new["lines"], strict=True):
+            assert max(abs(x - y) for x, y in zip(a["box"], b["box"], strict=True)) <= 1, (
+                old["page_id"],
+                a,
+                b,
+            )
     for name in ("page_000.png", "page_017.png", "page_039.png"):  # pixels, not PNG bytes (encoders differ)
         a, b = read_image(kit / "pages" / name), read_image(tmp_path / "kit" / "pages" / name)
         assert a.shape == b.shape and np.abs(a - b).mean() < 0.002

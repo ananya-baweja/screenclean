@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # pinned: ubuntu-latest moves to a new release in October 2026
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
@@ -22,7 +22,8 @@ jobs:
         run: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
       - name: Install package
-        run: pip install -e ".[dev]"
+        # The annotate plugin turns test failures into public annotations on the run (readable without a login).
+        run: pip install -e ".[dev]" pytest-github-actions-annotate-failures
 
       - name: Lint
         run: |

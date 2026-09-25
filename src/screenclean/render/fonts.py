@@ -81,4 +81,9 @@ def fonts_of(family: str, style: str | None = None, extra: tuple[str, ...] = ())
 
 @lru_cache(maxsize=512)
 def load(path: str, size: int) -> ImageFont.FreeTypeFont:
-    return ImageFont.truetype(path, size)
+    """Load a font with Pillow's basic layout engine.
+
+    Pillow uses the "raqm" engine (kerning, complex scripts) when it's available, which it is on
+    Linux but often not on Windows. Forcing the basic engine makes pages identical everywhere.
+    """
+    return ImageFont.truetype(path, size, layout_engine=ImageFont.Layout.BASIC)
