@@ -27,6 +27,10 @@ Google Drive access.
 2. **Runtime → Run all**, and allow Google Drive access.
 3. Keep this tab open until cell 3 prints `JOB FINISHED`, `TIME BUDGET REACHED` or `JOB FAILED`.
 4. Cell 4 downloads `<job>.zip`. Move it from Downloads into your `results_inbox` folder.
+
+**Is it still running?** The page can stop showing new lines while the job keeps working. Open
+Google Drive → `screenclean/job_status/<job>.json`: its `progress` and `progress_utc` fields update
+after every step.
 """
 
 SETTINGS = """\

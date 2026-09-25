@@ -156,6 +156,20 @@ class JobContext:
         """True when the task should checkpoint and return ``partial``."""
         return self.deadline.expired(margin_s)
 
+    def progress(self, text: str) -> None:
+        """Log a progress note and save it in ``job_status/<id>.json`` on Drive.
+
+        Drive shows that file live, because it is rewritten atomically; ``job.log`` stays
+        open while the job runs, so Drive only uploads it at the end.
+        """
+        log.info("progress: %s", text)
+        StatusStore(self.layout).set(
+            self.spec.id,
+            progress=text,
+            progress_utc=_now(),
+            elapsed_min=round(self.deadline.elapsed() / 60, 1),
+        )
+
 
 TaskFn = Callable[[JobContext], TaskResult]
 TASKS: dict[str, TaskFn] = {}

@@ -36,6 +36,9 @@ Job states live on Drive in `job_status/<id>.json`, not in the repo:
 | `partial` | time budget reached; run the notebook again to continue |
 | `failed` | error; `auto` skips it until the spec's `attempt` is increased |
 
+While a job runs, tasks write a short `progress` note (with `progress_utc`) into that status file after
+each step. Drive shows it live. `job.log` stays open until the job ends, so Drive may show an old copy of it.
+
 `auto` picks the first job (sorted by file name) that isn't `done`, didn't fail at its current
 `attempt`, and whose `depends_on` jobs are all `done`.
 

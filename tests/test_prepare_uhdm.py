@@ -93,6 +93,8 @@ def test_prepare_end_to_end(tmp_path, fake_uhdm, capsys):
         assert {"sample_grid.jpg", "splits/uhdm_val.txt", "splits/uhdm_dev100.txt", "summary.json"} <= names
         summary = json.loads(zf.read("summary.json"))
     assert summary["splits"]["train"]["complete"] and summary["counts"]["uhdm_train"] == 9
+    status = json.loads((drive / "job_status" / "0002_prepare_uhdm.json").read_text())
+    assert status["progress"] == "train shard 3/3 done" and "progress_utc" in status
     assert summary["source"]["members"] == 40 and summary["source"]["downloaded_mb"] > 0
 
     # Running again changes nothing and doesn't even open the archive.

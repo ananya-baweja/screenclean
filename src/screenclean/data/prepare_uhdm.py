@@ -237,6 +237,7 @@ class Preparer:
                 entry["bytes"] / 1e6,
                 time.monotonic() - t0,
             )
+            self.ctx.progress(f"{split} shard {gi + 1}/{len(groups)} done")
         manifest["complete"] = True
         save_manifest(split_dir, manifest)
 
