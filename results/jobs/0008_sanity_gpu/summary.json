@@ -1,0 +1,44 @@
+{
+  "amp": true,
+  "attempt": 1,
+  "batch": 6,
+  "best": {
+    "iter": 1000,
+    "psnr": 18.506008421818557,
+    "ssim": 0.6832370257121602
+  },
+  "calibration": {
+    "batch": 6,
+    "crop": 384,
+    "it_per_s": 1.381,
+    "iters_for_plan": 22300,
+    "peak_mem_gb": 9.23,
+    "plan_minutes": 300,
+    "rule": "largest batch at crop 384 using at most 75% of 15.6 GB"
+  },
+  "crop": 384,
+  "device": "cuda",
+  "elapsed_s": 1179.2,
+  "final_val": {
+    "input_psnr": 17.399096,
+    "iter": 1000.0,
+    "psnr": 18.506008,
+    "seconds": 92.567995,
+    "ssim": 0.683237
+  },
+  "git_sha": "af04fff4b483e02dbe50167c3923eb017811af28",
+  "id": "0008_sanity_gpu",
+  "input_psnr": 17.39909554077999,
+  "it_per_s": 1.128,
+  "iteration": 1000,
+  "iters": 1000,
+  "iters_this_run": 1000,
+  "model": "scnet_base",
+  "params_m": 4.65,
+  "peak_gpu_mem_gb": 9.25,
+  "resumed": false,
+  "run_dir": "runs/0008_sanity_gpu",
+  "seconds_this_run": 886.3,
+  "state": "done",
+  "task": "train"
+}

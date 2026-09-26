@@ -1,0 +1,76 @@
+{
+  "device": "Tesla T4",
+  "fft_share_at_0.05": 0.01,
+  "fft_weight_for_20pct": 1.2878,
+  "gpu_mem_gb": 15.64,
+  "loss_at_start": {
+    "charbonnier": 0.13866,
+    "fft": 0.02692
+  },
+  "measurements": [
+    {
+      "batch": 4,
+      "crop": 256,
+      "data_wait": 0.002,
+      "it_per_s": 4.385,
+      "oom": false,
+      "peak_mem_gb": 2.78,
+      "samples_per_s": 17.5
+    },
+    {
+      "batch": 6,
+      "crop": 256,
+      "data_wait": 0.001,
+      "it_per_s": 3.092,
+      "oom": false,
+      "peak_mem_gb": 4.13,
+      "samples_per_s": 18.6
+    },
+    {
+      "batch": 8,
+      "crop": 256,
+      "data_wait": 0.001,
+      "it_per_s": 2.381,
+      "oom": false,
+      "peak_mem_gb": 5.47,
+      "samples_per_s": 19.0
+    },
+    {
+      "batch": 4,
+      "crop": 384,
+      "data_wait": 0.001,
+      "it_per_s": 2.066,
+      "oom": false,
+      "peak_mem_gb": 6.16,
+      "samples_per_s": 8.3
+    },
+    {
+      "batch": 6,
+      "crop": 384,
+      "data_wait": 0.0,
+      "it_per_s": 1.381,
+      "oom": false,
+      "peak_mem_gb": 9.23,
+      "samples_per_s": 8.3
+    },
+    {
+      "batch": 8,
+      "crop": 384,
+      "data_wait": 0.0,
+      "it_per_s": 1.048,
+      "oom": false,
+      "peak_mem_gb": 12.2,
+      "samples_per_s": 8.4
+    }
+  ],
+  "model": "scnet_base",
+  "recommended": {
+    "batch": 6,
+    "crop": 384,
+    "it_per_s": 1.381,
+    "iters_for_plan": 22300,
+    "peak_mem_gb": 9.23,
+    "plan_minutes": 300,
+    "rule": "largest batch at crop 384 using at most 75% of 15.6 GB"
+  }
+}

@@ -1,0 +1,32 @@
+2026-09-26 07:18:11,543 INFO screenclean.jobs: Starting 0008_sanity_gpu (task=train, runtime=gpu, attempt=1, resuming=False)
+2026-09-26 07:18:12,639 INFO screenclean.jobs: progress: copying data/uhdm_v1/train from Drive to local disk
+2026-09-26 07:18:14,186 INFO screenclean.utils.drive: staging train-00000.tar (255 MB)
+2026-09-26 07:18:26,037 INFO screenclean.utils.drive: staging train-00001.tar (253 MB)
+2026-09-26 07:18:35,422 INFO screenclean.utils.drive: staging train-00002.tar (252 MB)
+2026-09-26 07:18:46,113 INFO screenclean.utils.drive: staging train-00003.tar (256 MB)
+2026-09-26 07:19:00,829 INFO screenclean.utils.drive: staging train-00004.tar (302 MB)
+2026-09-26 07:19:07,648 INFO screenclean.utils.drive: staging train-00005.tar (266 MB)
+2026-09-26 07:19:18,522 INFO screenclean.utils.drive: staging train-00006.tar (275 MB)
+2026-09-26 07:19:22,508 INFO screenclean.utils.drive: staging train-00007.tar (217 MB)
+2026-09-26 07:19:34,365 INFO screenclean.utils.drive: staging train-00008.tar (221 MB)
+2026-09-26 07:19:43,986 INFO screenclean.utils.drive: staging train-00009.tar (211 MB)
+2026-09-26 07:19:53,034 INFO screenclean.utils.drive: staging train-00010.tar (177 MB)
+2026-09-26 07:20:10,732 INFO screenclean.jobs: progress: copying data/uhdm_v1/val from Drive to local disk
+2026-09-26 07:20:11,422 INFO screenclean.utils.drive: staging val-00000.tar (81 MB)
+2026-09-26 07:20:15,697 INFO screenclean.train.task: training sources: [12900] pairs; val: 400
+2026-09-26 07:20:15,698 INFO screenclean.jobs: progress: calibrating 6 crop/batch settings
+2026-09-26 07:20:39,094 INFO screenclean.train.calibrate: calibration {'crop': 256, 'batch': 4, 'it_per_s': 4.385, 'samples_per_s': 17.5, 'data_wait': 0.002, 'peak_mem_gb': 2.78, 'oom': False}
+2026-09-26 07:20:58,324 INFO screenclean.train.calibrate: calibration {'crop': 256, 'batch': 6, 'it_per_s': 3.092, 'samples_per_s': 18.6, 'data_wait': 0.001, 'peak_mem_gb': 4.13, 'oom': False}
+2026-09-26 07:21:20,989 INFO screenclean.train.calibrate: calibration {'crop': 256, 'batch': 8, 'it_per_s': 2.381, 'samples_per_s': 19.0, 'data_wait': 0.001, 'peak_mem_gb': 5.47, 'oom': False}
+2026-09-26 07:21:44,859 INFO screenclean.train.calibrate: calibration {'crop': 384, 'batch': 4, 'it_per_s': 2.066, 'samples_per_s': 8.3, 'data_wait': 0.001, 'peak_mem_gb': 6.16, 'oom': False}
+2026-09-26 07:22:15,960 INFO screenclean.train.calibrate: calibration {'crop': 384, 'batch': 6, 'it_per_s': 1.381, 'samples_per_s': 8.3, 'data_wait': 0.0, 'peak_mem_gb': 9.23, 'oom': False}
+2026-09-26 07:22:53,758 INFO screenclean.train.calibrate: calibration {'crop': 384, 'batch': 8, 'it_per_s': 1.048, 'samples_per_s': 8.4, 'data_wait': 0.0, 'peak_mem_gb': 12.2, 'oom': False}
+2026-09-26 07:22:55,809 INFO screenclean.jobs: progress: calibration: recommended {"crop": 384, "batch": 6, "it_per_s": 1.381, "peak_mem_gb": 9.23, "iters_for_plan": 22300, "plan_minutes": 300, "rule": "largest batch at crop 384 using at most 75% of 15.6 GB"}
+2026-09-26 07:23:02,863 INFO numexpr.utils: NumExpr defaulting to 2 threads.
+2026-09-26 07:25:21,681 INFO screenclean.jobs: progress: iteration 175/1000: loss 0.1282, 1.24 it/s
+2026-09-26 07:27:40,909 INFO screenclean.jobs: progress: iteration 350/1000: loss 0.1282, 1.25 it/s
+2026-09-26 07:29:41,041 INFO screenclean.jobs: progress: iteration 500/1000: loss 0.1133, 1.25 it/s
+2026-09-26 07:31:59,909 INFO screenclean.jobs: progress: iteration 675/1000: loss 0.1195, 1.26 it/s
+2026-09-26 07:34:18,334 INFO screenclean.jobs: progress: iteration 850/1000: loss 0.1182, 1.26 it/s
+2026-09-26 07:37:49,824 INFO screenclean.jobs: progress: validation at 1000: PSNR 18.51 dB (input 17.40), SSIM 0.6832; best 18.51 at 1000
+2026-09-26 07:37:50,709 INFO screenclean.jobs: Job 0008_sanity_gpu ended as done after 1179.2 s
