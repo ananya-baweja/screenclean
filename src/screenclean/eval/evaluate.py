@@ -11,6 +11,7 @@ Methods come from the config, e.g.::
       - {name: identity}
       - {name: fft_notch, params_from: params/baselines.yaml}   # tuned settings from job 0003
       - {name: esdnet_ref, label: "ESDNet (reference)", ...}   # GPU; see baselines/esdnet_ref.py
+      - {name: scnet, label: "ScreenCleanNet", checkpoint: runs/<job>/best.pt, tile: 512}  # models/runner.py
 """
 
 from __future__ import annotations
@@ -40,6 +41,7 @@ from screenclean.utils.io import write_image
 log = logging.getLogger(__name__)
 
 FIELDS = ["key", "method", "psnr", "ssim", "lpips", "seconds", "height", "width"]
+GPU_METHODS = {"esdnet_ref", "scnet"}  # neural networks: run in the main process, one image at a time
 SAMPLE_CROP = 512
 
 Item = tuple[
@@ -64,13 +66,20 @@ def resolve_methods(specs: list[dict[str, Any]], drive_root: Path) -> list[dict[
             else:
                 source = "defaults (no tuned settings found)"
                 log.warning("%s: no tuned settings in %s; using defaults", name, spec["params_from"])
-        if name not in BASELINES and name != "esdnet_ref":
+        if name == "scnet":  # our trained model: settings come from the checkpoint
+            params = {"tile": spec.get("tile") or "full image", "fp16": bool(spec.get("fp16", True))}
+            source = f"checkpoint {spec['checkpoint']}"
+        elif name not in BASELINES and name not in GPU_METHODS:
             raise ValueError(f"unknown method {name!r}")
         out.append({**spec, "label": spec.get("label", name), "params": params, "params_source": source})
     return out
 
 
 def build_fn(method: dict[str, Any], drive_root: Path) -> Callable[[np.ndarray], np.ndarray]:
+    if method["name"] == "scnet":
+        from screenclean.models.runner import build_runner
+
+        return build_runner(method, drive_root)
     if method["name"] == "esdnet_ref":
         from screenclean.baselines.esdnet_ref import build_esdnet
 
@@ -208,7 +217,7 @@ def eval_task(ctx: JobContext) -> TaskResult:
     labels = [m["label"] for m in methods]
     use_lpips = bool(cfg.get("lpips", False))
     n_samples = int(cfg.get("sample_images", 4))
-    gpu = any(m["name"] == "esdnet_ref" for m in methods)
+    gpu = any(m["name"] in GPU_METHODS for m in methods)
     workers = 1 if gpu else int(cfg.get("workers", 2))
 
     # Build in-process methods first: a missing model file should stop the job before any data is copied.
@@ -281,6 +290,8 @@ def eval_task(ctx: JobContext) -> TaskResult:
                 summary["methods"].get(m["label"], {}).update(
                     {"inference_modes": dict(fn.modes), "parameters": fn.params, "fp16": fn.fp16}
                 )
+            if hasattr(fn, "info"):  # a trained checkpoint: which iteration, and its validation score
+                summary["methods"].get(m["label"], {}).update({"checkpoint": fn.info})
     manifest = read_json(ctx.layout.root / split / "manifest.json", default={}) or {}
     summary["dataset_params"] = manifest.get("params")
     if rows_path.exists():
