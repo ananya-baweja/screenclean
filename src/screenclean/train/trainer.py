@@ -174,7 +174,10 @@ class Trainer:
         path = self.run_dir / "last.pt"
         if not path.exists():
             return False
-        ck = load_checkpoint(path, map_location=self.device)
+        # Load to CPU: load_state_dict copies weights and optimiser state to the model's device itself,
+        # and the saved random-generator states must stay CPU byte tensors (torch.set_rng_state and
+        # torch.cuda.set_rng_state_all refuse GPU tensors: "RNG state must be a torch.ByteTensor").
+        ck = load_checkpoint(path, map_location="cpu")
         self.model.load_state_dict(ck["model"])
         self.ema.load_state_dict(ck["ema"])
         self.opt.load_state_dict(ck["optimizer"])

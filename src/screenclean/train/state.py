@@ -51,11 +51,12 @@ def rng_state() -> dict[str, Any]:
 
 
 def set_rng_state(state: dict[str, Any]) -> None:
-    torch.set_rng_state(state["torch"])
+    """Restore generator states (moved to CPU first: PyTorch only accepts CPU byte tensors here)."""
+    torch.set_rng_state(state["torch"].cpu())
     np.random.set_state(state["numpy"])
     random.setstate(state["python"])
     if "cuda" in state and torch.cuda.is_available():
-        torch.cuda.set_rng_state_all(state["cuda"])
+        torch.cuda.set_rng_state_all([s.cpu() for s in state["cuda"]])
 
 
 def save_checkpoint(path: str | Path, obj: dict[str, Any]) -> Path:

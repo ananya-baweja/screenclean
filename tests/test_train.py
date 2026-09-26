@@ -13,6 +13,7 @@ import yaml
 from screenclean import jobs
 from screenclean.data import shards
 from screenclean.data.pairs_dataset import PairsDataset
+from screenclean.train import trainer as trainer_mod
 from screenclean.train.calibrate import recommend
 from screenclean.train.data import MixedCrops, train_loader
 from screenclean.train.state import EMA, load_checkpoint, rng_state, save_checkpoint, set_rng_state
@@ -109,6 +110,37 @@ def test_ema_and_checkpoint_round_trip(tmp_path):
     ema2 = EMA(torch.nn.Linear(3, 2))
     ema2.load_state_dict(ck["ema"])
     assert torch.equal(ema2.model.weight, ema.model.weight) and ema2.updates == 200
+
+
+def test_rng_states_saved_on_a_gpu_can_be_restored(tmp_path, data, monkeypatch):
+    """Regression (job 0009, attempt 1): resuming on a GPU failed with "RNG state must be a
+    torch.ByteTensor" because the checkpoint was loaded onto the GPU, generator states included."""
+
+    class OnGpu:  # stands in for a GPU tensor: only .cpu() gives a usable generator state
+        def __init__(self, t):
+            self.t = t
+
+        def cpu(self):
+            return self.t
+
+    state = rng_state()
+    first = torch.rand(3)
+    state["torch"] = OnGpu(state["torch"])
+    set_rng_state(state)
+    assert torch.equal(torch.rand(3), first)
+
+    train, val = data
+    Trainer(tiny_cfg(iters=2, val_every=2), tmp_path / "run", [train], val).fit()
+    seen = []
+    real = trainer_mod.load_checkpoint
+
+    def spy(path, map_location):
+        seen.append(map_location)
+        return real(path)
+
+    monkeypatch.setattr(trainer_mod, "load_checkpoint", spy)
+    Trainer(tiny_cfg(iters=4, val_every=2), tmp_path / "run", [train], val).fit()
+    assert seen == ["cpu"]  # always to CPU first; load_state_dict moves weights to the model's device
 
 
 def test_trainer_runs_validates_and_checkpoints(tmp_path, data):
