@@ -25,8 +25,8 @@ a skewed angle. They're hard to read, and OCR tools misread them.
 Under the hood:
 
 - a classical screen detector
-- a lightweight wavelet U-Net (**ScreenCleanNet**) trained in PyTorch on real 4K moiré pairs (UHDM),
-  plus text pairs from a physics-based moiré simulator
+- a lightweight wavelet U-Net (**ScreenCleanNet**, 4.65 M parameters; [architecture](docs/architecture.md))
+  trained in PyTorch on real 4K moiré pairs (UHDM), plus text pairs from a physics-based moiré simulator
 - OCR and export
 
 The model is compared with classical signal-processing baselines (chroma low-pass, FFT notch filters)

@@ -183,3 +183,27 @@ One entry per decision: date, the decision, why, and the alternatives considered
   corner marker sets it and lighter coloured text breaks apart); Sauvola raised word F1 from 0.68 to 0.80.
 - **Consequence:** this is the case for the learned model. P8 measures OCR with and without it on the same pages.
 
+## 2026-09-26: ScreenCleanNet details (P6)
+
+- **Decision:** `scnet_base` follows the planned diagram (4.65 M parameters, 52 GFLOPs at 512×512); `scnet_tiny`
+  has 0.79 M. The last convolution starts at zero, so the untrained model returns its input.
+- **Why:** starting as the identity means training starts at the input's quality and only learns corrections;
+  NAFNet's zero-started β/γ already make every block start as the identity.
+- **Note on the ablation:** Haar DWT + 1×1 conv spans exactly the same functions as a 2×2 stride-2 conv (unit
+  test), and 1×1 conv + inverse Haar equals 1×1 conv + PixelShuffle. `plain_unet` therefore tests the
+  starting point and training dynamics of the wavelet parametrisation (plus dilation), not extra capacity.
+
+## 2026-09-26: Training samples are fixed by their number
+
+- **Decision:** sample k of a run takes its source, pair, crop and flips from a generator seeded with
+  (seed, k); the loader walks k = iteration × batch onwards.
+- **Why:** Colab jobs stop at a time budget and resume from `last.pt`. With this, a resumed run sees exactly the
+  data an uninterrupted one would (the CPU test gets the same loss curve for "stop at 20, resume to 50" as for one
+  run of 50), independent of DataLoader workers, and sources can be mixed by weight for the text fine-tune.
+
+## 2026-09-26: ONNX export test uses both exporters
+
+- **Decision:** the fast test exports the Haar layers with the legacy TorchScript exporter (about 1 s); a slow
+  test uses the new `torch.export`-based exporter (about 20 s), which is PyTorch's default since 2.9.
+- **Why:** CI stays fast, and the export path that P10 will use is still checked.
+
