@@ -1,0 +1,23 @@
+# Job 0010: our trained model on UHDM dev100 (T4), with LPIPS. Rows join the dev100 table next to the
+# baselines (job 0004) and the ESDNet reference (job 0005).
+# Two ways to run it, both fp16 with the EMA weights of the best validation checkpoint:
+# - the whole 4K image at once (falls back to 1024 px tiles if memory runs out);
+# - 512 px tiles with 64 px blended overlaps, closer to the 384 px crops seen in training (the channel-
+#   attention layers average over their whole input, so the input size can matter).
+split: data/uhdm_v1/dev100
+local_dir: /content/eval_data
+sample_images: 4
+lpips: true
+stop_margin_min: 10
+methods:
+  - {name: identity, label: "Input (no cleaning)"}
+  - name: scnet
+    label: "ScreenCleanNet (ours, whole image)"
+    checkpoint: runs/0009_train_sc_base/best.pt
+    fp16: true
+  - name: scnet
+    label: "ScreenCleanNet (ours, 512 px tiles)"
+    checkpoint: runs/0009_train_sc_base/best.pt
+    fp16: true
+    tile: 512
+    overlap: 64

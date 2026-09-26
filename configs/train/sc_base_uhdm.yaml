@@ -1,0 +1,27 @@
+# Job 0009: main training of scnet_base on UHDM (T4), over about two 150-minute Colab runs.
+# Settings measured by job 0008 (results/jobs/0008_sanity_gpu, docs/DECISIONS.md):
+# - crop 384, batch 6: 9.2 GB of the T4's 15.6 GB; data loading never waited (2 CPU workers suffice).
+# - FFT loss weight 1.0: at the start the FFT term is then ~16% of the loss (it was 1% at 0.05).
+# - iters "auto": the first run measures its speed (with and without torch.compile, keeping the faster)
+#   and sets the schedule to fill budget_minutes, counting validation time. Resumed runs keep it.
+run: runs/0009_train_sc_base
+data:
+  train: [data/uhdm_v1/train]
+  val: data/uhdm_v1/val
+  local_dir: /content/train_data
+train:
+  model: scnet_base
+  crop: 384
+  batch: 6
+  workers: 2
+  iters: auto
+  budget_minutes: 270        # two jobs of 150 min, minus data copying, the stop margin and the probe
+  val_seconds: 95            # one validation on the 400 val crops (0008: 93 s)
+  compile: auto
+  probe_iters: 40
+  optim: {lr: 3.0e-4, warmup: 1000, min_lr: 1.0e-6}
+  loss: {fft_weight: 1.0}
+  val_every: 2000
+  log_every: 50
+  ckpt_minutes: 15
+stop_margin_min: 8

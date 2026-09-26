@@ -193,6 +193,37 @@ def test_train_job_end_to_end(tmp_path, capsys):
     assert (drive / "runs" / "0100_train_t" / "last.pt").exists()
 
 
+@pytest.mark.parametrize("config", ["sanity.yaml", "sc_base_uhdm.yaml"])
+def test_real_training_configs_dry_run(tmp_path, capsys, config):
+    """P7.1: each committed training config runs end to end with scnet_tiny, 20 iterations, fake data."""
+    repo_cfg = yaml.safe_load((Path(__file__).parents[1] / "configs" / "train" / config).read_text())
+    drive = tmp_path / "drive"
+    for split in [*repo_cfg["data"]["train"], repo_cfg["data"]["val"]]:
+        make_split(drive / split, 6, seed=len(split), prefix=Path(split).name[:3])
+    tiny = {"model": "scnet_tiny", "crop": 32, "batch": 2, "workers": 0, "val_every": 10, "val_max": 4,
+            "log_every": 5, "compile": False, "iters": 20}  # fmt: skip
+    if repo_cfg["train"].get("iters") == "auto":  # keep "auto", but with a tiny budget and probe
+        tiny.update(iters="auto", budget_minutes=0.02, probe_iters=4, iters_round=1, optim={"warmup": 20})
+    cfg = merge(repo_cfg, {"train": tiny, "data": {"local_dir": str(tmp_path / "local")}})
+    if "calibrate" in cfg:
+        cfg["calibrate"] = {"crops": [32], "batches": [2], "iters": 4, "warmup": 2, "plan_minutes": 1}
+    repo = tmp_path / "repo"
+    (repo / "jobs" / "queue").mkdir(parents=True)
+    (repo / "configs").mkdir()
+    (repo / "configs" / config).write_text(yaml.safe_dump(cfg))
+    spec = {
+        "id": "0099_dry",
+        "task": "train",
+        "runtime": "cpu",
+        "config": f"configs/{config}",
+        "max_minutes": 30,
+    }
+    (repo / "jobs" / "queue" / "0099_dry.yaml").write_text(yaml.safe_dump(spec))
+    assert jobs.run("auto", drive, repo, tmp_path / "m.txt", runtime="cpu") == 0
+    assert "JOB FINISHED: 0099_dry" in capsys.readouterr().out
+    assert (drive / repo_cfg["run"] / "best.pt").exists()
+
+
 @pytest.mark.slow
 def test_tiny_model_overfits_four_pairs(tmp_path):
     """P6.5: scnet_tiny learns to remove the stripes from 4 pairs within 200 iterations."""
