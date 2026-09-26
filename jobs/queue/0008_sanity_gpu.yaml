@@ -1,0 +1,10 @@
+id: 0008_sanity_gpu
+task: train
+runtime: gpu
+config: configs/train/sanity.yaml
+depends_on: [0002_prepare_uhdm]
+max_minutes: 45
+resume: true
+attempt: 1
+drive_subdir: jobs/0008_sanity_gpu
+notes: "T4: speed/memory calibration + 1,000 iterations of scnet_base with validation (~15-25 min est.)"

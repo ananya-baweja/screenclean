@@ -1,0 +1,30 @@
+# Job 0008: GPU sanity run (T4). Measures, then trains briefly, so the main run (P7) can be planned.
+#
+# 1. calibrate: crops 256/384 x batches 4/6/8 of scnet_base, 30 iterations each on real UHDM crops:
+#    it/s, peak GPU memory, share of time waiting for data. Recommends the batch (at most 75% of GPU
+#    memory) and the iterations that fill two 150-minute jobs; measures the FFT loss share at the start.
+# 2. train: 1,000 iterations of scnet_base at crop 384, batch 6, then validation on the 400 val crops.
+#    This checks that the loss falls and val PSNR rises above the input's before hours are spent.
+run: runs/0008_sanity_gpu
+data:
+  train: [data/uhdm_v1/train]
+  val: data/uhdm_v1/val
+  local_dir: /content/train_data
+calibrate:
+  crops: [256, 384]
+  batches: [4, 6, 8]
+  iters: 30
+  warmup: 8
+  plan_minutes: 300          # the main run: two jobs of 150 minutes
+train:
+  model: scnet_base
+  crop: 384
+  batch: 6
+  workers: 2                 # Colab gives 2 CPU cores with a T4
+  iters: 1000
+  optim: {lr: 3.0e-4, warmup: 100}
+  loss: {fft_weight: 0.05}
+  val_every: 1000
+  log_every: 25
+  ckpt_minutes: 15
+stop_margin_min: 6
