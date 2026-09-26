@@ -47,7 +47,9 @@ def test_train_loss_parts_and_share():
     pred = torch.rand(2, 3, 32, 32, requires_grad=True)
     target = torch.rand(2, 3, 32, 32)
     loss_fn = TrainLoss(fft_weight=0.05)
-    total, parts = loss_fn(pred, target)
+    total, tensors = loss_fn(pred, target)
+    assert all(not t.requires_grad for t in tensors.values())
+    parts = loss_fn.as_floats(tensors)
     assert parts["total"] == pytest.approx(parts["charbonnier"] + 0.05 * parts["fft"], rel=1e-5)
     assert 0 < parts["fft_share"] < 1
     total.backward()
@@ -61,7 +63,8 @@ def test_perceptual_term_without_downloading_weights():
     perc = VGGPerceptual(weights=None)
     pred = torch.rand(1, 3, 32, 32, requires_grad=True)
     loss_fn = TrainLoss(fft_weight=0.0, perc_weight=0.1, perceptual=perc)
-    total, parts = loss_fn(pred, torch.rand(1, 3, 32, 32))
+    total, tensors = loss_fn(pred, torch.rand(1, 3, 32, 32))
+    parts = loss_fn.as_floats(tensors)
     total.backward()
     assert parts["perceptual"] > 0 and "fft" not in parts and pred.grad.abs().sum() > 0
     assert not any(p.requires_grad for p in perc.parameters())

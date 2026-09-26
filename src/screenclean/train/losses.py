@@ -70,7 +70,8 @@ class VGGPerceptual(nn.Module):
 
 
 class TrainLoss(nn.Module):
-    """The weighted sum, plus each term (detached floats) for logging."""
+    """The weighted sum, plus each term as a detached tensor (turn them into numbers with
+    :meth:`as_floats` only when logging: reading a GPU value waits for the GPU)."""
 
     def __init__(
         self,
@@ -85,7 +86,9 @@ class TrainLoss(nn.Module):
             perceptual if perceptual is not None else (VGGPerceptual() if perc_weight > 0 else None)
         )
 
-    def forward(self, pred: torch.Tensor, target: torch.Tensor) -> tuple[torch.Tensor, dict[str, float]]:
+    def forward(
+        self, pred: torch.Tensor, target: torch.Tensor
+    ) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
         parts = {"charbonnier": charbonnier(pred, target, self.eps)}
         if self.fft_weight > 0:
             parts["fft"] = fft_amplitude(pred, target)
@@ -95,11 +98,16 @@ class TrainLoss(nn.Module):
         total = (
             total + self.fft_weight * parts.get("fft", 0.0) + self.perc_weight * parts.get("perceptual", 0.0)
         )
-        logged = {k: float(v.detach()) for k, v in parts.items()}
-        logged["total"] = float(total.detach())
-        if self.fft_weight > 0:  # how much of the loss the FFT term makes up (calibrate to about 10-30%)
-            logged["fft_share"] = self.fft_weight * logged["fft"] / max(logged["total"], 1e-12)
-        return total, logged
+        detached = {k: v.detach() for k, v in parts.items()}
+        detached["total"] = total.detach()
+        return total, detached
+
+    def as_floats(self, parts: dict[str, torch.Tensor]) -> dict[str, float]:
+        """Numbers for the log, plus ``fft_share``: the FFT term's part of the total (aim for 10-30%)."""
+        out = {k: float(v) for k, v in parts.items()}
+        if "fft" in out:
+            out["fft_share"] = self.fft_weight * out["fft"] / max(out["total"], 1e-12)
+        return out
 
 
 def suggest_fft_weight(charbonnier_value: float, fft_value: float, share: float = 0.2) -> float:
