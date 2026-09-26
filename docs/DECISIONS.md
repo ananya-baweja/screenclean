@@ -207,3 +207,21 @@ One entry per decision: date, the decision, why, and the alternatives considered
   test uses the new `torch.export`-based exporter (about 20 s), which is PyTorch's default since 2.9.
 - **Why:** CI stays fast, and the export path that P10 will use is still checked.
 
+## 2026-09-26: Main training settings from the T4 sanity run (P7.0)
+
+- **Measured (job 0008, `results/jobs/0008_sanity_gpu`):** scnet_base at crop 384 × batch 6 runs at 1.38 it/s
+  (8.3 crops/s) and peaks at 9.2 GB of the T4's 15.6 GB; batch 8 needs 12.2 GB. Crop 256 gives the same pixels per
+  second, so the GPU is compute-bound. Data loading never waited (under 0.1% of the time). After 1,000 iterations
+  validation PSNR rose from 17.40 dB (input) to 18.51 dB. At the start, the FFT term was only 1% of the loss with
+  weight 0.05.
+- **Decisions:**
+  - crop 384, batch 6 (the calibration's pick: the largest batch within 75% of the memory);
+  - data loading: keep JPEG decoding on the 2 CPU workers (no GPU decoding or memmap cache needed, plan C3.4);
+  - FFT loss weight 1.0 (its share at the start is then about 16%, inside the planned 10-30%);
+  - schedule length set on the GPU from the measured speed to fill 270 training minutes (two 150-minute runs),
+    counting validation time;
+  - `torch.compile` tried automatically on the first run and kept only if more than 5% faster.
+- **Why compile:** 8.3 crops/s is about 0.7 TFLOP/s, far below the T4's fp16 capability. The network is dominated
+  by small memory-bound operations (float32 LayerNorm statistics, gates, residual scales) that compilation fuses.
+  If compilation fails on Colab, training continues without it.
+
