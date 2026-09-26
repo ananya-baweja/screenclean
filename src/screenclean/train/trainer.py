@@ -46,7 +46,12 @@ DEFAULTS: dict[str, Any] = {
     "batch": 6,
     "workers": 2,
     "source_weights": None,  # one weight per training source (default: equal)
-    "iters": 60000,  # length of the whole schedule, across resumed runs
+    "iters": 60000,  # length of the whole schedule, across resumed runs; or "auto" (see budget_minutes)
+    "budget_minutes": None,  # with iters "auto": training minutes to fill, all runs together
+    "val_seconds": 100,  # time one validation takes (for iters "auto"; 0008 measured 93 s on a T4)
+    "compile": False,  # torch.compile: True, False, or "auto" (time both, keep the faster)
+    "probe_iters": 40,  # iterations timed per variant (the second half of them) for "auto" settings
+    "iters_round": 1000,  # iters "auto" is rounded down to a multiple of this
     "optim": {"lr": 3e-4, "betas": [0.9, 0.99], "weight_decay": 1e-4, "warmup": 1000, "min_lr": 1e-6},
     "clip": 1.0,
     "loss": {"fft_weight": 0.05, "perc_weight": 0.0, "eps": 1e-3},
@@ -93,13 +98,13 @@ class CsvLog:
             with open(path, newline="", encoding="utf-8") as f:
                 rows = [r for r in csv.DictReader(f) if int(float(r["iter"])) <= keep_until]
         with open(path, "w", newline="", encoding="utf-8") as f:
-            w = csv.DictWriter(f, fieldnames=fields)
+            w = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
             w.writeheader()
             w.writerows(rows)
 
     def write(self, row: dict[str, Any]) -> None:
         with open(self.path, "a", newline="", encoding="utf-8") as f:
-            csv.DictWriter(f, fieldnames=self.fields, extrasaction="ignore").writerow(
+            csv.DictWriter(f, fieldnames=self.fields, extrasaction="ignore", lineterminator="\n").writerow(
                 {k: (round(v, 6) if isinstance(v, float) else v) for k, v in row.items()}
             )
 
@@ -137,13 +142,33 @@ class Trainer:
             self.model.parameters(), lr=o["lr"], betas=tuple(o["betas"]), weight_decay=o["weight_decay"]
         )
         min_ratio = o["min_lr"] / o["lr"]
+        self.total_iters = None if c["iters"] == "auto" else int(c["iters"])
+        if self.total_iters is None:
+            if not c["budget_minutes"]:
+                raise ValueError('iters "auto" needs budget_minutes')
+            if o["warmup"] < 2 * c["probe_iters"] + 10:
+                raise ValueError("warmup must outlast the speed probe (the schedule length is set after it)")
         self.sched = torch.optim.lr_scheduler.LambdaLR(
-            self.opt, lambda it: lr_factor(it, o["warmup"], c["iters"], min_ratio)
+            self.opt, lambda it: lr_factor(it, o["warmup"], self._total(), min_ratio)
         )
         self.scaler = torch.amp.GradScaler("cuda", enabled=self.amp)
         self.loss_fn = TrainLoss(**c["loss"]).to(self.device)
         self.iteration, self.best = 0, {"psnr": -math.inf, "iter": None}
         self.input_psnr: float | None = None
+        self.probe: dict[str, Any] = {"eager_it_per_s": None, "compiled_it_per_s": None, "choice": None,
+                                      "error": None}  # fmt: skip
+
+    def _total(self) -> int:
+        """Schedule length; very long until an "auto" length is decided (warmup outlasts that)."""
+        return self.total_iters or 10**9
+
+    def _plan_iters(self, it_per_s: float) -> int:
+        """Iterations that fill ``budget_minutes``, counting validation time, rounded down to
+        ``iters_round`` (and at least one ``iters_round`` past the warmup)."""
+        c = self.cfg
+        step = c["iters_round"]
+        per_iter = 1.0 / it_per_s + c["val_seconds"] / c["val_every"]
+        return max(c["optim"]["warmup"] + step, int(60 * c["budget_minutes"] / per_iter) // step * step)
 
     def _resume(self) -> bool:
         path = self.run_dir / "last.pt"
@@ -156,6 +181,8 @@ class Trainer:
         self.sched.load_state_dict(ck["scheduler"])
         self.scaler.load_state_dict(ck["scaler"])
         self.iteration, self.best, self.input_psnr = ck["iteration"], ck["best"], ck.get("input_psnr")
+        self.total_iters = ck.get("total_iters", self.total_iters)
+        self.probe = ck.get("probe", self.probe)
         set_rng_state(ck["rng"])
         log.info("resumed from %s at iteration %d", path, self.iteration)
         return True
@@ -172,6 +199,8 @@ class Trainer:
                 "iteration": self.iteration,
                 "best": self.best,
                 "input_psnr": self.input_psnr,
+                "total_iters": self.total_iters,
+                "probe": self.probe,
                 "rng": rng_state(),
                 "config": self.cfg,
                 "spec": self.model.spec.as_dict(),
@@ -255,15 +284,17 @@ class Trainer:
 
         start_iter, t_start = self.iteration, time.monotonic()
         state = "done"
-        if self.iteration < c["iters"]:
+        if self.total_iters is None or self.iteration < self.total_iters:
             data = MixedCrops(self.train_sources, c["crop"], c["seed"], c["source_weights"])
-            loader = iter(train_loader(data, c["batch"], self.iteration, c["iters"], c["workers"]))
+            end = self.total_iters or 10**8 // c["batch"]  # "auto": the loop decides where to stop
+            loader = iter(train_loader(data, c["batch"], self.iteration, end, c["workers"]))
             if self.device.type == "cuda":
                 torch.cuda.reset_peak_memory_stats(self.device)
             last_ckpt = last_progress = last_log_t = time.monotonic()
             wait, parts_sum, n_parts, grad_norm = 0.0, {}, 0, 0.0
             self.model.train()
-            while self.iteration < c["iters"]:
+            fwd, probe = self._start_probe()
+            while self.total_iters is None or self.iteration < self.total_iters:
                 if self.should_stop():
                     state = "partial"
                     break
@@ -271,23 +302,24 @@ class Trainer:
                 moire, gt = next(loader)
                 wait += time.monotonic() - t0
                 moire, gt = moire.to(self.device, non_blocking=True), gt.to(self.device, non_blocking=True)
-                with torch.autocast(self.device.type, dtype=torch.float16, enabled=self.amp):
-                    pred = self.model(moire)
-                loss, parts = self.loss_fn(pred.float(), gt)
-                self.opt.zero_grad(set_to_none=True)
-                self.scaler.scale(loss).backward()
-                self.scaler.unscale_(self.opt)
-                grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), c["clip"])
-                self.scaler.step(self.opt)
-                self.scaler.update()
-                self.sched.step()
-                self.ema.update(self.model)
+                try:
+                    parts, grad_norm = self._step(fwd, moire, gt)
+                except Exception as e:  # noqa: BLE001 - a failed compile must not end the run
+                    if fwd is self.model:
+                        raise
+                    log.exception("torch.compile failed; continuing without it")
+                    self.probe["error"] = f"{type(e).__name__}: {e}"[:500]
+                    fwd = self.model
+                    parts, grad_norm = self._step(fwd, moire, gt)
+                    probe = self._finish_probe("eager")
                 self.iteration += 1
                 for k, v in parts.items():
                     parts_sum[k] = parts_sum.get(k, 0.0) + v
                 n_parts += 1
+                if probe is not None:
+                    fwd, probe = self._advance_probe(fwd, probe)
 
-                if self.iteration % c["log_every"] == 0 or self.iteration == c["iters"]:
+                if self.iteration % c["log_every"] == 0 or self.iteration == self.total_iters:
                     now = time.monotonic()
                     floats = self.loss_fn.as_floats({k: v / n_parts for k, v in parts_sum.items()})
                     row = {
@@ -309,7 +341,7 @@ class Trainer:
                     parts_sum, n_parts, wait, last_log_t = {}, 0, 0.0, now
                     if now - last_progress > 60 * c["progress_minutes"]:
                         self.progress(
-                            f"iteration {self.iteration}/{c['iters']}: loss {row['loss']:.4f}, "
+                            f"iteration {self.iteration}/{self.total_iters or '?'}: loss {row['loss']:.4f}, "
                             f"{row['it_per_s']:.2f} it/s"
                         )
                         last_progress = now
@@ -337,7 +369,7 @@ class Trainer:
         return {
             "state": state,
             "iteration": self.iteration,
-            "iters": c["iters"],
+            "iters": self.total_iters,
             "resumed": resumed,
             "iters_this_run": self.iteration - start_iter,
             "seconds_this_run": round(seconds, 1),
@@ -354,7 +386,81 @@ class Trainer:
             "batch": c["batch"],
             "amp": self.amp,
             "device": str(self.device),
+            "speed_probe": self.probe,
         }
+
+    # ------------------------------------------------------------ one step
+
+    def _step(
+        self, fwd, moire: torch.Tensor, gt: torch.Tensor
+    ) -> tuple[dict[str, torch.Tensor], torch.Tensor]:
+        c = self.cfg
+        with torch.autocast(self.device.type, dtype=torch.float16, enabled=self.amp):
+            pred = fwd(moire)
+        loss, parts = self.loss_fn(pred.float(), gt)
+        self.opt.zero_grad(set_to_none=True)
+        self.scaler.scale(loss).backward()
+        self.scaler.unscale_(self.opt)
+        grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), c["clip"])
+        self.scaler.step(self.opt)
+        self.scaler.update()
+        self.sched.step()
+        self.ema.update(self.model)
+        return parts, grad_norm
+
+    # ---------------------------------------------------------- speed probe
+    # "auto" settings are decided on the first iterations of the first run (real training steps):
+    #   compile "auto": time eager steps, then compiled ones; keep compiled only if more than 5% faster;
+    #   iters "auto":   set the schedule length from the measured speed and budget_minutes.
+    # Timing uses the second half of each window (the first half includes warm-up and compilation).
+
+    def _start_probe(self):
+        c, p = self.cfg, self.probe
+        compiled = p["choice"] == "compiled" or (p["choice"] is None and c["compile"] is True)
+        fwd = torch.compile(self.model) if compiled else self.model
+        if p["choice"] is None and (c["compile"] == "auto" or self.total_iters is None):
+            return fwd, {"phase": "compiled" if compiled else "eager", "start": self.iteration, "mark": None}
+        if p["choice"] is None:
+            p["choice"] = "compiled" if compiled else "eager"
+        return fwd, None
+
+    def _advance_probe(self, fwd, probe):
+        c, p, k = self.cfg, self.probe, self.iteration - probe["start"]
+        half = c["probe_iters"] // 2
+        if k == half:
+            self._sync()
+            probe["mark"] = time.monotonic()
+        if k < c["probe_iters"]:
+            return fwd, probe
+        self._sync()
+        speed = round((c["probe_iters"] - half) / max(time.monotonic() - probe["mark"], 1e-9), 3)
+        if probe["phase"] == "eager":
+            p["eager_it_per_s"] = speed
+            if c["compile"] == "auto":
+                return torch.compile(self.model), {"phase": "compiled", "start": self.iteration, "mark": None}
+            return fwd, self._finish_probe("eager")
+        p["compiled_it_per_s"] = speed
+        eager = p["eager_it_per_s"]
+        if eager is not None and speed <= 1.05 * eager:
+            return self.model, self._finish_probe("eager")
+        return fwd, self._finish_probe("compiled")
+
+    def _finish_probe(self, choice: str) -> None:
+        p = self.probe
+        p["choice"] = choice
+        if self.total_iters is None:
+            speed = p["compiled_it_per_s"] if choice == "compiled" else p["eager_it_per_s"]
+            self.total_iters = self._plan_iters(speed or 1.0)
+        error = f" (compile failed: {p['error'][:120]})" if p["error"] else ""
+        self.progress(
+            f"speed probe: eager {p['eager_it_per_s']} it/s, compiled {p['compiled_it_per_s']} it/s "
+            f"-> {choice}; schedule {self.total_iters} iterations{error}"
+        )
+        return None
+
+    def _sync(self) -> None:
+        if self.device.type == "cuda":
+            torch.cuda.synchronize(self.device)
 
     def _last_val(self, val_log: CsvLog) -> dict[str, float] | None:
         with open(val_log.path, newline="", encoding="utf-8") as f:
