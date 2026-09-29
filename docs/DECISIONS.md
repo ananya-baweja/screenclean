@@ -225,3 +225,32 @@ One entry per decision: date, the decision, why, and the alternatives considered
   by small memory-bound operations (float32 LayerNorm statistics, gates, residual scales) that compilation fuses.
   If compilation fails on Colab, training continues without it.
 
+## 2026-09-29: Main training result (P7) and what it means
+
+- **Result:** job 0009 trained scnet_base for 48,000 iterations (torch.compile: 3.46 it/s vs 1.41 without, so the
+  270-minute budget fit 2.4x more steps). Validation PSNR rose from 17.40 dB (input) to its best, 20.86 dB, at
+  iteration 30,000, then stayed flat (20.77 at the end) while the training loss kept falling: mild overfitting
+  to the 12,900 training crops, which is why `best.pt` (iteration 30,000) is the checkpoint used. On UHDM dev100
+  (job 0010): **19.98 dB, +2.88 dB over the input**, SSIM 0.751, LPIPS 0.311; the best classical filter gains
+  +0.31 dB; the ESDNet reference (authors' weights) +4.66 dB.
+- **Whole image vs 512 px tiles:** whole images scored higher PSNR (+0.15 dB) and ran faster; tiles had slightly
+  better LPIPS (0.301 vs 0.311). The whole image is the default.
+- **Why the gap to ESDNet:** visual samples show our model removes fine stripes but leaves large colour bands and
+  global colour casts that ESDNet corrects better. ESDNet was also trained far longer by its authors.
+- **P8.0 check passed:** the learned model clearly beats the classical baselines on dev100.
+
+## 2026-09-29: Fine-tune and ablation setup (P8)
+
+- **Text fine-tune (0011):** starts from 0009's `best.pt`; UHDM 70% / simulated text 30%; lr 1e-4 -> 1e-6 over a
+  75-minute budget; validated on UHDM val and synthetic-text val, `best.pt` by their average PSNR, so neither
+  kind of image is sacrificed for the other.
+- **Ablations (0012-0016):** each trains from scratch for exactly 8,000 iterations (the same data seen; equal
+  wall-clock time would favour faster variants) and is scored on its final EMA weights, so no variant is picked
+  with validation data it shouldn't see (`abl_sim_only` never sees a real photo). `abl_full` is the reference on
+  the same short schedule.
+- **Evaluation:** 0017 scores the fine-tune and the ablations on dev100; 0018 scores every model, the input and the
+  classical filter on the 300-crop synthetic text test. Tables are now per dataset/split (`uhdm_dev100.md`,
+  `synth_test.md`). The plan's P9 jobs move up one number (0019 onwards).
+- **SSIM on the GPU:** evaluating 7 models on 4K images with scikit-image's SSIM on Colab's 2-core CPU would take
+  hours; the float64 PyTorch version gives identical numbers (tested) in well under a second per image.
+

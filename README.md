@@ -30,7 +30,9 @@ Under the hood:
 - OCR and export
 
 The model is compared with classical signal-processing baselines (chroma low-pass, FFT notch filters)
-and a published reference model. The evaluation focuses on **OCR accuracy on real phone photos of
+and a published reference model. First result on UHDM dev100: **+2.88 dB** PSNR over the unprocessed photos
+(the best classical filter: +0.31 dB; the published ESDNet reference: +4.66 dB); see
+[results/tables/uhdm_dev100.md](results/tables/uhdm_dev100.md). The evaluation focuses on **OCR accuracy on real phone photos of
 screens**. See [docs/USE_CASES.md](docs/USE_CASES.md) for the user stories and target metrics.
 
 ## Scan photos of screens
