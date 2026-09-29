@@ -1,0 +1,10 @@
+id: 0018_eval_synth_test
+task: eval
+runtime: gpu
+config: configs/eval/synth_test.yaml
+depends_on: [0011_finetune_text, 0012_abl_full, 0013_abl_no_fftloss, 0014_abl_plain_unet, 0015_abl_no_dilation, 0016_abl_sim_only]
+max_minutes: 45
+resume: true
+attempt: 1
+drive_subdir: jobs/0018_eval_synth_test
+notes: "All models + input + classical filter on the synthetic text test (T4, ~10 min)"

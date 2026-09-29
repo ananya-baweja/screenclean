@@ -19,6 +19,7 @@ from __future__ import annotations
 import csv
 import logging
 import multiprocessing as mp
+import re
 import time
 from collections import defaultdict
 from collections.abc import Callable
@@ -265,7 +266,7 @@ def eval_task(ctx: JobContext) -> TaskResult:
             for r in new_rows:
                 done[key].add(r["method"])
             for label, strip in samples.items():
-                safe = label.replace(" ", "_").replace("(", "").replace(")", "")
+                safe = re.sub(r"[^A-Za-z0-9._-]+", "_", label).strip("_")  # also valid on Windows (no ":")
                 write_image(ctx.results_dir / "samples" / f"{safe}__{it[1]}.jpg", strip, quality=85)
             scored += 1
             ctx.progress(f"image {scored}/{len(jobs)} ({key})")

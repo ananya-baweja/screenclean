@@ -25,8 +25,19 @@ def _m(name, psnr, n=100, **kw):
 
 
 def test_tables_work_with_no_results(tmp_path):
-    (path,) = build_tables(tmp_path)
-    assert "no results yet" in path.read_text(encoding="utf-8")
+    paths = build_tables(tmp_path)
+    assert [p.name for p in paths] == ["uhdm_dev100.md", "synth_test.md"]
+    assert all("no results yet" in p.read_text(encoding="utf-8") for p in paths)
+
+
+def test_synthetic_and_uhdm_splits_stay_apart(tmp_path):
+    _summary(tmp_path, "0010_eval", {"A": _m("scnet", 20.0)}, split="data/uhdm_v1/dev100")
+    _summary(tmp_path, "0018_eval", {"A": _m("scnet", 30.0)}, split="data/synth_v1/test")
+    results = tmp_path / "results" / "jobs"
+    assert [r["psnr"] for r in collect(results, "uhdm_v1/dev100")] == [20.0]
+    assert [r["psnr"] for r in collect(results, "synth_v1/test")] == [30.0]
+    assert [r["psnr"] for r in collect(results, "dev100")] == [20.0]  # the folder name alone still works
+    assert collect(results, "uhdm_v1/test") == []
 
 
 def test_tables_merge_jobs_and_mark_reference(tmp_path, capsys):

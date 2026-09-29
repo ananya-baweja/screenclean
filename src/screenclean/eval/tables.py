@@ -12,19 +12,32 @@ import json
 from pathlib import Path
 from typing import Any
 
-SPLIT_TITLES = {"dev100": "UHDM dev100 (100 full-resolution test pairs)"}
+# table file name -> (dataset/split it covers, title)
+TABLES = {
+    "uhdm_dev100": ("uhdm_v1/dev100", "UHDM dev100 (100 full-resolution test pairs)"),
+    "synth_test": ("synth_v1/test", "Synthetic text test (300 simulated 512 px crops of text pages)"),
+}
+
+
+def _covers(split: str, key: str) -> bool:
+    """``data/uhdm_v1/dev100`` is covered by ``uhdm_v1/dev100`` and by ``dev100``."""
+    parts, want = Path(split).as_posix().strip("/").split("/"), key.strip("/").split("/")
+    return parts[-len(want) :] == want
 
 
 def _fmt(v: Any, digits: int) -> str:
     return "–" if v is None else f"{v:.{digits}f}"
 
 
-def collect(results_dir: Path, split_name: str) -> list[dict[str, Any]]:
-    """One entry per method across all finished ``eval`` jobs on ``split_name`` (newest job wins)."""
+def collect(results_dir: Path, split_key: str) -> list[dict[str, Any]]:
+    """One entry per method across all finished ``eval`` jobs on the split (newest job wins).
+
+    ``split_key`` is ``dataset/split`` (e.g. ``synth_v1/test``) or just the split folder name.
+    """
     rows: dict[str, dict[str, Any]] = {}
     for summary_path in sorted(results_dir.glob("*/summary.json")):
         s = json.loads(summary_path.read_text(encoding="utf-8"))
-        if s.get("task") != "eval" or Path(s.get("split", "")).name != split_name:
+        if s.get("task") != "eval" or not _covers(s.get("split", ""), split_key):
             continue
         for label, m in s.get("methods", {}).items():
             prev = rows.get(label)
@@ -35,8 +48,7 @@ def collect(results_dir: Path, split_name: str) -> list[dict[str, Any]]:
     )
 
 
-def render(rows: list[dict[str, Any]], split_name: str) -> str:
-    title = SPLIT_TITLES.get(split_name, split_name)
+def render(rows: list[dict[str, Any]], title: str) -> str:
     lines = [
         f"# Results: {title}",
         "",
@@ -93,15 +105,14 @@ def render(rows: list[dict[str, Any]], split_name: str) -> str:
     return "\n".join(lines) + "\n"
 
 
-def build_tables(repo_root: Path, splits: tuple[str, ...] = ("dev100",)) -> list[Path]:
-    """Write ``results/tables/uhdm_<split>.md`` for each split; returns the written paths."""
+def build_tables(repo_root: Path, tables: dict[str, tuple[str, str]] | None = None) -> list[Path]:
+    """Write ``results/tables/<name>.md`` for each table; returns the written paths."""
     out_dir = repo_root / "results" / "tables"
     out_dir.mkdir(parents=True, exist_ok=True)
     written = []
-    for split in splits:
-        path = out_dir / f"uhdm_{split}.md"
-        path.write_text(
-            render(collect(repo_root / "results" / "jobs", split), split), encoding="utf-8", newline="\n"
-        )
+    for name, (key, title) in (tables or TABLES).items():
+        path = out_dir / f"{name}.md"
+        rows = collect(repo_root / "results" / "jobs", key)
+        path.write_text(render(rows, title), encoding="utf-8", newline="\n")
         written.append(path)
     return written

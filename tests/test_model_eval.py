@@ -1,6 +1,7 @@
 """Trained checkpoints at evaluation time (models/runner.py and the ``eval`` task's ``scnet`` method)."""
 
 import json
+import re
 import zipfile
 from pathlib import Path
 
@@ -60,7 +61,7 @@ def test_eval_task_scores_a_trained_checkpoint(tmp_path, trained, capsys):
     methods = [
         {"name": "identity", "label": "Input (no cleaning)"},
         {"name": "scnet", "label": "ScreenCleanNet", "checkpoint": "runs/t/best.pt"},
-        {"name": "scnet", "label": "ScreenCleanNet (tiles)", "checkpoint": "runs/t/best.pt", "tile": 48},
+        {"name": "scnet", "label": "Ablation: tiles (512)", "checkpoint": "runs/t/best.pt", "tile": 48},
     ]
     repo = _repo(tmp_path, "eval", _eval_cfg(tmp_path, methods, sample_images=1), job_id="0010_eval_models")
     marker = tmp_path / "m.txt"
@@ -68,9 +69,11 @@ def test_eval_task_scores_a_trained_checkpoint(tmp_path, trained, capsys):
     assert "JOB FINISHED: 0010_eval_models" in capsys.readouterr().out
     with zipfile.ZipFile(Path(marker.read_text())) as zf:
         summary = json.loads(zf.read("summary.json"))
+        samples = [n for n in zf.namelist() if n.startswith("samples/")]
+    assert samples and all(re.fullmatch(r"samples/[A-Za-z0-9._-]+", n) for n in samples)  # Windows-safe names
     m = summary["methods"]["ScreenCleanNet"]
     assert m["n"] == 3 and m["checkpoint"]["iteration"] == 6 and m["inference_modes"] == {"full": 3}
-    assert summary["methods"]["ScreenCleanNet (tiles)"]["inference_modes"] == {"tiled": 3}
+    assert summary["methods"]["Ablation: tiles (512)"]["inference_modes"] == {"tiled": 3}
     assert "psnr_gain_vs_input" in m and not m["reference"]
     assert m["params_source"] == "checkpoint runs/t/best.pt"
 
@@ -78,4 +81,4 @@ def test_eval_task_scores_a_trained_checkpoint(tmp_path, trained, capsys):
     (results / "0010_eval_models").mkdir(parents=True)
     (results / "0010_eval_models" / "summary.json").write_text(json.dumps(summary))
     labels = [r["label"] for r in collect(results, "dev100")]
-    assert labels[0] == "Input (no cleaning)" and {"ScreenCleanNet", "ScreenCleanNet (tiles)"} <= set(labels)
+    assert labels[0] == "Input (no cleaning)" and {"ScreenCleanNet", "Ablation: tiles (512)"} <= set(labels)
