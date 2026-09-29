@@ -52,6 +52,8 @@ DEFAULTS: dict[str, Any] = {
     "compile": False,  # torch.compile: True, False, or "auto" (time both, keep the faster)
     "probe_iters": 40,  # iterations timed per variant (the second half of them) for "auto" settings
     "iters_round": 1000,  # iters "auto" is rounded down to a multiple of this
+    "init_from": None,  # start from these weights (a checkpoint's EMA weights) instead of random ones
+    "val_weights": None,  # with several validation sets: weight of each in the score that picks best.pt
     "optim": {"lr": 3e-4, "betas": [0.9, 0.99], "weight_decay": 1e-4, "warmup": 1000, "min_lr": 1e-6},
     "clip": 1.0,
     "loss": {"fft_weight": 0.05, "perc_weight": 0.0, "eps": 1e-3},
@@ -115,7 +117,7 @@ class Trainer:
         cfg: dict[str, Any],
         run_dir: str | Path,
         train_sources: list[PairsDataset],
-        val_set: PairsDataset | None = None,
+        val_set: PairsDataset | dict[str, PairsDataset] | None = None,
         should_stop: Callable[[], bool] = lambda: False,
         progress: Callable[[str], None] | None = None,
         device: str | torch.device | None = None,
@@ -123,7 +125,11 @@ class Trainer:
         self.cfg = merge(DEFAULTS, cfg)
         self.run_dir = Path(run_dir)
         self.run_dir.mkdir(parents=True, exist_ok=True)
-        self.train_sources, self.val_set = train_sources, val_set
+        self.train_sources = train_sources
+        # one validation set, or several by name (e.g. UHDM photos and synthetic text)
+        self.val_sets: dict[str, PairsDataset] = (
+            {} if val_set is None else dict(val_set) if isinstance(val_set, dict) else {"val": val_set}
+        )
         self.should_stop, self.progress = should_stop, progress or (lambda text: log.info(text))
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
         self.amp = bool(self.cfg["amp"]) and self.device.type == "cuda"
@@ -155,6 +161,7 @@ class Trainer:
         self.loss_fn = TrainLoss(**c["loss"]).to(self.device)
         self.iteration, self.best = 0, {"psnr": -math.inf, "iter": None}
         self.input_psnr: float | None = None
+        self.input_by_set: dict[str, float] = {}
         self.probe: dict[str, Any] = {"eager_it_per_s": None, "compiled_it_per_s": None, "choice": None,
                                       "error": None}  # fmt: skip
 
@@ -186,6 +193,7 @@ class Trainer:
         self.iteration, self.best, self.input_psnr = ck["iteration"], ck["best"], ck.get("input_psnr")
         self.total_iters = ck.get("total_iters", self.total_iters)
         self.probe = ck.get("probe", self.probe)
+        self.input_by_set = ck.get("input_by_set", {})
         set_rng_state(ck["rng"])
         log.info("resumed from %s at iteration %d", path, self.iteration)
         return True
@@ -202,6 +210,7 @@ class Trainer:
                 "iteration": self.iteration,
                 "best": self.best,
                 "input_psnr": self.input_psnr,
+                "input_by_set": self.input_by_set,
                 "total_iters": self.total_iters,
                 "probe": self.probe,
                 "rng": rng_state(),
@@ -212,39 +221,74 @@ class Trainer:
 
     # ------------------------------------------------------------- validation
 
+    def _init_from(self, path: str | Path) -> None:
+        """Start from trained weights (the EMA weights of ``best.pt`` or ``last.pt``)."""
+        ck = load_checkpoint(path, map_location="cpu")
+        state = ck["ema"]["model"] if "ema" in ck else ck["model"]
+        self.model.load_state_dict(state)
+        self.ema.model.load_state_dict(state)
+        self.progress(f"starting from the weights in {path} (iteration {ck.get('iteration')})")
+
+    def _val_weights(self) -> dict[str, float]:
+        w = self.cfg["val_weights"] or {name: 1.0 for name in self.val_sets}
+        total = sum(w[name] for name in self.val_sets)
+        return {name: w[name] / total for name in self.val_sets}
+
+    def _val_fields(self) -> list[str]:
+        extra = [f"{k}_{n}" for n in self.val_sets for k in ("psnr", "ssim", "input_psnr")]
+        return VAL_FIELDS[:-1] + (extra if len(self.val_sets) > 1 else []) + VAL_FIELDS[-1:]
+
     @torch.no_grad()
     def validate(self) -> dict[str, float]:
-        """EMA weights on the validation crops: mean uint8 PSNR/SSIM, plus a sample grid."""
+        """EMA weights on each validation set: mean uint8 PSNR/SSIM, plus a sample grid.
+
+        With several sets, ``psnr`` / ``ssim`` are their weighted average (``val_weights``) and each
+        set is also reported on its own.
+        """
         c, model = self.cfg, self.ema.model
-        n = min(len(self.val_set), c["val_max"])
         t0 = time.perf_counter()
-        scores, inputs, grid = [], [], []
-        for start in range(0, n, c["val_batch"]):
-            pairs = [self.val_set[i] for i in range(start, min(n, start + c["val_batch"]))]
-            moire = torch.stack([p[0] for p in pairs]).to(self.device)
-            with torch.autocast(self.device.type, dtype=torch.float16, enabled=self.amp):
-                out = model(moire)
-            out = out.float().clamp(0, 1).cpu()
-            for (m, g), o in zip(pairs, out, strict=True):
-                o8, g8 = to_uint8(o.permute(1, 2, 0).numpy()), to_uint8(g.permute(1, 2, 0).numpy())
-                scores.append((psnr(o8, g8), ssim(o8, g8)))
-                if self.input_psnr is None:
-                    inputs.append(psnr(to_uint8(m.permute(1, 2, 0).numpy()), g8))
-                if len(grid) < c["sample_grid"]:
-                    grid.append(np.hstack([to_uint8(m.permute(1, 2, 0).numpy()), o8, g8]))
-        if self.input_psnr is None:
-            self.input_psnr = float(np.mean(inputs))
+        per_grid = max(1, math.ceil(c["sample_grid"] / max(1, len(self.val_sets))))
+        grid: list[np.ndarray] = []
+        by_set: dict[str, tuple[float, float]] = {}
+        for name, ds in self.val_sets.items():
+            n = min(len(ds), c["val_max"])
+            scores, inputs, shown = [], [], 0
+            for start in range(0, n, c["val_batch"]):
+                pairs = [ds[i] for i in range(start, min(n, start + c["val_batch"]))]
+                moire = torch.stack([p[0] for p in pairs]).to(self.device)
+                with torch.autocast(self.device.type, dtype=torch.float16, enabled=self.amp):
+                    out = model(moire)
+                out = out.float().clamp(0, 1).cpu()
+                for (m, g), o in zip(pairs, out, strict=True):
+                    o8, g8 = to_uint8(o.permute(1, 2, 0).numpy()), to_uint8(g.permute(1, 2, 0).numpy())
+                    scores.append((psnr(o8, g8), ssim(o8, g8)))
+                    m8 = to_uint8(m.permute(1, 2, 0).numpy())
+                    if name not in self.input_by_set:
+                        inputs.append(psnr(m8, g8))
+                    if shown < per_grid:
+                        grid.append(np.hstack([m8, o8, g8]))
+                        shown += 1
+            if name not in self.input_by_set:
+                self.input_by_set[name] = float(np.mean(inputs))
+            sc = np.array(scores)
+            by_set[name] = (float(sc[:, 0].mean()), float(sc[:, 1].mean()))
+        w = self._val_weights()
+        self.input_psnr = sum(w[n] * self.input_by_set[n] for n in by_set)
         if grid:
+            same = [g for g in grid if g.shape == grid[0].shape]  # sets with other crop sizes are left out
             write_image(
-                self.run_dir / "samples" / f"val_{self.iteration:06d}.jpg", np.vstack(grid), quality=85
+                self.run_dir / "samples" / f"val_{self.iteration:06d}.jpg", np.vstack(same), quality=85
             )
-        s = np.array(scores)
-        return {
-            "psnr": float(s[:, 0].mean()),
-            "ssim": float(s[:, 1].mean()),
+        result = {
+            "psnr": sum(w[n] * v[0] for n, v in by_set.items()),
+            "ssim": sum(w[n] * v[1] for n, v in by_set.items()),
             "input_psnr": self.input_psnr,
-            "seconds": time.perf_counter() - t0,
         }
+        if len(by_set) > 1:
+            for n, (ps, ss) in by_set.items():
+                result.update({f"psnr_{n}": ps, f"ssim_{n}": ss, f"input_psnr_{n}": self.input_by_set[n]})
+        result["seconds"] = time.perf_counter() - t0
+        return result
 
     def _after_validation(self, val: dict[str, float], val_log: CsvLog) -> None:
         val_log.write({"iter": self.iteration, **val})
@@ -257,9 +301,14 @@ class Trainer:
                 {"model": self.ema.model.state_dict(), "spec": self.model.spec.as_dict(),
                  "model_name": self.cfg["model"], "iteration": self.iteration, "val": val},
             )  # fmt: skip
+        sets = "".join(
+            f"; {n} {val[f'psnr_{n}']:.2f} (input {val[f'input_psnr_{n}']:.2f})"
+            for n in self.val_sets
+            if f"psnr_{n}" in val
+        )
         self.progress(
             f"validation at {self.iteration}: PSNR {val['psnr']:.2f} dB (input {val['input_psnr']:.2f}), "
-            f"SSIM {val['ssim']:.4f}; best {self.best['psnr']:.2f} at {self.best['iter']}"
+            f"SSIM {val['ssim']:.4f}{sets}; best {self.best['psnr']:.2f} at {self.best['iter']}"
         )
 
     # ------------------------------------------------------------------ train
@@ -273,9 +322,11 @@ class Trainer:
         c = self.cfg
         self._build()
         resumed = self._resume()
+        if not resumed and c["init_from"]:
+            self._init_from(c["init_from"])
         keep = self.iteration if resumed else None
         train_log = CsvLog(self.run_dir / "train_log.csv", TRAIN_FIELDS, keep)
-        val_log = CsvLog(self.run_dir / "val_log.csv", VAL_FIELDS, keep)
+        val_log = CsvLog(self.run_dir / "val_log.csv", self._val_fields(), keep)
         try:
             from torch.utils.tensorboard import SummaryWriter
 
@@ -348,7 +399,7 @@ class Trainer:
                             f"{row['it_per_s']:.2f} it/s"
                         )
                         last_progress = now
-                if self.val_set is not None and self.iteration % c["val_every"] == 0:
+                if self.val_sets and self.iteration % c["val_every"] == 0:
                     self.model.eval()
                     self._after_validation(self.validate(), val_log)
                     self.model.train()
@@ -357,7 +408,7 @@ class Trainer:
                     last_ckpt = time.monotonic()
 
         final = None
-        if state == "done" and self.val_set is not None:
+        if state == "done" and self.val_sets:
             done_val = self.iteration % c["val_every"] == 0 and self.iteration > start_iter
             if not done_val:  # make sure the last iteration is validated
                 self.model.eval()
@@ -383,6 +434,9 @@ class Trainer:
             "best": self.best,
             "final_val": final,
             "input_psnr": self.input_psnr,
+            "input_by_set": self.input_by_set,
+            "val_sets": list(self.val_sets),
+            "init_from": c["init_from"],
             "model": c["model"],
             "params_m": round(count_params(self.model) / 1e6, 3),
             "crop": c["crop"],

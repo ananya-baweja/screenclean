@@ -13,6 +13,7 @@ import yaml
 from screenclean import jobs
 from screenclean.data import shards
 from screenclean.data.pairs_dataset import PairsDataset
+from screenclean.models.registry import build_model
 from screenclean.train import trainer as trainer_mod
 from screenclean.train.calibrate import recommend
 from screenclean.train.data import MixedCrops, train_loader
@@ -177,6 +178,46 @@ def test_trainer_stops_on_time_and_resumes(tmp_path, data):
     )
 
 
+def test_several_validation_sets_and_weighted_selection(tmp_path, data):
+    train, val = data
+    photos = PairsDataset(sorted(make_split(tmp_path / "photos", 3, seed=5, prefix="p").glob("*.tar")))
+    cfg = tiny_cfg(iters=4, val_every=4, val_weights={"photos": 3.0, "text": 1.0})
+    summary = Trainer(cfg, tmp_path / "run", [train], {"photos": photos, "text": val}).fit()
+    with open(tmp_path / "run" / "val_log.csv", newline="") as f:
+        (row,) = list(csv.DictReader(f))
+    ps, pt = float(row["psnr_photos"]), float(row["psnr_text"])
+    assert float(row["psnr"]) == pytest.approx(0.75 * ps + 0.25 * pt, abs=1e-4)
+    assert float(row["input_psnr"]) == pytest.approx(
+        0.75 * float(row["input_psnr_photos"]) + 0.25 * float(row["input_psnr_text"]), abs=1e-4
+    )
+    assert summary["val_sets"] == ["photos", "text"] and set(summary["input_by_set"]) == {"photos", "text"}
+
+
+def test_init_from_trained_weights_but_not_over_a_resume(tmp_path, data, monkeypatch):
+    train, val = data
+    Trainer(tiny_cfg(iters=4, val_every=4), tmp_path / "a", [train], val).fit()
+    start = load_checkpoint(tmp_path / "a" / "best.pt")["model"]
+    t = Trainer(tiny_cfg(init_from=str(tmp_path / "a" / "best.pt")), tmp_path / "b", [train], val)
+    t._build()
+    t._init_from(t.cfg["init_from"])
+    for k, v in start.items():
+        assert torch.equal(t.model.state_dict()[k], v) and torch.equal(t.ema.model.state_dict()[k], v)
+
+    calls = {"n": 0}
+
+    def stop_after_2():
+        calls["n"] += 1
+        return calls["n"] > 2
+
+    cfg = tiny_cfg(iters=4, val_every=4, init_from=str(tmp_path / "a" / "best.pt"))
+    first = Trainer(cfg, tmp_path / "b", [train], val, should_stop=stop_after_2).fit()
+    assert first["state"] == "partial" and first["init_from"].endswith("best.pt")
+    used = []
+    monkeypatch.setattr(Trainer, "_init_from", lambda self, path: used.append(path))
+    rest = Trainer(cfg, tmp_path / "b", [train], val).fit()
+    assert rest["resumed"] and rest["iteration"] == 4 and used == []  # a resume keeps its own weights
+
+
 def test_recommend():
     rows = [
         {"crop": 256, "batch": 8, "it_per_s": 9.0, "peak_mem_gb": 5.0},
@@ -225,13 +266,21 @@ def test_train_job_end_to_end(tmp_path, capsys):
     assert (drive / "runs" / "0100_train_t" / "last.pt").exists()
 
 
-@pytest.mark.parametrize("config", ["sanity.yaml", "sc_base_uhdm.yaml"])
+TRAIN_CONFIGS = sorted(p.name for p in (Path(__file__).parents[1] / "configs" / "train").glob("*.yaml"))
+
+
+@pytest.mark.parametrize("config", TRAIN_CONFIGS)
 def test_real_training_configs_dry_run(tmp_path, capsys, config):
-    """P7.1: each committed training config runs end to end with scnet_tiny, 20 iterations, fake data."""
+    """P7.1/P8.2: every committed training config runs end to end: scnet_tiny, ~20 iterations, fake data."""
     repo_cfg = yaml.safe_load((Path(__file__).parents[1] / "configs" / "train" / config).read_text())
     drive = tmp_path / "drive"
-    for split in [*repo_cfg["data"]["train"], repo_cfg["data"]["val"]]:
+    val = repo_cfg["data"]["val"]
+    for split in {*repo_cfg["data"]["train"], *(val.values() if isinstance(val, dict) else [val])}:
         make_split(drive / split, 6, seed=len(split), prefix=Path(split).name[:3])
+    if repo_cfg["train"].get("init_from"):  # the checkpoint it starts from (made here with the tiny model)
+        tiny_model = build_model("scnet_tiny")
+        state = {"model": tiny_model.state_dict(), "spec": tiny_model.spec.as_dict()}
+        save_checkpoint(drive / repo_cfg["train"]["init_from"], state)
     tiny = {"model": "scnet_tiny", "crop": 32, "batch": 2, "workers": 0, "val_every": 10, "val_max": 4,
             "log_every": 5, "compile": False, "iters": 20}  # fmt: skip
     if repo_cfg["train"].get("iters") == "auto":  # keep "auto", but with a tiny budget and probe

@@ -43,10 +43,18 @@ def train_task(ctx: JobContext) -> TaskResult:
     data = cfg["data"]
     local_root = Path(data.get("local_dir", ctx.work_dir / "local_data"))
     sources = [PairsDataset(_stage(ctx, split, local_root)) for split in data["train"]]
-    val = PairsDataset(_stage(ctx, data["val"], local_root)) if data.get("val") else None
+    val_cfg = data.get("val")  # one split, or {name: split} for several validation sets
+    if isinstance(val_cfg, dict):
+        val = {name: PairsDataset(_stage(ctx, split, local_root)) for name, split in val_cfg.items()}
+    else:
+        val = PairsDataset(_stage(ctx, val_cfg, local_root)) if val_cfg else None
+    train_cfg = dict(cfg.get("train", {}))
+    if train_cfg.get("init_from"):  # given relative to the Drive project folder
+        train_cfg["init_from"] = str(ctx.layout.root / train_cfg["init_from"])
     run_dir = ctx.layout.root / cfg.get("run", f"runs/{ctx.spec.id}")
     run_dir.mkdir(parents=True, exist_ok=True)
-    log.info("training sources: %s pairs; val: %s", [len(s) for s in sources], len(val) if val else 0)
+    val_sizes = {k: len(v) for k, v in val.items()} if isinstance(val, dict) else (len(val) if val else 0)
+    log.info("training sources: %s pairs; val: %s", [len(s) for s in sources], val_sizes)
 
     cal_path = run_dir / "calibration.json"
     if cfg.get("calibrate") and not cal_path.exists():
@@ -67,7 +75,7 @@ def train_task(ctx: JobContext) -> TaskResult:
 
     margin = 60 * cfg.get("stop_margin_min", 8)
     trainer = Trainer(
-        cfg.get("train", {}),
+        train_cfg,
         run_dir,
         sources,
         val,
