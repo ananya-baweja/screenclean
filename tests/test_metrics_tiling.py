@@ -36,6 +36,23 @@ def test_ssim_range_and_identity():
     assert -1.0 <= metrics.ssim(a, b) < 0.2
 
 
+@pytest.mark.parametrize("noise", [0, 3, 30, 255])
+def test_torch_ssim_matches_scikit_image(noise):
+    """The GPU path must give the same numbers as the reference, so table rows stay comparable."""
+    pytest.importorskip("torch")
+    rng = np.random.default_rng(noise)
+    yy, xx = np.mgrid[0:70, 0:90]
+    clean = np.stack([(128 + 100 * np.sin(xx / 5 + c) * np.cos(yy / 7)) for c in range(3)], -1).astype(
+        np.uint8
+    )
+    other = np.clip(clean.astype(int) + rng.integers(-noise, noise + 1, clean.shape), 0, 255).astype(np.uint8)
+    ref = metrics.ssim_skimage(clean, other)
+    assert metrics.ssim_torch(clean, other, device="cpu") == pytest.approx(ref, abs=1e-9)
+    assert metrics.ssim_torch(clean[..., 0], other[..., 0], device="cpu") == pytest.approx(
+        metrics.ssim_skimage(clean[..., :1], other[..., :1]), abs=1e-9
+    )
+
+
 def test_shape_mismatch_raises():
     with pytest.raises(ValueError):
         metrics.psnr(_img(h=64), _img(h=32))
