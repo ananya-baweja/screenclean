@@ -1,0 +1,10 @@
+id: 0016_abl_sim_only
+task: train
+runtime: gpu
+config: configs/train/abl_sim_only.yaml
+depends_on: [0002_prepare_uhdm, 0006_gen_synth]
+max_minutes: 80
+resume: true
+attempt: 1
+drive_subdir: jobs/0016_abl_sim_only
+notes: "Ablation (P8.2): abl_sim_only, 8,000 iterations from scratch (T4, ~50 min)"

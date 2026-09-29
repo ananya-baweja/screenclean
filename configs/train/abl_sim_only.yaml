@@ -1,0 +1,23 @@
+# Ablation 0016: trained on the simulated text pairs only (P4), never on real photos. Tests whether the
+# simulator transfers to real photos (scored on UHDM dev100, real photos).
+# All five ablations train from scratch for the same number of iterations (8,000: the same data seen) and are
+# scored on their final weights, so no ablation is picked using data it shouldn't see (abl_sim_only never
+# sees a real photo). About 50 minutes each on a T4 (P8.2).
+run: runs/0016_abl_sim_only
+data:
+  train: [data/synth_v1/train]
+  val: {uhdm: data/uhdm_v1/val, text: data/synth_v1/val}
+  local_dir: /content/train_data
+train:
+  model: scnet_base
+  crop: 384
+  batch: 6
+  workers: 2
+  iters: 8000
+  compile: auto
+  optim: {lr: 3.0e-4, warmup: 500, min_lr: 1.0e-6}
+  loss: {fft_weight: 1.0}
+  val_every: 2000
+  log_every: 50
+  ckpt_minutes: 15
+stop_margin_min: 8
