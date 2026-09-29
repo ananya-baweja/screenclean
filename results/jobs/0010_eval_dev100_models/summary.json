@@ -1,0 +1,92 @@
+{
+  "attempt": 1,
+  "complete": true,
+  "dataset_params": {
+    "format": "original JPEGs",
+    "n_test_pairs": 500,
+    "seed": 0,
+    "source": "UHDM test"
+  },
+  "elapsed_s": 2972.1,
+  "git_sha": "3e1c3b3455a073954af1f29f9aa775f6af8e1317",
+  "id": "0010_eval_dev100_models",
+  "methods": {
+    "Input (no cleaning)": {
+      "lpips": 0.5200741575658321,
+      "n": 100,
+      "name": "identity",
+      "params": {},
+      "params_source": "config",
+      "psnr": 17.09878671921916,
+      "reference": false,
+      "seconds": 0.0364035132099616,
+      "ssim": 0.5033020062436856
+    },
+    "ScreenCleanNet (ours, 512 px tiles)": {
+      "checkpoint": {
+        "checkpoint": "/content/drive/MyDrive/screenclean/runs/0009_train_sc_base/best.pt",
+        "iteration": 30000,
+        "model_name": "scnet_base",
+        "val": {
+          "input_psnr": 17.39909554077999,
+          "psnr": 20.855707545355067,
+          "seconds": 79.96274895299985,
+          "ssim": 0.7657880766370522
+        }
+      },
+      "fp16": true,
+      "inference_modes": {
+        "tiled": 100
+      },
+      "lpips": 0.30060651782900094,
+      "n": 100,
+      "name": "scnet",
+      "parameters": 4649667,
+      "params": {
+        "fp16": true,
+        "tile": 512
+      },
+      "params_source": "checkpoint runs/0009_train_sc_base/best.pt",
+      "psnr": 19.828581323594477,
+      "psnr_gain_vs_input": 2.7297946043753165,
+      "reference": false,
+      "seconds": 3.6298455166300116,
+      "ssim": 0.750805346436553
+    },
+    "ScreenCleanNet (ours, whole image)": {
+      "checkpoint": {
+        "checkpoint": "/content/drive/MyDrive/screenclean/runs/0009_train_sc_base/best.pt",
+        "iteration": 30000,
+        "model_name": "scnet_base",
+        "val": {
+          "input_psnr": 17.39909554077999,
+          "psnr": 20.855707545355067,
+          "seconds": 79.96274895299985,
+          "ssim": 0.7657880766370522
+        }
+      },
+      "fp16": true,
+      "inference_modes": {
+        "full": 100
+      },
+      "lpips": 0.3110759977996349,
+      "n": 100,
+      "name": "scnet",
+      "parameters": 4649667,
+      "params": {
+        "fp16": true,
+        "tile": "full image"
+      },
+      "params_source": "checkpoint runs/0009_train_sc_base/best.pt",
+      "psnr": 19.981872439117105,
+      "psnr_gain_vs_input": 2.8830857198979425,
+      "reference": false,
+      "seconds": 2.3692089561500005,
+      "ssim": 0.7506085956282704
+    }
+  },
+  "n_images": 100,
+  "split": "data/uhdm_v1/dev100",
+  "state": "done",
+  "task": "eval"
+}

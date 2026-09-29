@@ -1,0 +1,32 @@
+job:
+  id: 0010_eval_dev100_models
+  task: eval
+  runtime: gpu
+  config: configs/eval/scnet_dev100.yaml
+  depends_on:
+  - 0009_train_sc_base
+  max_minutes: 60
+  resume: true
+  attempt: 1
+  drive_subdir: jobs/0010_eval_dev100_models
+  notes: 'ScreenCleanNet (best checkpoint of 0009) on dev100: whole image and 512
+    px tiles, with LPIPS (T4, ~20-30 min est.)'
+config:
+  split: data/uhdm_v1/dev100
+  local_dir: /content/eval_data
+  sample_images: 4
+  lpips: true
+  stop_margin_min: 10
+  methods:
+  - name: identity
+    label: Input (no cleaning)
+  - name: scnet
+    label: ScreenCleanNet (ours, whole image)
+    checkpoint: runs/0009_train_sc_base/best.pt
+    fp16: true
+  - name: scnet
+    label: ScreenCleanNet (ours, 512 px tiles)
+    checkpoint: runs/0009_train_sc_base/best.pt
+    fp16: true
+    tile: 512
+    overlap: 64

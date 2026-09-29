@@ -1,0 +1,41 @@
+{
+  "amp": true,
+  "attempt": 2,
+  "batch": 6,
+  "best": {
+    "iter": 30000,
+    "psnr": 20.855707545355067,
+    "ssim": 0.7657880766370522
+  },
+  "crop": 384,
+  "device": "cuda",
+  "elapsed_s": 1674.4,
+  "final_val": {
+    "input_psnr": 17.399096,
+    "iter": 48000.0,
+    "psnr": 20.771356,
+    "seconds": 81.399476,
+    "ssim": 0.762521
+  },
+  "git_sha": "3e1c3b3455a073954af1f29f9aa775f6af8e1317",
+  "id": "0009_train_sc_base",
+  "input_psnr": 17.39909554077999,
+  "it_per_s": 2.213,
+  "iteration": 48000,
+  "iters": 48000,
+  "iters_this_run": 3397,
+  "model": "scnet_base",
+  "params_m": 4.65,
+  "peak_gpu_mem_gb": 6.12,
+  "resumed": true,
+  "run_dir": "runs/0009_train_sc_base",
+  "seconds_this_run": 1534.8,
+  "speed_probe": {
+    "choice": "compiled",
+    "compiled_it_per_s": 3.462,
+    "eager_it_per_s": 1.408,
+    "error": null
+  },
+  "state": "done",
+  "task": "train"
+}

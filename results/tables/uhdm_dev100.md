@@ -4,7 +4,9 @@ Generated from `results/jobs/*/summary.json` by `python -m screenclean tables`; 
 
 | Method | PSNR (dB) ↑ | Δ PSNR vs input | SSIM ↑ | LPIPS ↓ | s / image | Images | Job |
 |---|---|---|---|---|---|---|---|
-| Input (no cleaning) | 17.10 | – | 0.5033 | 0.5201 | 0.04 | 100 | `0005_esdnet_ref_dev100` |
+| Input (no cleaning) | 17.10 | – | 0.5033 | 0.5201 | 0.04 | 100 | `0010_eval_dev100_models` |
+| ScreenCleanNet (ours, whole image) | 19.98 | +2.88 | 0.7506 | 0.3111 | 2.37 | 100 | `0010_eval_dev100_models` |
+| ScreenCleanNet (ours, 512 px tiles) | 19.83 | +2.73 | 0.7508 | 0.3006 | 3.63 | 100 | `0010_eval_dev100_models` |
 | fft_notch_local | 17.41 | +0.31 | 0.5321 | – | 13.73 | 100 | `0004_eval_baselines_dev100` |
 | fft_notch | 17.17 | +0.07 | 0.5045 | – | 12.67 | 100 | `0004_eval_baselines_dev100` |
 | chroma_lowpass | 17.13 | +0.03 | 0.5057 | – | 0.78 | 100 | `0004_eval_baselines_dev100` |
@@ -17,6 +19,8 @@ Generated from `results/jobs/*/summary.json` by `python -m screenclean tables`; 
 
 Settings:
 
+- **ScreenCleanNet (ours, whole image)**: fp16=True, tile=full image (from checkpoint runs/0009_train_sc_base/best.pt)
+- **ScreenCleanNet (ours, 512 px tiles)**: fp16=True, tile=512 (from checkpoint runs/0009_train_sc_base/best.pt)
 - **fft_notch_local**: channels=y, k=4, r0=0.1, sigma=2 (from params/baselines.yaml (job 0003_tune_notch))
 - **fft_notch**: channels=ycc, k=3, r0=0.08, sigma=4 (from params/baselines.yaml (job 0003_tune_notch))
 - **chroma_lowpass**: sigma=8 (from params/baselines.yaml (job 0003_tune_notch))
