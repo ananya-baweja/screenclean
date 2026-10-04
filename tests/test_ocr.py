@@ -14,7 +14,7 @@ needs_tesseract = pytest.mark.skipif(not tesseract.available(), reason="Tesserac
 
 
 def test_bullets_are_not_text():
-    assert normalize("• First point\n* second  � third") == "first point second third"
+    assert normalize("• First point\n* second  � third ¢ fourth") == "first point second third fourth"
     assert normalize("a - b * c*d") == "a - b c*d"  # only stand-alone symbols
 
 

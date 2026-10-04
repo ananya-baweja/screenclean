@@ -24,8 +24,8 @@ _TRANSLATE = str.maketrans({
     " ": " ", "…": "...",
 })  # fmt: skip
 _WS = re.compile(r"\s+")
-# A bullet drawn as a shape has no ground-truth text, but OCR reads it as "*", "•" or "�".
-_BULLET = re.compile(r"(?<!\S)[•·◦▪▫■□●○‣⁃∙*�](?!\S)")
+# A bullet drawn as a shape has no ground-truth text, but OCR reads it as "*", "•", "¢", "°" or U+FFFD.
+_BULLET = re.compile(r"(?<!\S)[•·◦▪▫■□●○‣⁃∙*¢°�](?!\S)")
 Box = tuple[float, float, float, float]  # x0, y0, x1, y1
 
 
