@@ -26,7 +26,7 @@ def _m(name, psnr, n=100, **kw):
 
 def test_tables_work_with_no_results(tmp_path):
     paths = build_tables(tmp_path)
-    assert [p.name for p in paths] == ["uhdm_dev100.md", "synth_test.md"]
+    assert [p.name for p in paths] == ["uhdm_dev100.md", "synth_test.md", "uhdm_test500.md"]
     assert all("no results yet" in p.read_text(encoding="utf-8") for p in paths)
 
 

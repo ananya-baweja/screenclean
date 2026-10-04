@@ -172,3 +172,39 @@ def test_committed_job_and_config_are_consistent(job_file):
     cfg = yaml.safe_load((root / spec.config).read_text())
     assert spec.runtime == "cpu" and spec.resume
     assert "/resolve/" in cfg["source"]["url"] and "/main/" not in cfg["source"]["url"]  # pinned revision
+
+
+def test_test_rest_phase_and_eval_over_two_splits(tmp_path, fake_uhdm, capsys):
+    """The final evaluation's data: the test pairs outside dev100, then scored together with dev100."""
+    repo, drive, marker = _setup_repo(tmp_path, fake_uhdm), tmp_path / "drive", tmp_path / "m.txt"
+    assert _run(repo, drive, marker) == 0
+    before = _shard_hashes(drive)
+    cfg = yaml.safe_load((repo / "configs" / "uhdm.yaml").read_text())
+    cfg.update(phases=["test_rest"], test_rest={"pairs_per_shard": 3, "drive_gb": 0.001})
+    (repo / "configs" / "uhdm.yaml").write_text(yaml.safe_dump(cfg))
+    assert _run(repo, drive, marker) == 0
+    out = drive / "data" / "uhdm_v1"
+    rest = shards.load_manifest(out / "test_rest")
+    dev = (out / "splits" / "uhdm_dev100.txt").read_text().split()
+    rest_keys = (out / "splits" / "uhdm_test_rest.txt").read_text().split()
+    assert rest["complete"] and rest["total_samples"] == 4 and len(rest["shards"]) == 2
+    assert sorted(dev + rest_keys) == sorted(f"test/{k.split('/')[-1]}" for k in fake_uhdm["test_keys"])
+    assert _shard_hashes(drive) == before  # train, val and dev100 untouched
+
+    eval_cfg = {
+        "split": ["data/uhdm_v1/dev100", "data/uhdm_v1/test_rest"],
+        "split_name": "data/uhdm_v1/test500",
+        "local_dir": str(tmp_path / "eval_local"),
+        "methods": [{"name": "identity", "label": "Input (no cleaning)"}],
+        "workers": 1,
+        "sample_images": 0,
+        "stop_margin_min": 0,
+    }
+    (repo / "configs" / "eval.yaml").write_text(yaml.safe_dump(eval_cfg))
+    spec = {"id": "0003_eval", "task": "eval", "runtime": "cpu", "config": "configs/eval.yaml"}
+    (repo / "jobs" / "queue" / "0003_eval.yaml").write_text(yaml.safe_dump(spec))
+    assert jobs.run("0003_eval", drive, repo, marker, runtime="cpu") == 0
+    with zipfile.ZipFile(Path(marker.read_text())) as zf:
+        summary = json.loads(zf.read("summary.json"))
+    assert summary["split"] == "data/uhdm_v1/test500" and summary["n_images"] == 6
+    assert summary["methods"]["Input (no cleaning)"]["n"] == 6 and len(summary["splits"]) == 2

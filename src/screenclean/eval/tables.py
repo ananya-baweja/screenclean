@@ -16,6 +16,7 @@ from typing import Any
 TABLES = {
     "uhdm_dev100": ("uhdm_v1/dev100", "UHDM dev100 (100 full-resolution test pairs)"),
     "synth_test": ("synth_v1/test", "Synthetic text test (300 simulated 512 px crops of text pages)"),
+    "uhdm_test500": ("uhdm_v1/test500", "UHDM test set (all 500 full-resolution pairs; used once, in P9)"),
 }
 
 

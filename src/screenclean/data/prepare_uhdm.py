@@ -7,6 +7,8 @@ requests, so nothing is extracted to disk.
 Output under ``<drive root>/<drive_out>/`` (``data/uhdm_v1`` by default):
 
 - ``dev100/``: 100 fixed full-resolution test pairs (original JPEG bytes, not re-encoded)
+- ``test_rest/``: the other 400 test pairs, the same way (only when the config's ``phases`` asks
+  for ``test_rest``: the full test set is used once, in the final evaluation)
 - ``val/``: 2 fixed 512 crops for each of 200 held-out training images
 - ``train/``: 2 random full-scale 512 crops + 1 crop at half scale, for every other training image
 - ``splits/``: the image lists (``uhdm_test.txt``, ``uhdm_dev100.txt``, ``uhdm_train.txt``, ``uhdm_val.txt``)
@@ -227,6 +229,26 @@ class Preparer:
             {"source": "UHDM test", "n_test_pairs": len(keys), "seed": self.seed, "format": "original JPEGs"},
         )
 
+    def phase_test_rest(self) -> None:
+        if load_manifest(self.out / "test_rest").get("complete"):
+            log.info("test_rest already complete")
+            return
+        d = self.cfg.get("test_rest", {})
+        self.check_drive_space(float(d.get("drive_gb", 5.0)))
+        pairs = self.pairs(self.cfg["source"].get("test_prefix", "test/"), "test")
+        dev_list = self.out / "splits" / "uhdm_dev100.txt"
+        if not dev_list.exists():
+            raise RuntimeError("test_rest needs dev100 first (splits/uhdm_dev100.txt is missing)")
+        dev = set(dev_list.read_text(encoding="utf-8").split())
+        rest = [k for k in sorted(pairs) if k not in dev]
+        _write_list(self.out / "splits" / "uhdm_test_rest.txt", rest)
+        self.build_split(
+            "test_rest",
+            _chunks(rest, int(d.get("pairs_per_shard", 25))),
+            self.original_samples,
+            {"source": "UHDM test minus dev100", "n_test_pairs": len(pairs), "format": "original JPEGs"},
+        )
+
     def phase_train_val(self) -> None:
         if load_manifest(self.out / "val").get("complete") and load_manifest(self.out / "train").get(
             "complete"
@@ -282,8 +304,10 @@ class Preparer:
 
     def finish_summary(self) -> dict[str, Any]:
         splits = {}
-        for split in ("train", "val", "dev100"):
+        for split in ("train", "val", "dev100", "test_rest"):
             m = load_manifest(self.out / split)
+            if split == "test_rest" and not m["shards"]:
+                continue
             splits[split] = {
                 "complete": bool(m.get("complete")),
                 "shards": len(m["shards"]),
@@ -312,7 +336,13 @@ def prepare_uhdm_task(ctx: JobContext) -> TaskResult:
     state, message = "done", ""
     t_start = time.monotonic()
     try:
-        for phase in (prep.phase_dev100, prep.phase_train_val):
+        phases = {
+            "dev100": prep.phase_dev100,
+            "train_val": prep.phase_train_val,
+            "test_rest": prep.phase_test_rest,
+        }
+        for name in ctx.config.get("phases", ["dev100", "train_val"]):
+            phase = phases[name]
             t0 = time.monotonic()
             phase()
             prep.summary["phase_seconds"][phase.__name__] = round(time.monotonic() - t0, 1)

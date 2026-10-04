@@ -213,7 +213,9 @@ def summarize(rows: list[dict[str, Any]], methods: list[dict[str, Any]]) -> dict
 @register("eval")
 def eval_task(ctx: JobContext) -> TaskResult:
     cfg = ctx.config
-    split = cfg["split"]
+    # one split, or several scored as one set (e.g. dev100 + test_rest = the full UHDM test set)
+    splits = cfg["split"] if isinstance(cfg["split"], list) else [cfg["split"]]
+    split = cfg.get("split_name", splits[0])
     methods = resolve_methods(cfg["methods"], ctx.layout.root)
     labels = [m["label"] for m in methods]
     use_lpips = bool(cfg.get("lpips", False))
@@ -231,8 +233,8 @@ def eval_task(ctx: JobContext) -> TaskResult:
                 raise
             return TaskResult("partial", {"split": split, "stopped": str(e)}, f"Download stopped: {e}")
 
-    local = Path(cfg.get("local_dir", "/content/eval_data")) / Path(split).name
-    shards = stage_shards(ctx.layout.root / split, local)
+    local = Path(cfg.get("local_dir", "/content/eval_data"))
+    shards = [s for sp in splits for s in stage_shards(ctx.layout.root / sp, local / Path(sp).name)]
     items = list_items(shards)[: cfg.get("limit")]
 
     rows_path = ctx.work_dir / "per_image.csv"
@@ -293,8 +295,10 @@ def eval_task(ctx: JobContext) -> TaskResult:
                 )
             if hasattr(fn, "info"):  # a trained checkpoint: which iteration, and its validation score
                 summary["methods"].get(m["label"], {}).update({"checkpoint": fn.info})
-    manifest = read_json(ctx.layout.root / split / "manifest.json", default={}) or {}
+    manifest = read_json(ctx.layout.root / splits[0] / "manifest.json", default={}) or {}
     summary["dataset_params"] = manifest.get("params")
+    if len(splits) > 1:
+        summary["splits"] = splits
     if rows_path.exists():
         copy_atomic(rows_path, ctx.results_dir / "per_image.csv")
     return TaskResult(state, summary, message)
