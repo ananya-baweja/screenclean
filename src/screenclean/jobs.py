@@ -189,6 +189,7 @@ TASK_MODULES: dict[str, str] = {
     "eval_synth_ocr": "screenclean.eval.ocr_eval",
     "ingest_real": "screenclean.eval.real_ocr",
     "eval_real_ocr": "screenclean.eval.real_ocr",
+    "efficiency": "screenclean.eval.efficiency",
 }
 
 

@@ -89,6 +89,7 @@ def build_runner(spec: dict[str, Any], drive_root: Path) -> ModelRunner:
     """A runner from an eval-config method entry (``checkpoint`` is relative to the Drive root)."""
     runner = ModelRunner(
         Path(drive_root) / spec["checkpoint"],
+        device=spec.get("device"),
         fp16=bool(spec.get("fp16", True)),
         tile=spec.get("tile"),
         overlap=int(spec.get("overlap", 64)),

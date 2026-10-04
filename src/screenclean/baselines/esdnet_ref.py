@@ -185,7 +185,7 @@ def build_esdnet(spec: dict[str, Any], drive_root: Path) -> ESDNetRunner:
     """Clone, fetch weights (cached on Drive) and return a ready :class:`ESDNetRunner`."""
     import torch
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = spec.get("device") or ("cuda" if torch.cuda.is_available() else "cpu")
     repo = ensure_repo(spec.get("repo_dir", "/content/UHDM"), spec["repo_sha"])
     weights = ensure_weights(
         spec["weights"],
