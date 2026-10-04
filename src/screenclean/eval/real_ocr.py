@@ -9,8 +9,9 @@ Colab task ``eval_real_ocr``, two measurements per photo:
 
 1. **Methods, same geometry** (plan C4): every method runs on the original photo (the page's
    area plus a margin, at full resolution); every output is straightened with the *same* H from
-   the markers, the markers are painted over, and each OCR engine reads the page. Differences
-   between methods are then due to the method alone.
+   the markers, evened out like a scanned document (the scan pipeline's clean-up, unless
+   ``oracle_cleanup: false``), the markers are painted over, and each OCR engine reads the page.
+   Differences between methods are then due to the method alone.
 2. **The product, end to end** (plan C11): ``scan()`` finds the screen itself, cleans with each
    cleaner (none / classical / the final model), straightens and evens out the page; each engine
    reads it. Screen detection is scored against the page corners known from the markers: corner
@@ -46,7 +47,7 @@ from screenclean.eval.ocr_eval import (
 )
 from screenclean.eval.text_metrics import ordered_text
 from screenclean.jobs import JobContext, TaskResult, register
-from screenclean.product.rectify import page_homography, rectify
+from screenclean.product.rectify import clean_up, page_homography, rectify
 from screenclean.render import aruco
 from screenclean.utils.drive import atomic_write_json, copy_atomic
 from screenclean.utils.io import read_image
@@ -196,6 +197,9 @@ def eval_real_ocr_task(ctx: JobContext) -> TaskResult:
     local = Path(cfg.get("local_dir", "/content/real_ocr"))
     margin = int(cfg.get("crop_margin", 64))
     mode = cfg.get("product_mode", "document")
+    # Without the clean-up, OCR on some photographed pages fails on lighting alone (a simulated slide:
+    # CER 0.92 -> 0.09 with it), which would drown the differences between methods.
+    oracle_cleanup = bool(cfg.get("oracle_cleanup", True))
 
     methods = build_methods(cfg["methods"], root)
     by_label = {m["label"]: m for m in methods}
@@ -239,6 +243,7 @@ def eval_real_ocr_task(ctx: JobContext) -> TaskResult:
                 out = crop if m["fn"] is None else np.clip(m["fn"](crop), 0.0, 1.0)
                 secs = time.perf_counter() - t0
                 rect, _ = rectify(out, corners_in_crop, size=PAGE_SIZE)
+                rect = clean_up(rect) if oracle_cleanup else rect
                 new_rows += scorer.score(
                     paint_over(rect, zones),
                     page["truth"],

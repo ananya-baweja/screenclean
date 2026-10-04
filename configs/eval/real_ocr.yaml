@@ -1,6 +1,7 @@
 # Job 0025: the real-photo benchmark (Ananya's phone photos of capture-kit pages; plan C4, C9, C11), T4.
 # 1. "oracle:" rows: every method on the original photo (the page's area + 64 px), every output straightened
-#    with the same homography from the corner markers to 1920x1080, markers painted over, then OCR.
+#    with the same homography from the corner markers to 1920x1080, evened out with the scan pipeline's
+#    document clean-up (oracle_cleanup), markers painted over, then OCR.
 # 2. "product:" rows: scan() end to end (find the screen, clean, straighten, document clean-up), per cleaner.
 # Screen detection is scored against the marker corners. Two OCR engines; ground truth from
 # capture_kit/pages.json. About 2 minutes per photo, so ~150 photos take two or three runs; it resumes.
@@ -11,6 +12,7 @@ local_dir: /content/real_ocr
 engines: [paddle, tesseract]
 ocr_packages: /content/ocr_packages
 crop_margin: 64
+oracle_cleanup: true
 product_mode: document
 stop_margin_min: 15
 methods:
