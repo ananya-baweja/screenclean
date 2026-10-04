@@ -6,6 +6,7 @@ Commands so far:
 - ``jobs list``       show the queue and each job's state on Drive
 - ``jobs last-zip``   print the results zip of the job that ended last (the notebook's download fallback)
 - ``results ingest``  unpack a downloaded results zip into ``results/jobs/<id>/``
+- ``tables``          rebuild ``results/tables/*.md``; ``report`` rebuilds ``docs/RESULTS.md`` and its figures
 - ``scan``            photos of screens -> clean upright pages, a searchable PDF and Markdown
 - ``env``             print the environment report as JSON
 """
@@ -62,6 +63,15 @@ def _cmd_tables(args: argparse.Namespace) -> int:
     from screenclean.eval.tables import build_tables
 
     for path in build_tables(args.repo_root):
+        print(f"wrote {path}")
+    return 0
+
+
+def _cmd_report(args: argparse.Namespace) -> int:
+    from screenclean.eval.report import build_report
+    from screenclean.eval.tables import build_tables
+
+    for path in [*build_tables(args.repo_root), *build_report(args.repo_root)]:
         print(f"wrote {path}")
     return 0
 
@@ -190,6 +200,9 @@ def build_parser() -> argparse.ArgumentParser:
     tab_p = sub.add_parser("tables", help="rebuild results/tables/*.md from ingested job results")
     tab_p.add_argument("--repo-root", default=Path("."), type=Path)
     tab_p.set_defaults(func=_cmd_tables)
+    rep_p = sub.add_parser("report", help="rebuild the tables, docs/RESULTS.md and its figures")
+    rep_p.add_argument("--repo-root", default=Path("."), type=Path)
+    rep_p.set_defaults(func=_cmd_report)
 
     kit_p = sub.add_parser("capture-kit", help="build the capture kit (pages with markers + slideshow)")
     kit_p.add_argument("--out", default=Path("capture_kit"), type=Path)
