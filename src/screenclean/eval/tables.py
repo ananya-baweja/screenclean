@@ -81,7 +81,7 @@ def render(rows: list[dict[str, Any]], title: str) -> str:
         "",
         "- Metrics on uint8 RGB at full resolution; SSIM with a Gaussian window (σ = 1.5).",
         "- Δ PSNR is the mean per-image difference against the unprocessed input.",
-        "- Timing: classical baselines on Colab CPU (2 vCPU); reference models on a T4 GPU.",
+        "- Timing: classical baselines on the Colab CPU (2 vCPU); neural networks on a T4 GPU.",
         "- *Reference* rows are published models run with their authors' weights, not our method.",
     ]
     notes = [r for r in rows if r.get("params_source") and r["name"] != "identity"]

@@ -53,7 +53,18 @@ def plot(job_dir: Path, out: Path) -> Path:
     ax.legend(fontsize=8)
 
     ax = axes[0, 1]
-    if va:
+    sets = [k.removeprefix("psnr_") for k in va if k.startswith("psnr_")]
+    if sets:  # several validation sets: one line per set against its own input, plus the weighted score
+        for name, color in zip(sets, ["C2", "C9", "C6", "C8"], strict=False):
+            ax.plot(va["iter"], va[f"psnr_{name}"], "o-", color=color, label=f"{name} (val)")
+            ax.axhline(va[f"input_psnr_{name}"][0], color=color, ls="--", lw=1,
+                       label=f"{name} input {va[f'input_psnr_{name}'][0]:.2f} dB")  # fmt: skip
+        ax.plot(va["iter"], va["psnr"], "-", color="0.3", lw=1, label="weighted (picks best)")
+        best = int(np.nanargmax(va["psnr"]))
+        ax.annotate(f"best {va['psnr'][best]:.2f} dB", (va["iter"][best], va["psnr"][best]),
+                    textcoords="offset points", xytext=(-30, -16), fontsize=8)  # fmt: skip
+        ax.set_title("Validation PSNR per set (higher is better)")
+    elif va:
         ax.plot(va["iter"], va["psnr"], "o-", color="C2", label="EMA model (val)")
         ax.axhline(va["input_psnr"][0], color="0.4", ls="--", label=f"input {va['input_psnr'][0]:.2f} dB")
         best = int(np.nanargmax(va["psnr"]))
@@ -63,16 +74,16 @@ def plot(job_dir: Path, out: Path) -> Path:
         ax2.plot(va["iter"], va["ssim"], "s:", color="C4", ms=4, label="SSIM (right axis)")
         ax2.set_ylabel("SSIM")
         ax2.legend(fontsize=8, loc="lower right")
-    ax.set_title("Validation PSNR on 400 crops (higher is better)")
+        ax.set_title("Validation PSNR on 400 crops (higher is better)")
     ax.set_xlabel("iteration")
     ax.set_ylabel("dB")
-    ax.legend(fontsize=8, loc="upper left")
+    ax.legend(fontsize=7 if sets else 8, loc="best" if sets else "upper left")
 
     ax = axes[1, 0]
     ax.plot(it, tr["lr"], color="C3")
     ax.set_title("Learning rate (warmup, then cosine decay)")
     ax.set_xlabel("iteration")
-    if "fft_share" in tr:
+    if "fft_share" in tr and np.isfinite(tr["fft_share"]).any():  # absent when the FFT loss is off
         ax2 = ax.twinx()
         ax2.plot(it, smooth(tr["fft_share"], n), color="C5", lw=1, label="FFT share of the loss (right)")
         ax2.set_ylim(0, max(0.05, float(np.nanmax(tr["fft_share"])) * 1.2))
