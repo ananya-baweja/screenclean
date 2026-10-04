@@ -181,6 +181,41 @@ def test_partial_then_resume(repo, tmp_path, capsys, fake_tasks):
         assert {"chunk1.txt", "chunk2.txt"} <= set(zf.namelist())  # results kept across the resume
 
 
+def test_latest_results_zip(repo, tmp_path, capsys, fake_tasks, monkeypatch):
+    """The download cell's fallback offers the zip of the job that ended last, never an older one."""
+    ticks = iter(range(100))
+    monkeypatch.setattr(jobs, "_now", lambda: f"2026-10-01T00:00:{next(ticks):02d}+00:00")
+
+    def slow(ctx):
+        counter = ctx.work_dir / "count.txt"
+        n = int(counter.read_text()) + 1 if counter.exists() else 1
+        counter.write_text(str(n))
+        return jobs.TaskResult("done" if n >= 2 else "partial", {})
+
+    fake_tasks("slow", slow)
+    q = repo / "jobs" / "queue"
+    write_spec(q, "0001_hello")
+    write_spec(q, "0002_slow", task="slow", resume=True)
+    drive_root, marker = tmp_path / "drive", tmp_path / "m.txt"
+    zips = drive_root / "results_zips"
+    assert jobs.latest_results_zip(drive_root) is None
+
+    jobs.run("auto", drive_root, repo, marker, runtime="cpu")  # 0001 done
+    assert jobs.latest_results_zip(drive_root) == zips / "0001_hello.zip"
+    jobs.run("auto", drive_root, repo, marker, runtime="cpu")  # 0002 stops at its time budget
+    assert jobs.latest_results_zip(drive_root) is None
+    jobs.run("auto", drive_root, repo, marker, runtime="cpu")  # 0002 done
+    assert jobs.latest_results_zip(drive_root) == zips / "0002_slow.zip"
+
+    capsys.readouterr()
+    assert cli.main(["jobs", "last-zip", "--drive-root", str(drive_root)]) == 0
+    assert capsys.readouterr().out.strip() == str(zips / "0002_slow.zip")
+
+    # A job that started but never ended (e.g. the runtime was reset) hides the older zip.
+    jobs.StatusStore(DriveLayout(drive_root)).set("0003_x", state="running", started_utc=jobs._now())
+    assert jobs.latest_results_zip(drive_root) is None
+
+
 def test_gpu_job_refused_on_cpu(repo, tmp_path, capsys):
     write_spec(repo / "jobs" / "queue", "0001_gpu", runtime="gpu")
     code = jobs.run("auto", tmp_path / "drive", repo, tmp_path / "m.txt", runtime="cpu")

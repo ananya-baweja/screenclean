@@ -27,6 +27,8 @@ Google Drive access.
 2. **Runtime → Run all**, and allow Google Drive access.
 3. Keep this tab open until cell 3 prints `JOB FINISHED`, `TIME BUDGET REACHED` or `JOB FAILED`.
 4. Cell 4 downloads `<job>.zip`. Move it from Downloads into your `results_inbox` folder.
+   If the page lost its connection, cell 4 can show an old message: click its ▶ button to run it again.
+   Every zip is also kept in Google Drive → `screenclean/results_zips/`.
 
 **Is it still running?** The page can stop showing new lines while the job keeps working. Open
 Google Drive → `screenclean/job_status/<job>.json`: its `progress` and `progress_utc` fields update
@@ -67,13 +69,19 @@ RUN = """\
 
 DOWNLOAD = """\
 # Cell 4 — Download the results zip, then move it into your results_inbox folder
-import pathlib
+import pathlib, subprocess
 from google.colab import files
 marker = pathlib.Path("/content/last_results_zip.txt")
 if marker.exists():
-    files.download(marker.read_text().strip())
-    print("Downloaded. Move the zip from Downloads into results_inbox.")
-    print("If nothing downloaded, the zip is also in Google Drive: screenclean/results_zips/")
+    zip_path = marker.read_text().strip()
+else:  # e.g. cell 3 ran again: take the zip of the job that ended last, if it finished
+    cmd = ["python", "-m", "screenclean", "jobs", "last-zip", "--drive-root", DRIVE_ROOT]
+    zip_path = subprocess.run(cmd, capture_output=True, text=True).stdout.strip()
+if zip_path:
+    name = pathlib.Path(zip_path).name
+    print(f"Downloading {name}. Move it from Downloads into results_inbox.")
+    files.download(zip_path)
+    print(f"If nothing downloaded, it is also in Google Drive: screenclean/results_zips/{name}")
 else:
     print("No results zip this time. If it said TIME BUDGET REACHED, run the notebook again later.")
 """

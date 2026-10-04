@@ -473,6 +473,24 @@ def run(
     return run_job(spec, drive_root, repo_root, marker, runtime)
 
 
+def latest_results_zip(drive_root: str | Path) -> Path | None:
+    """The results zip of the most recent job event on Drive, if that event was a job ending.
+
+    The notebook's download cell uses this when its marker file is missing (e.g. the cell
+    was re-run, or the runtime restarted). Returns ``None`` when the latest event is a job
+    that stopped at its time budget or is still running, so no older zip is offered.
+    """
+    layout = DriveLayout(Path(drive_root))
+    statuses = [read_json(p, default={}) or {} for p in sorted(layout.job_status.glob("*.json"))]
+    statuses = [s for s in statuses if s.get("id") and (s.get("started_utc") or s.get("finished_utc"))]
+    if not statuses:
+        return None
+    last = max(statuses, key=lambda s: max(s.get("started_utc", ""), s.get("finished_utc", "")))
+    ended = last.get("finished_utc", "") >= last.get("started_utc", "")
+    zip_path = layout.results_zips / f"{last['id']}.zip"
+    return zip_path if ended and last.get("state") in ("done", "failed") and zip_path.exists() else None
+
+
 def describe_queue(repo_root: str | Path, drive_root: str | Path | None = None) -> list[str]:
     """One line per queued job with its state on Drive (if a Drive root is given)."""
     store = StatusStore(DriveLayout(Path(drive_root))) if drive_root else None

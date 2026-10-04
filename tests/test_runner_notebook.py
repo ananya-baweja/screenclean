@@ -29,6 +29,7 @@ def test_notebook_structure():
     assert "drive.mount" in code[1] and 'pip install -q -e ".[colab]"' in code[1]
     assert "python -m screenclean jobs run" in code[2]
     assert "last_results_zip.txt" in code[3]
+    assert '"jobs", "last-zip", "--drive-root", DRIVE_ROOT' in code[3]
     joined = "\n".join(code).lower()
     for word in ("token", "secret", "userdata"):
         assert word not in joined

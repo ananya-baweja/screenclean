@@ -4,6 +4,7 @@ Commands so far:
 
 - ``jobs run``        run the next queued job (used by the Colab runner notebook)
 - ``jobs list``       show the queue and each job's state on Drive
+- ``jobs last-zip``   print the results zip of the job that ended last (the notebook's download fallback)
 - ``results ingest``  unpack a downloaded results zip into ``results/jobs/<id>/``
 - ``scan``            photos of screens -> clean upright pages, a searchable PDF and Markdown
 - ``env``             print the environment report as JSON
@@ -31,6 +32,15 @@ def _cmd_jobs_list(args: argparse.Namespace) -> int:
 
     for line in jobs.describe_queue(args.repo_root, args.drive_root):
         print(line)
+    return 0
+
+
+def _cmd_jobs_last_zip(args: argparse.Namespace) -> int:
+    from screenclean import jobs
+
+    zip_path = jobs.latest_results_zip(args.drive_root)
+    if zip_path:
+        print(zip_path)
     return 0
 
 
@@ -163,6 +173,10 @@ def build_parser() -> argparse.ArgumentParser:
     list_p.add_argument("--drive-root", type=Path, default=None)
     list_p.add_argument("--repo-root", default=Path("."), type=Path)
     list_p.set_defaults(func=_cmd_jobs_list)
+
+    last_p = jobs_p.add_parser("last-zip", help="print the results zip of the job that ended last, if any")
+    last_p.add_argument("--drive-root", required=True, type=Path)
+    last_p.set_defaults(func=_cmd_jobs_last_zip)
 
     res_p = sub.add_parser("results", help="job results")
     res_p = res_p.add_subparsers(dest="results_command", required=True)
