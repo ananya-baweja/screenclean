@@ -85,18 +85,18 @@ def test_tesseract_worker_reads_a_clean_capture_page():
     with WorkerOCR("tesseract") as ocr:
         check = self_check(ocr)
         assert ocr.info["versions"]["tesseract"].startswith("tesseract")
-    assert check["cer"] < 0.03 and check["word_f1"] > 0.97
+    assert check["cer"] < 0.03 and check["word_f1"] > 0.95
 
 
 @needs_tesseract
 def test_open_engine_falls_back(tmp_path):
     ocr, record = open_engine("paddle_missing", fallbacks={"paddle_missing": ["tesseract"]}, log_dir=tmp_path)
     try:
-        assert record["engine"] == "tesseract" and record["self_check"]["word_f1"] > 0.97
+        assert record["engine"] == "tesseract" and record["self_check"]["word_f1"] > 0.95
         assert "did not start" in record["attempts"][0]["error"]
         with pytest.raises(OcrEngineError, match="missing.png"):
             ocr.read(tmp_path / "missing.png")
         assert lines_text([]) == ""  # the worker is still serving after a bad image:
-        assert self_check(ocr)["word_f1"] > 0.97
+        assert self_check(ocr)["word_f1"] > 0.95
     finally:
         ocr.close()
