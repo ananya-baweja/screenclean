@@ -43,7 +43,7 @@ each step. Drive shows it live. `job.log` stays open until the job ends, so Driv
 `auto` picks the first job (sorted by file name) that isn't `done`, didn't fail at its current
 `attempt`, whose `depends_on` jobs are all `done` and whose `requires` folders on Drive hold files.
 A job for the session's runtime comes first: on a CPU runtime the next CPU job runs, on a GPU
-runtime the next GPU job (a CPU job runs there only when no GPU job is ready).
+runtime the next GPU job. A GPU runtime never runs a CPU job; it lists the CPU jobs that are ready.
 
 ## Results
 

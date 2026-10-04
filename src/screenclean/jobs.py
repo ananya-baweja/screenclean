@@ -281,7 +281,8 @@ def select_job(
     ``requested`` is a job id (run it regardless of state) or ``"auto"``: the first job that
     isn't done, didn't fail at its current ``attempt``, whose dependencies are all done and
     whose ``requires`` folders on Drive hold files. Given the ``runtime``, a runnable job for
-    that runtime comes first, so a CPU session picks the CPU jobs and a GPU session the GPU jobs.
+    that runtime comes first. A GPU session never takes a CPU job (GPU time is scarce): it reports
+    the waiting CPU jobs instead.
     """
     if requested != "auto":
         for spec in queue:
@@ -310,6 +311,10 @@ def select_job(
     if not runnable:
         return None, reasons
     same = [s for s in runnable if s.runtime == runtime]
+    if runtime == "gpu" and not same:
+        return None, reasons + [
+            f"{s.id}: ready, but it is a CPU job: switch to a CPU runtime" for s in runnable
+        ]
     return (same or runnable)[0], reasons
 
 

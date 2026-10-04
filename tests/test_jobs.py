@@ -125,7 +125,9 @@ def test_select_job_prefers_the_runtime_and_waits_for_files(repo, tmp_path):
     (layout.root / "real_captures" / "raw" / "screen-a__phone-b").mkdir(parents=True)
     assert jobs.select_job(queue, store)[0] is None  # empty folders don't count
     (layout.root / "real_captures" / "raw" / "screen-a__phone-b" / "IMG_1.jpg").write_bytes(b"x")
-    assert jobs.select_job(queue, store, runtime="gpu")[0].id == "0003_photos"  # nothing else is ready
+    assert jobs.select_job(queue, store, runtime="cpu")[0].id == "0003_photos"
+    spec, reasons = jobs.select_job(queue, store, runtime="gpu")  # never spend GPU time on a CPU job
+    assert spec is None and "switch to a CPU runtime" in reasons[-1]
 
 
 def test_requires_must_be_a_list(repo):
@@ -251,9 +253,12 @@ def test_gpu_job_refused_on_cpu(repo, tmp_path, capsys):
     assert not (tmp_path / "drive" / "job_status" / "0001_gpu.json").exists()
 
 
-def test_cpu_job_on_gpu_warns(repo, tmp_path, capsys):
+def test_cpu_job_on_gpu_waits_unless_named(repo, tmp_path, capsys):
     write_spec(repo / "jobs" / "queue", "0001_hello")
     assert jobs.run("auto", tmp_path / "drive", repo, tmp_path / "m.txt", runtime="gpu") == 0
+    out = capsys.readouterr().out
+    assert "Nothing to run" in out and "switch to a CPU runtime" in out
+    assert jobs.run("0001_hello", tmp_path / "drive", repo, tmp_path / "m.txt", runtime="gpu") == 0
     assert "save GPU quota" in capsys.readouterr().out
 
 
