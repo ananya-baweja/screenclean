@@ -1,0 +1,15 @@
+{
+  "attempt": 1,
+  "elapsed_min": 38.9,
+  "elapsed_s": 2334.2,
+  "error": null,
+  "finished_utc": "2026-10-03T13:04:51+00:00",
+  "id": "0016_abl_sim_only",
+  "progress": "validation at 8000: PSNR 21.46 dB (input 17.98), SSIM 0.7740; uhdm 14.74 (input 17.40); text 28.18 (input 18.56); best 21.46 at 8000",
+  "progress_utc": "2026-10-03T13:04:51+00:00",
+  "runtime": "gpu",
+  "started_utc": "2026-10-03T12:25:57+00:00",
+  "state": "done",
+  "task": "train",
+  "updated_utc": "2026-10-03T13:04:51+00:00"
+}

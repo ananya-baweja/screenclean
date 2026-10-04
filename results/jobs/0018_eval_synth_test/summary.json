@@ -1,0 +1,362 @@
+{
+  "attempt": 1,
+  "complete": true,
+  "dataset_params": {
+    "base_size": [
+      12,
+      40
+    ],
+    "crops_per_page": 4,
+    "gt_jpeg_quality": 95,
+    "seed": 0,
+    "sim": {
+      "crop": 512,
+      "display": {
+        "brightness": [
+          0.7,
+          1.0
+        ],
+        "fill_x": [
+          0.6,
+          0.9
+        ],
+        "fill_y": [
+          0.75,
+          0.95
+        ],
+        "gamma": 2.2,
+        "layouts": {
+          "bgr": 0.2,
+          "pentile": 0.2,
+          "rgb": 0.6
+        },
+        "supersample": 4
+      },
+      "geometry": {
+        "focal_px": 3000,
+        "k1": [
+          -0.05,
+          0.05
+        ],
+        "pitch_deg": 25,
+        "resonance_prob": 0.5,
+        "resonance_rel_sd": 0.04,
+        "resonances": [
+          1.0,
+          2.0
+        ],
+        "roll_deg": 5,
+        "scale": [
+          0.9,
+          3.0
+        ],
+        "sensor_size": [
+          4000,
+          3000
+        ],
+        "yaw_deg": 25
+      },
+      "ground_truth": {
+        "jpeg_quality": 95
+      },
+      "isp": {
+        "chroma_denoise": [
+          1.0,
+          3.0
+        ],
+        "contrast": [
+          0.9,
+          1.2
+        ],
+        "demosaic": [
+          "bilinear",
+          "ea",
+          "vng"
+        ],
+        "gamma": [
+          2.0,
+          2.4
+        ],
+        "jpeg_quality": [
+          70,
+          95
+        ],
+        "luma_denoise": [
+          0.0,
+          0.7
+        ],
+        "sharpen": [
+          0.0,
+          1.0
+        ],
+        "sharpen_sigma": [
+          0.8,
+          1.6
+        ],
+        "wb_jitter": 0.08
+      },
+      "optics": {
+        "pixel_aperture": 0.9,
+        "psf_sigma": [
+          0.2,
+          0.7
+        ]
+      },
+      "sensor": {
+        "cfa": [
+          "RGGB",
+          "BGGR"
+        ],
+        "exposure_floor": 0.35,
+        "exposure_percentile": 98,
+        "exposure_target": [
+          0.75,
+          0.95
+        ],
+        "photons": [
+          150,
+          3000
+        ],
+        "read_noise": [
+          0.0005,
+          0.006
+        ]
+      }
+    }
+  },
+  "elapsed_s": 361.6,
+  "git_sha": "0cf86cba6323e2a612debbbb85cf0a95d30f51f5",
+  "id": "0018_eval_synth_test",
+  "methods": {
+    "Ablation: full model, short schedule": {
+      "checkpoint": {
+        "checkpoint": "/content/drive/MyDrive/screenclean/runs/0012_abl_full/last.pt",
+        "iteration": 8000,
+        "model_name": "scnet_base",
+        "val": null
+      },
+      "fp16": true,
+      "inference_modes": {
+        "full": 300
+      },
+      "lpips": 0.26993750301500163,
+      "n": 300,
+      "name": "scnet",
+      "parameters": 4649667,
+      "params": {
+        "fp16": true,
+        "tile": "full image"
+      },
+      "params_source": "checkpoint runs/0012_abl_full/last.pt",
+      "psnr": 21.7325257498403,
+      "psnr_gain_vs_input": 2.367394174585868,
+      "reference": false,
+      "seconds": 0.0662523842466669,
+      "ssim": 0.768792748938212
+    },
+    "Ablation: no FFT loss": {
+      "checkpoint": {
+        "checkpoint": "/content/drive/MyDrive/screenclean/runs/0013_abl_no_fftloss/last.pt",
+        "iteration": 8000,
+        "model_name": "scnet_base",
+        "val": null
+      },
+      "fp16": true,
+      "inference_modes": {
+        "full": 300
+      },
+      "lpips": 0.32418074396749336,
+      "n": 300,
+      "name": "scnet",
+      "parameters": 4649667,
+      "params": {
+        "fp16": true,
+        "tile": "full image"
+      },
+      "params_source": "checkpoint runs/0013_abl_no_fftloss/last.pt",
+      "psnr": 20.81617177047372,
+      "psnr_gain_vs_input": 1.4510401952192873,
+      "reference": false,
+      "seconds": 0.06621660858333409,
+      "ssim": 0.749351819400816
+    },
+    "Ablation: no dilation": {
+      "checkpoint": {
+        "checkpoint": "/content/drive/MyDrive/screenclean/runs/0015_abl_no_dilation/last.pt",
+        "iteration": 8000,
+        "model_name": "scnet_nodil",
+        "val": null
+      },
+      "fp16": true,
+      "inference_modes": {
+        "full": 300
+      },
+      "lpips": 0.26944901221742235,
+      "n": 300,
+      "name": "scnet",
+      "parameters": 4649667,
+      "params": {
+        "fp16": true,
+        "tile": "full image"
+      },
+      "params_source": "checkpoint runs/0015_abl_no_dilation/last.pt",
+      "psnr": 21.7504176311161,
+      "psnr_gain_vs_input": 2.385286055861668,
+      "reference": false,
+      "seconds": 0.06612821870666759,
+      "ssim": 0.7676658539977097
+    },
+    "Ablation: plain U-Net (no wavelets, no dilation)": {
+      "checkpoint": {
+        "checkpoint": "/content/drive/MyDrive/screenclean/runs/0014_abl_plain_unet/last.pt",
+        "iteration": 8000,
+        "model_name": "plain_unet",
+        "val": null
+      },
+      "fp16": true,
+      "inference_modes": {
+        "full": 300
+      },
+      "lpips": 0.28367762902130683,
+      "n": 300,
+      "name": "scnet",
+      "parameters": 4649667,
+      "params": {
+        "fp16": true,
+        "tile": "full image"
+      },
+      "params_source": "checkpoint runs/0014_abl_plain_unet/last.pt",
+      "psnr": 21.52822545146981,
+      "psnr_gain_vs_input": 2.1630938762153833,
+      "reference": false,
+      "seconds": 0.06115410267999891,
+      "ssim": 0.7616419812403581
+    },
+    "Ablation: simulator data only": {
+      "checkpoint": {
+        "checkpoint": "/content/drive/MyDrive/screenclean/runs/0016_abl_sim_only/last.pt",
+        "iteration": 8000,
+        "model_name": "scnet_base",
+        "val": null
+      },
+      "fp16": true,
+      "inference_modes": {
+        "full": 300
+      },
+      "lpips": 0.09558082787630459,
+      "n": 300,
+      "name": "scnet",
+      "parameters": 4649667,
+      "params": {
+        "fp16": true,
+        "tile": "full image"
+      },
+      "params_source": "checkpoint runs/0016_abl_sim_only/last.pt",
+      "psnr": 27.9378811590585,
+      "psnr_gain_vs_input": 8.572749583804066,
+      "reference": false,
+      "seconds": 0.06622438323333237,
+      "ssim": 0.9301113966139515
+    },
+    "Input (no cleaning)": {
+      "lpips": 0.46002973506848016,
+      "n": 300,
+      "name": "identity",
+      "params": {},
+      "params_source": "config",
+      "psnr": 19.36513157525443,
+      "reference": false,
+      "seconds": 0.00027858974999768785,
+      "ssim": 0.5727710173989637
+    },
+    "ScreenCleanNet (ours, whole image)": {
+      "checkpoint": {
+        "checkpoint": "/content/drive/MyDrive/screenclean/runs/0009_train_sc_base/best.pt",
+        "iteration": 30000,
+        "model_name": "scnet_base",
+        "val": {
+          "input_psnr": 17.39909554077999,
+          "psnr": 20.855707545355067,
+          "seconds": 79.96274895299985,
+          "ssim": 0.7657880766370522
+        }
+      },
+      "fp16": true,
+      "inference_modes": {
+        "full": 300
+      },
+      "lpips": 0.2215447325942417,
+      "n": 300,
+      "name": "scnet",
+      "parameters": 4649667,
+      "params": {
+        "fp16": true,
+        "tile": "full image"
+      },
+      "params_source": "checkpoint runs/0009_train_sc_base/best.pt",
+      "psnr": 22.53056470073642,
+      "psnr_gain_vs_input": 3.1654331254819885,
+      "reference": false,
+      "seconds": 0.07335860357332952,
+      "ssim": 0.8039027121003792
+    },
+    "ScreenCleanNet + text fine-tune": {
+      "checkpoint": {
+        "checkpoint": "/content/drive/MyDrive/screenclean/runs/0011_finetune_text/best.pt",
+        "iteration": 11000,
+        "model_name": "scnet_base",
+        "val": {
+          "input_psnr": 17.981746348060383,
+          "input_psnr_text": 18.564397155340778,
+          "input_psnr_uhdm": 17.39909554077999,
+          "psnr": 23.446947652753337,
+          "psnr_text": 26.175164695480888,
+          "psnr_uhdm": 20.71873061002579,
+          "seconds": 67.6719717850001,
+          "ssim": 0.8234254140994224,
+          "ssim_text": 0.8907749675433181,
+          "ssim_uhdm": 0.7560758606555268
+        }
+      },
+      "fp16": true,
+      "inference_modes": {
+        "full": 300
+      },
+      "lpips": 0.1432343689414362,
+      "n": 300,
+      "name": "scnet",
+      "parameters": 4649667,
+      "params": {
+        "fp16": true,
+        "tile": "full image"
+      },
+      "params_source": "checkpoint runs/0011_finetune_text/best.pt",
+      "psnr": 26.214464071280965,
+      "psnr_gain_vs_input": 6.849332496026533,
+      "reference": false,
+      "seconds": 0.06628244905999812,
+      "ssim": 0.89269838349507
+    },
+    "fft_notch_local": {
+      "lpips": 0.4658467228213946,
+      "n": 300,
+      "name": "fft_notch_local",
+      "params": {
+        "channels": "y",
+        "k": 4,
+        "r0": 0.1,
+        "sigma": 2
+      },
+      "params_source": "params/baselines.yaml (job 0003_tune_notch)",
+      "psnr": 19.09676728738434,
+      "psnr_gain_vs_input": -0.2683642878700944,
+      "reference": false,
+      "seconds": 0.273441115256666,
+      "ssim": 0.5601951066610101
+    }
+  },
+  "n_images": 300,
+  "split": "data/synth_v1/test",
+  "state": "done",
+  "task": "eval"
+}

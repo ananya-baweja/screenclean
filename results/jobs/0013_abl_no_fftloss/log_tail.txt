@@ -1,0 +1,61 @@
+2026-10-03 08:52:00,300 INFO screenclean.jobs: Starting 0013_abl_no_fftloss (task=train, runtime=gpu, attempt=1, resuming=False)
+2026-10-03 08:52:02,149 INFO screenclean.jobs: progress: copying data/uhdm_v1/train from Drive to local disk
+2026-10-03 08:52:03,238 INFO screenclean.utils.drive: staging train-00000.tar (255 MB)
+2026-10-03 08:52:08,681 INFO screenclean.utils.drive: staging train-00001.tar (253 MB)
+2026-10-03 08:52:17,842 INFO screenclean.utils.drive: staging train-00002.tar (252 MB)
+2026-10-03 08:52:23,893 INFO screenclean.utils.drive: staging train-00003.tar (256 MB)
+2026-10-03 08:52:31,520 INFO screenclean.utils.drive: staging train-00004.tar (302 MB)
+2026-10-03 08:52:36,770 INFO screenclean.utils.drive: staging train-00005.tar (266 MB)
+2026-10-03 08:52:46,416 INFO screenclean.utils.drive: staging train-00006.tar (275 MB)
+2026-10-03 08:52:49,420 INFO screenclean.utils.drive: staging train-00007.tar (217 MB)
+2026-10-03 08:52:55,579 INFO screenclean.utils.drive: staging train-00008.tar (221 MB)
+2026-10-03 08:53:02,183 INFO screenclean.utils.drive: staging train-00009.tar (211 MB)
+2026-10-03 08:53:08,761 INFO screenclean.utils.drive: staging train-00010.tar (177 MB)
+2026-10-03 08:53:27,113 INFO screenclean.jobs: progress: copying data/uhdm_v1/val from Drive to local disk
+2026-10-03 08:53:27,548 INFO screenclean.utils.drive: staging val-00000.tar (81 MB)
+2026-10-03 08:53:31,051 INFO screenclean.jobs: progress: copying data/synth_v1/val from Drive to local disk
+2026-10-03 08:53:31,602 INFO screenclean.utils.drive: staging val-00000.tar (43 MB)
+2026-10-03 08:53:34,990 INFO screenclean.train.task: training sources: [12900] pairs; val: {'uhdm': 400, 'text': 300}
+2026-10-03 08:53:46,921 INFO numexpr.utils: NumExpr defaulting to 2 threads.
+2026-10-03 08:57:51,018 INFO screenclean.jobs: progress: iteration 50/8000: loss 0.1261, 0.21 it/s
+2026-10-03 08:58:00,125 INFO screenclean.jobs: progress: speed probe: eager 1.378 it/s, compiled 3.304 it/s -> compiled; schedule 8000 iterations
+2026-10-03 08:59:56,139 INFO screenclean.jobs: progress: iteration 450/8000: loss 0.1266, 3.12 it/s
+2026-10-03 09:02:10,126 INFO screenclean.jobs: progress: iteration 850/8000: loss 0.1155, 2.90 it/s
+2026-10-03 09:04:13,433 INFO screenclean.jobs: progress: iteration 1200/8000: loss 0.1158, 2.82 it/s
+2026-10-03 09:06:18,049 INFO screenclean.jobs: progress: iteration 1550/8000: loss 0.1002, 2.81 it/s
+2026-10-03 09:08:22,248 INFO screenclean.jobs: progress: iteration 1900/8000: loss 0.1018, 2.82 it/s
+2026-10-03 09:10:19,161 INFO screenclean.jobs: progress: validation at 2000: PSNR 19.76 dB (input 17.98), SSIM 0.7091; uhdm 19.31 (input 17.40); text 20.21 (input 18.56); best 19.76 at 2000
+2026-10-03 09:10:36,489 INFO screenclean.jobs: progress: iteration 2050/8000: loss 0.1012, 0.51 it/s
+2026-10-03 09:12:40,219 INFO screenclean.jobs: progress: iteration 2400/8000: loss 0.0920, 2.80 it/s
+2026-10-03 09:14:45,330 INFO screenclean.jobs: progress: iteration 2750/8000: loss 0.0984, 2.79 it/s
+2026-10-03 09:16:50,359 INFO screenclean.jobs: progress: iteration 3100/8000: loss 0.0981, 2.80 it/s
+2026-10-03 09:18:55,659 INFO screenclean.jobs: progress: iteration 3450/8000: loss 0.0955, 2.77 it/s
+2026-10-03 09:21:01,699 INFO screenclean.jobs: progress: iteration 3800/8000: loss 0.0970, 2.78 it/s
+2026-10-03 09:23:26,835 INFO screenclean.jobs: progress: validation at 4000: PSNR 19.92 dB (input 17.98), SSIM 0.7317; uhdm 19.61 (input 17.40); text 20.22 (input 18.56); best 19.92 at 4000
+2026-10-03 09:23:44,540 INFO screenclean.jobs: progress: iteration 4050/8000: loss 0.0917, 0.55 it/s
+2026-10-03 09:25:52,123 INFO screenclean.jobs: progress: iteration 4400/8000: loss 0.0912, 2.78 it/s
+2026-10-03 09:27:57,703 INFO screenclean.jobs: progress: iteration 4750/8000: loss 0.0777, 2.78 it/s
+2026-10-03 09:30:03,691 INFO screenclean.jobs: progress: iteration 5100/8000: loss 0.0907, 2.78 it/s
+2026-10-03 09:32:09,882 INFO screenclean.jobs: progress: iteration 5450/8000: loss 0.0935, 2.76 it/s
+2026-10-03 09:34:16,684 INFO screenclean.jobs: progress: iteration 5800/8000: loss 0.0850, 2.76 it/s
+2026-10-03 09:34:33,660 INFO screenclean.jobs: Starting 0013_abl_no_fftloss (task=train, runtime=gpu, attempt=1, resuming=True)
+2026-10-03 09:34:34,500 INFO screenclean.jobs: progress: copying data/uhdm_v1/train from Drive to local disk
+2026-10-03 09:34:36,406 INFO screenclean.jobs: progress: copying data/uhdm_v1/val from Drive to local disk
+2026-10-03 09:34:36,474 INFO screenclean.jobs: progress: copying data/synth_v1/val from Drive to local disk
+2026-10-03 09:34:36,541 INFO screenclean.train.task: training sources: [12900] pairs; val: {'uhdm': 400, 'text': 300}
+2026-10-03 09:34:38,654 INFO screenclean.train.trainer: resumed from /content/drive/MyDrive/screenclean/runs/0013_abl_no_fftloss/last.pt at iteration 4064
+2026-10-03 09:34:42,749 INFO numexpr.utils: NumExpr defaulting to 2 threads.
+2026-10-03 09:36:44,281 INFO screenclean.jobs: progress: iteration 4350/8000: loss 0.0899, 2.91 it/s
+2026-10-03 09:38:49,549 INFO screenclean.jobs: progress: iteration 4700/8000: loss 0.0901, 2.73 it/s
+2026-10-03 09:40:59,491 INFO screenclean.jobs: progress: iteration 5050/8000: loss 0.0946, 2.70 it/s
+2026-10-03 09:43:09,066 INFO screenclean.jobs: progress: iteration 5400/8000: loss 0.0863, 2.70 it/s
+2026-10-03 09:45:19,681 INFO screenclean.jobs: progress: iteration 5750/8000: loss 0.0964, 2.67 it/s
+2026-10-03 09:48:11,863 INFO screenclean.jobs: progress: validation at 6000: PSNR 20.19 dB (input 17.98), SSIM 0.7398; uhdm 19.79 (input 17.40); text 20.59 (input 18.56); best 20.19 at 6000
+2026-10-03 09:48:30,123 INFO screenclean.jobs: progress: iteration 6050/8000: loss 0.0932, 0.52 it/s
+2026-10-03 09:50:40,489 INFO screenclean.jobs: progress: iteration 6400/8000: loss 0.0861, 2.67 it/s
+2026-10-03 09:52:50,416 INFO screenclean.jobs: progress: iteration 6750/8000: loss 0.0869, 2.68 it/s
+2026-10-03 09:55:01,081 INFO screenclean.jobs: progress: iteration 7100/8000: loss 0.0864, 2.70 it/s
+2026-10-03 09:57:11,240 INFO screenclean.jobs: progress: iteration 7450/8000: loss 0.0822, 2.68 it/s
+2026-10-03 09:59:22,073 INFO screenclean.jobs: progress: iteration 7800/8000: loss 0.0810, 2.69 it/s
+2026-10-03 10:01:49,765 INFO screenclean.jobs: progress: validation at 8000: PSNR 20.17 dB (input 17.98), SSIM 0.7414; uhdm 19.83 (input 17.40); text 20.52 (input 18.56); best 20.19 at 6000
+2026-10-03 10:01:50,436 INFO screenclean.jobs: Job 0013_abl_no_fftloss ended as done after 1636.8 s

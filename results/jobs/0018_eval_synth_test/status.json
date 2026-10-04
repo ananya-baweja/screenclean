@@ -1,0 +1,15 @@
+{
+  "attempt": 1,
+  "elapsed_min": 6.0,
+  "elapsed_s": 361.6,
+  "error": null,
+  "finished_utc": "2026-10-04T17:13:26+00:00",
+  "id": "0018_eval_synth_test",
+  "progress": "image 300/300 (test_000299)",
+  "progress_utc": "2026-10-04T17:13:26+00:00",
+  "runtime": "gpu",
+  "started_utc": "2026-10-04T17:07:24+00:00",
+  "state": "done",
+  "task": "eval",
+  "updated_utc": "2026-10-04T17:13:26+00:00"
+}

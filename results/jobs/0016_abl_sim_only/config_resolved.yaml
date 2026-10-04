@@ -1,0 +1,39 @@
+job:
+  id: 0016_abl_sim_only
+  task: train
+  runtime: gpu
+  config: configs/train/abl_sim_only.yaml
+  depends_on:
+  - 0002_prepare_uhdm
+  - 0006_gen_synth
+  max_minutes: 80
+  resume: true
+  attempt: 1
+  drive_subdir: jobs/0016_abl_sim_only
+  notes: 'Ablation (P8.2): abl_sim_only, 8,000 iterations from scratch (T4, ~50 min)'
+config:
+  run: runs/0016_abl_sim_only
+  data:
+    train:
+    - data/synth_v1/train
+    val:
+      uhdm: data/uhdm_v1/val
+      text: data/synth_v1/val
+    local_dir: /content/train_data
+  train:
+    model: scnet_base
+    crop: 384
+    batch: 6
+    workers: 2
+    iters: 8000
+    compile: auto
+    optim:
+      lr: 0.0003
+      warmup: 500
+      min_lr: 1.0e-06
+    loss:
+      fft_weight: 1.0
+    val_every: 2000
+    log_every: 50
+    ckpt_minutes: 15
+  stop_margin_min: 8

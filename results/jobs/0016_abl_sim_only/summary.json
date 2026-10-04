@@ -1,0 +1,56 @@
+{
+  "amp": true,
+  "attempt": 1,
+  "batch": 6,
+  "best": {
+    "iter": 8000,
+    "psnr": 21.46192383926413,
+    "ssim": 0.774029482806421
+  },
+  "crop": 384,
+  "device": "cuda",
+  "elapsed_s": 2334.2,
+  "final_val": {
+    "input_psnr": 17.981746,
+    "input_psnr_text": 18.564397,
+    "input_psnr_uhdm": 17.399096,
+    "iter": 8000.0,
+    "psnr": 21.461924,
+    "psnr_text": 28.18288,
+    "psnr_uhdm": 14.740968,
+    "seconds": 71.49428,
+    "ssim": 0.774029,
+    "ssim_text": 0.93056,
+    "ssim_uhdm": 0.617499
+  },
+  "git_sha": "0cf86cba6323e2a612debbbb85cf0a95d30f51f5",
+  "id": "0016_abl_sim_only",
+  "init_from": null,
+  "input_by_set": {
+    "text": 18.564397155340778,
+    "uhdm": 17.39909554077999
+  },
+  "input_psnr": 17.981746348060383,
+  "it_per_s": 2.469,
+  "iteration": 8000,
+  "iters": 8000,
+  "iters_this_run": 5743,
+  "model": "scnet_base",
+  "params_m": 4.65,
+  "peak_gpu_mem_gb": 6.13,
+  "resumed": true,
+  "run_dir": "runs/0016_abl_sim_only",
+  "seconds_this_run": 2326.0,
+  "speed_probe": {
+    "choice": "compiled",
+    "compiled_it_per_s": 3.334,
+    "eager_it_per_s": 1.375,
+    "error": null
+  },
+  "state": "done",
+  "task": "train",
+  "val_sets": [
+    "uhdm",
+    "text"
+  ]
+}

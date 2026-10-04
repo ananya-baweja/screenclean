@@ -1,0 +1,36 @@
+2026-10-03 11:00:36,124 INFO screenclean.jobs: Starting 0015_abl_no_dilation (task=train, runtime=gpu, attempt=1, resuming=False)
+2026-10-03 11:00:36,903 INFO screenclean.jobs: progress: copying data/uhdm_v1/train from Drive to local disk
+2026-10-03 11:00:37,867 INFO screenclean.jobs: progress: copying data/uhdm_v1/val from Drive to local disk
+2026-10-03 11:00:37,914 INFO screenclean.jobs: progress: copying data/synth_v1/val from Drive to local disk
+2026-10-03 11:00:37,968 INFO screenclean.train.task: training sources: [12900] pairs; val: {'uhdm': 400, 'text': 300}
+2026-10-03 11:00:44,049 INFO numexpr.utils: NumExpr defaulting to 2 threads.
+2026-10-03 11:02:48,895 INFO screenclean.jobs: progress: iteration 50/8000: loss 0.1502, 0.40 it/s
+2026-10-03 11:02:58,003 INFO screenclean.jobs: progress: speed probe: eager 1.373 it/s, compiled 3.344 it/s -> compiled; schedule 8000 iterations
+2026-10-03 11:04:54,424 INFO screenclean.jobs: progress: iteration 450/8000: loss 0.1433, 3.10 it/s
+2026-10-03 11:07:09,105 INFO screenclean.jobs: progress: iteration 850/8000: loss 0.1319, 2.90 it/s
+2026-10-03 11:09:11,832 INFO screenclean.jobs: progress: iteration 1200/8000: loss 0.1407, 2.82 it/s
+2026-10-03 11:11:16,990 INFO screenclean.jobs: progress: iteration 1550/8000: loss 0.1173, 2.79 it/s
+2026-10-03 11:13:22,843 INFO screenclean.jobs: progress: iteration 1900/8000: loss 0.1162, 2.79 it/s
+2026-10-03 11:15:19,012 INFO screenclean.jobs: progress: validation at 2000: PSNR 19.90 dB (input 17.98), SSIM 0.7081; uhdm 19.26 (input 17.40); text 20.54 (input 18.56); best 19.90 at 2000
+2026-10-03 11:15:36,303 INFO screenclean.jobs: progress: iteration 2050/8000: loss 0.1179, 0.51 it/s
+2026-10-03 11:17:39,100 INFO screenclean.jobs: progress: iteration 2400/8000: loss 0.1107, 2.84 it/s
+2026-10-03 11:19:42,981 INFO screenclean.jobs: progress: iteration 2750/8000: loss 0.1115, 2.82 it/s
+2026-10-03 11:21:47,652 INFO screenclean.jobs: progress: iteration 3100/8000: loss 0.1120, 2.80 it/s
+2026-10-03 11:23:52,702 INFO screenclean.jobs: progress: iteration 3450/8000: loss 0.1094, 2.80 it/s
+2026-10-03 11:25:57,827 INFO screenclean.jobs: progress: iteration 3800/8000: loss 0.1108, 2.81 it/s
+2026-10-03 11:28:20,884 INFO screenclean.jobs: progress: validation at 4000: PSNR 20.26 dB (input 17.98), SSIM 0.7382; uhdm 19.66 (input 17.40); text 20.87 (input 18.56); best 20.26 at 4000
+2026-10-03 11:28:38,210 INFO screenclean.jobs: progress: iteration 4050/8000: loss 0.1059, 0.56 it/s
+2026-10-03 11:30:42,765 INFO screenclean.jobs: progress: iteration 4400/8000: loss 0.1079, 2.80 it/s
+2026-10-03 11:32:47,871 INFO screenclean.jobs: progress: iteration 4750/8000: loss 0.0907, 2.79 it/s
+2026-10-03 11:34:53,281 INFO screenclean.jobs: progress: iteration 5100/8000: loss 0.1051, 2.79 it/s
+2026-10-03 11:36:58,841 INFO screenclean.jobs: progress: iteration 5450/8000: loss 0.1057, 2.79 it/s
+2026-10-03 11:39:04,406 INFO screenclean.jobs: progress: iteration 5800/8000: loss 0.0980, 2.78 it/s
+2026-10-03 11:41:27,841 INFO screenclean.jobs: progress: validation at 6000: PSNR 20.51 dB (input 17.98), SSIM 0.7497; uhdm 19.79 (input 17.40); text 21.22 (input 18.56); best 20.51 at 6000
+2026-10-03 11:41:45,372 INFO screenclean.jobs: progress: iteration 6050/8000: loss 0.1065, 0.56 it/s
+2026-10-03 11:43:48,993 INFO screenclean.jobs: progress: iteration 6400/8000: loss 0.0991, 2.78 it/s
+2026-10-03 11:45:56,477 INFO screenclean.jobs: progress: iteration 6750/8000: loss 0.1013, 2.71 it/s
+2026-10-03 11:48:01,791 INFO screenclean.jobs: progress: iteration 7100/8000: loss 0.1013, 2.79 it/s
+2026-10-03 11:50:06,404 INFO screenclean.jobs: progress: iteration 7450/8000: loss 0.0972, 2.82 it/s
+2026-10-03 11:52:10,329 INFO screenclean.jobs: progress: iteration 7800/8000: loss 0.0941, 2.83 it/s
+2026-10-03 11:54:32,815 INFO screenclean.jobs: progress: validation at 8000: PSNR 20.55 dB (input 17.98), SSIM 0.7513; uhdm 19.83 (input 17.40); text 21.27 (input 18.56); best 20.55 at 8000
+2026-10-03 11:54:33,746 INFO screenclean.jobs: Job 0015_abl_no_dilation ended as done after 3237.6 s

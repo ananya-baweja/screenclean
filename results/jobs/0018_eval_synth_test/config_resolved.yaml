@@ -1,0 +1,50 @@
+job:
+  id: 0018_eval_synth_test
+  task: eval
+  runtime: gpu
+  config: configs/eval/synth_test.yaml
+  depends_on:
+  - 0011_finetune_text
+  - 0012_abl_full
+  - 0013_abl_no_fftloss
+  - 0014_abl_plain_unet
+  - 0015_abl_no_dilation
+  - 0016_abl_sim_only
+  max_minutes: 45
+  resume: true
+  attempt: 1
+  drive_subdir: jobs/0018_eval_synth_test
+  notes: All models + input + classical filter on the synthetic text test (T4, ~10
+    min)
+config:
+  split: data/synth_v1/test
+  local_dir: /content/eval_data
+  sample_images: 6
+  lpips: true
+  stop_margin_min: 10
+  methods:
+  - name: identity
+    label: Input (no cleaning)
+  - name: fft_notch_local
+    params_from: params/baselines.yaml
+  - name: scnet
+    label: ScreenCleanNet (ours, whole image)
+    checkpoint: runs/0009_train_sc_base/best.pt
+  - name: scnet
+    label: ScreenCleanNet + text fine-tune
+    checkpoint: runs/0011_finetune_text/best.pt
+  - name: scnet
+    label: 'Ablation: full model, short schedule'
+    checkpoint: runs/0012_abl_full/last.pt
+  - name: scnet
+    label: 'Ablation: no FFT loss'
+    checkpoint: runs/0013_abl_no_fftloss/last.pt
+  - name: scnet
+    label: 'Ablation: plain U-Net (no wavelets, no dilation)'
+    checkpoint: runs/0014_abl_plain_unet/last.pt
+  - name: scnet
+    label: 'Ablation: no dilation'
+    checkpoint: runs/0015_abl_no_dilation/last.pt
+  - name: scnet
+    label: 'Ablation: simulator data only'
+    checkpoint: runs/0016_abl_sim_only/last.pt

@@ -1,0 +1,15 @@
+{
+  "attempt": 1,
+  "elapsed_min": 30.9,
+  "elapsed_s": 1858.1,
+  "error": null,
+  "finished_utc": "2026-10-04T13:57:30+00:00",
+  "id": "0017_eval_ablations_dev100",
+  "progress": "image 63/63 (test/0477)",
+  "progress_utc": "2026-10-04T13:57:30+00:00",
+  "runtime": "gpu",
+  "started_utc": "2026-10-04T13:26:32+00:00",
+  "state": "done",
+  "task": "eval",
+  "updated_utc": "2026-10-04T13:57:30+00:00"
+}

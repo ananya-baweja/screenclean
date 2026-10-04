@@ -1,0 +1,36 @@
+2026-10-03 10:06:09,300 INFO screenclean.jobs: Starting 0014_abl_plain_unet (task=train, runtime=gpu, attempt=1, resuming=False)
+2026-10-03 10:06:09,872 INFO screenclean.jobs: progress: copying data/uhdm_v1/train from Drive to local disk
+2026-10-03 10:06:10,910 INFO screenclean.jobs: progress: copying data/uhdm_v1/val from Drive to local disk
+2026-10-03 10:06:10,953 INFO screenclean.jobs: progress: copying data/synth_v1/val from Drive to local disk
+2026-10-03 10:06:11,000 INFO screenclean.train.task: training sources: [12900] pairs; val: {'uhdm': 400, 'text': 300}
+2026-10-03 10:06:16,807 INFO numexpr.utils: NumExpr defaulting to 2 threads.
+2026-10-03 10:08:56,743 INFO screenclean.jobs: progress: iteration 50/8000: loss 0.1502, 0.32 it/s
+2026-10-03 10:09:05,444 INFO screenclean.jobs: progress: speed probe: eager 1.501 it/s, compiled 3.468 it/s -> compiled; schedule 8000 iterations
+2026-10-03 10:10:58,503 INFO screenclean.jobs: progress: iteration 450/8000: loss 0.1449, 3.19 it/s
+2026-10-03 10:13:07,557 INFO screenclean.jobs: progress: iteration 850/8000: loss 0.1325, 3.02 it/s
+2026-10-03 10:15:24,071 INFO screenclean.jobs: progress: iteration 1250/8000: loss 0.1276, 2.90 it/s
+2026-10-03 10:17:25,139 INFO screenclean.jobs: progress: iteration 1600/8000: loss 0.1245, 2.90 it/s
+2026-10-03 10:19:25,972 INFO screenclean.jobs: progress: iteration 1950/8000: loss 0.1147, 2.89 it/s
+2026-10-03 10:21:00,639 INFO screenclean.jobs: progress: validation at 2000: PSNR 19.69 dB (input 17.98), SSIM 0.7024; uhdm 19.14 (input 17.40); text 20.23 (input 18.56); best 19.69 at 2000
+2026-10-03 10:21:35,038 INFO screenclean.jobs: progress: iteration 2100/8000: loss 0.1232, 2.87 it/s
+2026-10-03 10:23:35,504 INFO screenclean.jobs: progress: iteration 2450/8000: loss 0.1178, 2.89 it/s
+2026-10-03 10:25:36,631 INFO screenclean.jobs: progress: iteration 2800/8000: loss 0.1105, 2.89 it/s
+2026-10-03 10:27:37,889 INFO screenclean.jobs: progress: iteration 3150/8000: loss 0.1064, 2.88 it/s
+2026-10-03 10:29:38,958 INFO screenclean.jobs: progress: iteration 3500/8000: loss 0.1056, 2.89 it/s
+2026-10-03 10:31:40,436 INFO screenclean.jobs: progress: iteration 3850/8000: loss 0.1048, 2.88 it/s
+2026-10-03 10:33:41,789 INFO screenclean.jobs: progress: validation at 4000: PSNR 20.12 dB (input 17.98), SSIM 0.7300; uhdm 19.53 (input 17.40); text 20.71 (input 18.56); best 20.12 at 4000
+2026-10-03 10:33:59,012 INFO screenclean.jobs: progress: iteration 4050/8000: loss 0.1051, 0.58 it/s
+2026-10-03 10:36:00,797 INFO screenclean.jobs: progress: iteration 4400/8000: loss 0.1068, 2.85 it/s
+2026-10-03 10:38:03,561 INFO screenclean.jobs: progress: iteration 4750/8000: loss 0.0924, 2.89 it/s
+2026-10-03 10:40:05,165 INFO screenclean.jobs: progress: iteration 5100/8000: loss 0.1071, 2.87 it/s
+2026-10-03 10:42:07,147 INFO screenclean.jobs: progress: iteration 5450/8000: loss 0.1083, 2.86 it/s
+2026-10-03 10:44:08,507 INFO screenclean.jobs: progress: iteration 5800/8000: loss 0.1011, 2.88 it/s
+2026-10-03 10:46:27,102 INFO screenclean.jobs: progress: validation at 6000: PSNR 20.31 dB (input 17.98), SSIM 0.7420; uhdm 19.68 (input 17.40); text 20.95 (input 18.56); best 20.31 at 6000
+2026-10-03 10:46:44,448 INFO screenclean.jobs: progress: iteration 6050/8000: loss 0.1083, 0.58 it/s
+2026-10-03 10:48:45,903 INFO screenclean.jobs: progress: iteration 6400/8000: loss 0.1002, 2.88 it/s
+2026-10-03 10:50:47,760 INFO screenclean.jobs: progress: iteration 6750/8000: loss 0.1028, 2.88 it/s
+2026-10-03 10:52:49,719 INFO screenclean.jobs: progress: iteration 7100/8000: loss 0.1013, 2.89 it/s
+2026-10-03 10:54:51,135 INFO screenclean.jobs: progress: iteration 7450/8000: loss 0.0952, 2.87 it/s
+2026-10-03 10:56:53,934 INFO screenclean.jobs: progress: iteration 7800/8000: loss 0.0949, 2.85 it/s
+2026-10-03 10:59:13,260 INFO screenclean.jobs: progress: validation at 8000: PSNR 20.37 dB (input 17.98), SSIM 0.7448; uhdm 19.73 (input 17.40); text 21.01 (input 18.56); best 20.37 at 8000
+2026-10-03 10:59:14,167 INFO screenclean.jobs: Job 0014_abl_plain_unet ended as done after 3184.9 s
