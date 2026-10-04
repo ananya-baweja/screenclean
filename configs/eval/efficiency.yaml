@@ -1,0 +1,14 @@
+# Job 0023: size and speed of each model at 1280x720 and 1920x1080: parameters, FLOPs, latency on the
+# T4 (fp16) with peak memory, and on the CPU (fp32, 2 threads). Image in -> image out, median of runs.
+sizes: {"1280x720": [720, 1280], "1920x1080": [1080, 1920]}
+gpu_repeats: 20
+cpu_repeats: 3
+cpu_threads: 2
+models:
+  - {label: "ScreenCleanNet (final)", name: scnet, checkpoint: runs/0011_finetune_text/best.pt}
+  - {label: "ScreenCleanNet tiny (architecture only)", name: scnet, untrained: scnet_tiny}
+  - label: ESDNet (reference)
+    name: esdnet_ref
+    repo_sha: fa70a92d3d4f35d5c4e3fa7a54e3b2e5b995f1cd
+    weights: {id: 1HT_ubcAYRqzFIJ46XuPhrulJk2YFBIEl, bytes: 23895301}
+    weights_cache: models/esdnet_uhdm.pth

@@ -1,0 +1,9 @@
+id: 0023_efficiency
+task: efficiency
+runtime: gpu
+config: configs/eval/efficiency.yaml
+max_minutes: 45
+resume: false
+attempt: 1
+drive_subdir: jobs/0023_efficiency
+notes: "Parameters, FLOPs, T4 and CPU latency at 720p/1080p for the final model, scnet_tiny and ESDNet (T4, ~15 min)"

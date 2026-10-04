@@ -1,0 +1,9 @@
+id: 0020_prepare_uhdm_test
+task: prepare_uhdm
+runtime: cpu
+config: configs/data/uhdm_test_rest.yaml
+max_minutes: 90
+resume: true
+attempt: 1
+drive_subdir: jobs/0020_prepare_uhdm_test
+notes: "The 400 UHDM test pairs outside dev100, as original JPEGs on Drive (~4.7 GB, CPU, ~20 min)"

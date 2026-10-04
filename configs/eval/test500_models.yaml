@@ -1,0 +1,21 @@
+# Job 0021: the neural networks on the full UHDM test set, all 500 pairs at full resolution (T4), with
+# LPIPS. Used once, for the final report (plan C3.1); nothing is tuned on these numbers. dev100 (job 0002)
+# plus test_rest (job 0020) are scored as one set. Whole images, falling back to tiles if memory runs out.
+split: [data/uhdm_v1/dev100, data/uhdm_v1/test_rest]
+split_name: data/uhdm_v1/test500
+local_dir: /content/eval_data
+sample_images: 4
+lpips: true
+stop_margin_min: 10
+methods:
+  - {name: identity, label: "Input (no cleaning)"}
+  - name: esdnet_ref
+    label: ESDNet (reference)
+    repo_sha: fa70a92d3d4f35d5c4e3fa7a54e3b2e5b995f1cd
+    weights: {id: 1HT_ubcAYRqzFIJ46XuPhrulJk2YFBIEl, bytes: 23895301}
+    weights_cache: models/esdnet_uhdm.pth
+    fp16: true
+    tile: 1024
+    overlap: 64
+  - {name: scnet, label: "ScreenCleanNet (before fine-tune)", checkpoint: runs/0009_train_sc_base/best.pt}
+  - {name: scnet, label: "ScreenCleanNet (final)", checkpoint: runs/0011_finetune_text/best.pt}

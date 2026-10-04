@@ -1,0 +1,28 @@
+# Job 0019: OCR on the 300 synthetic text test crops (P4), every method x two OCR engines (T4).
+# Runs first in P9: it installs and self-checks the OCR engines, and tells whether the text fine-tune
+# (the final model, docs/DECISIONS.md P9.0) also *reads* better than the main model ("compare").
+# Ground truth = the text lines fully inside each crop. PaddleOCR uses its defaults for English with
+# document orientation, unwarping and text-line orientation off; if it fails its self-check it is retried
+# without oneDNN, then replaced by RapidOCR (eval/ocr.py).
+split: data/synth_v1/test
+local_dir: /content/ocr_eval
+engines: [paddle, tesseract]
+ocr_packages: /content/ocr_packages
+stop_margin_min: 10
+methods:
+  - {name: identity, label: "Input (no cleaning)"}
+  - {name: target, label: "Clean target (upper bound)"}
+  - {name: fft_notch_local, params_from: params/baselines.yaml}
+  - name: esdnet_ref
+    label: ESDNet (reference)
+    repo_sha: fa70a92d3d4f35d5c4e3fa7a54e3b2e5b995f1cd
+    weights: {id: 1HT_ubcAYRqzFIJ46XuPhrulJk2YFBIEl, bytes: 23895301}
+    weights_cache: models/esdnet_uhdm.pth
+    fp16: true
+  - {name: scnet, label: "ScreenCleanNet (before fine-tune)", checkpoint: runs/0009_train_sc_base/best.pt}
+  - {name: scnet, label: "ScreenCleanNet (final)", checkpoint: runs/0011_finetune_text/best.pt}
+  - {name: scnet, label: "Ablation: simulator data only", checkpoint: runs/0016_abl_sim_only/last.pt}
+compare:
+  - ["ScreenCleanNet (final)", "ScreenCleanNet (before fine-tune)"]
+  - ["ScreenCleanNet (final)", "fft_notch_local"]
+  - ["ScreenCleanNet (final)", "ESDNet (reference)"]

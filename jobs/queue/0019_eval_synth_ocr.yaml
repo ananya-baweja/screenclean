@@ -1,0 +1,9 @@
+id: 0019_eval_synth_ocr
+task: eval_synth_ocr
+runtime: gpu
+config: configs/eval/synth_ocr.yaml
+max_minutes: 120
+resume: true
+attempt: 1
+drive_subdir: jobs/0019_eval_synth_ocr
+notes: "OCR (PaddleOCR + Tesseract) on the 300 synthetic text crops, every method; checks the final-model choice (T4, ~60 min)"

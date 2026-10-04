@@ -1,0 +1,10 @@
+id: 0025_eval_real_ocr
+task: eval_real_ocr
+runtime: gpu
+config: configs/eval/real_ocr.yaml
+depends_on: [0019_eval_synth_ocr, 0024_ingest_real]
+max_minutes: 150
+resume: true
+attempt: 1
+drive_subdir: jobs/0025_eval_real_ocr
+notes: "The real-photo OCR benchmark and the product pipeline end to end (T4, ~2 min per photo, resumes)"

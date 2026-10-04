@@ -1,0 +1,10 @@
+id: 0021_eval_test500_models
+task: eval
+runtime: gpu
+config: configs/eval/test500_models.yaml
+depends_on: [0020_prepare_uhdm_test]
+max_minutes: 150
+resume: true
+attempt: 1
+drive_subdir: jobs/0021_eval_test500_models
+notes: "Final UHDM evaluation, all 500 test pairs: input, ESDNet reference, both ScreenCleanNet models, LPIPS (T4, ~70 min)"

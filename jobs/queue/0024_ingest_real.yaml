@@ -1,0 +1,9 @@
+id: 0024_ingest_real
+task: ingest_real
+runtime: cpu
+requires: [real_captures/raw]
+max_minutes: 60
+resume: false
+attempt: 1
+drive_subdir: jobs/0024_ingest_real
+notes: "Match Ananya's phone photos to capture-kit pages by their corner markers (CPU, ~10 min); waits until photos are on Drive"

@@ -1,0 +1,10 @@
+id: 0022_eval_test500_classical
+task: eval
+runtime: cpu
+config: configs/eval/test500_classical.yaml
+depends_on: [0020_prepare_uhdm_test]
+max_minutes: 150
+resume: true
+attempt: 1
+drive_subdir: jobs/0022_eval_test500_classical
+notes: "Final UHDM evaluation, all 500 test pairs: the classical filters (CPU, ~2 h, may take two runs)"

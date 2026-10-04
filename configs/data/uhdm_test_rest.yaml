@@ -1,0 +1,23 @@
+# Job 0020: the 400 UHDM test pairs that are not in dev100 (original JPEGs, ~4.7 GB on Drive), for the
+# one-time evaluation on the full 500-pair test set in P9 (jobs 0021/0022). Same source as job 0002;
+# train/val/dev100 are not touched. Delete data/uhdm_v1/test_rest from Drive after P9 if space is short.
+phases: [test_rest]
+test_rest:
+  pairs_per_shard: 25
+  drive_gb: 5.0
+
+source:
+  url: https://huggingface.co/datasets/leegwang/uhdm/resolve/9b06328be55fbc609c6bb1d60ddc3fdab179c4b2/uhdm.zip
+  train_prefix: train/           # members look like train/train/pair_22/0254_gt.jpg -> key train/pair_22/0254
+  test_prefix: test/             # members look like test/test/0254_gt.jpg -> key test/0254
+
+drive_out: data/uhdm_v1          # under the Drive project root
+local_dir: /content/uhdm_work    # Colab local disk, only used to build each shard before copying it to Drive
+seed: 0
+crop: 512
+jpeg_quality: 95                 # 4:4:4 chroma, so thin coloured detail survives
+stop_margin_min: 10              # stop this long before the job's time budget ends
+download_workers: 8              # images fetched in parallel
+download_retries: 6
+download_backoff_s: 5
+

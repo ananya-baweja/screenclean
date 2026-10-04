@@ -1,0 +1,41 @@
+# Job 0025: the real-photo benchmark (Ananya's phone photos of capture-kit pages; plan C4, C9, C11), T4.
+# 1. "oracle:" rows: every method on the original photo (the page's area + 64 px), every output straightened
+#    with the same homography from the corner markers to 1920x1080, markers painted over, then OCR.
+# 2. "product:" rows: scan() end to end (find the screen, clean, straighten, document clean-up), per cleaner.
+# Screen detection is scored against the marker corners. Two OCR engines; ground truth from
+# capture_kit/pages.json. About 2 minutes per photo, so ~150 photos take two or three runs; it resumes.
+captures: real_captures/processed/captures.json
+raw_dir: real_captures/raw
+kit_dir: capture_kit
+local_dir: /content/real_ocr
+engines: [paddle, tesseract]
+ocr_packages: /content/ocr_packages
+crop_margin: 64
+product_mode: document
+stop_margin_min: 15
+methods:
+  - {name: identity, label: "Input (no cleaning)"}
+  - {name: chroma_lowpass, params_from: params/baselines.yaml}
+  - {name: fft_notch_local, params_from: params/baselines.yaml}
+  - name: esdnet_ref
+    label: ESDNet (reference)
+    repo_sha: fa70a92d3d4f35d5c4e3fa7a54e3b2e5b995f1cd
+    weights: {id: 1HT_ubcAYRqzFIJ46XuPhrulJk2YFBIEl, bytes: 23895301}
+    weights_cache: models/esdnet_uhdm.pth
+    fp16: true
+    tile: 1024
+    overlap: 64
+  - {name: scnet, label: "ScreenCleanNet (before fine-tune)", checkpoint: runs/0009_train_sc_base/best.pt}
+  - {name: scnet, label: "ScreenCleanNet (final)", checkpoint: runs/0011_finetune_text/best.pt}
+  - {name: scnet, label: "Ablation: simulator data only", checkpoint: runs/0016_abl_sim_only/last.pt}
+product_cleaners:
+  - {label: "none", cleaner: none}
+  - {label: "fft_notch_local", cleaner: fft_notch_local}
+  - {label: "ScreenCleanNet (final)", method: "ScreenCleanNet (final)"}
+compare:
+  - ["oracle:ScreenCleanNet (final)", "oracle:ScreenCleanNet (before fine-tune)"]
+  - ["oracle:ScreenCleanNet (final)", "oracle:fft_notch_local"]
+  - ["oracle:ScreenCleanNet (final)", "oracle:ESDNet (reference)"]
+  - ["oracle:Ablation: simulator data only", "oracle:Input (no cleaning)"]
+  - ["product:ScreenCleanNet (final)", "product:none"]
+  - ["product:fft_notch_local", "product:none"]

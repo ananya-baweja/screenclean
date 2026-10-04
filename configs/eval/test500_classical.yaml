@@ -1,0 +1,14 @@
+# Job 0022: the classical filters on the full UHDM test set (500 pairs, CPU runtime, 2 worker processes),
+# with the settings tuned on validation images by job 0003. The notch filters take ~13 s per 4K image, so
+# this takes about two hours; it continues where it stopped if a run ends early.
+split: [data/uhdm_v1/dev100, data/uhdm_v1/test_rest]
+split_name: data/uhdm_v1/test500
+local_dir: /content/eval_data
+sample_images: 4
+workers: 2
+stop_margin_min: 10
+methods:
+  - {name: identity, label: "Input (no cleaning)"}
+  - {name: chroma_lowpass, params_from: params/baselines.yaml}
+  - {name: fft_notch, params_from: params/baselines.yaml}
+  - {name: fft_notch_local, params_from: params/baselines.yaml}
