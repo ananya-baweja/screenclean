@@ -182,6 +182,7 @@ TASK_MODULES: dict[str, str] = {
     "gen_synth": "screenclean.data.synthetic",
     "sim_realism": "screenclean.data.synthetic",
     "train": "screenclean.train.task",
+    "eval_synth_ocr": "screenclean.eval.ocr_eval",
 }
 
 
