@@ -1,0 +1,88 @@
+{
+ "what": "jobs ingest_real + eval_real_ocr on simulated photos of capture-kit pages (laptop CPU)",
+ "photos": 10,
+ "pages": [
+  0,
+  4,
+  9,
+  13,
+  17,
+  22,
+  26,
+  30,
+  35,
+  39
+ ],
+ "ingest": {
+  "n_photos": 10,
+  "n_ok": 10,
+  "reproj_err_px": {
+   "median": 0.5635,
+   "p90": 1.2813999999999999
+  },
+  "not_ok": []
+ },
+ "ocr_tesseract": {
+  "oracle:Input (no cleaning)": {
+   "cer": 0.1198,
+   "word_f1": 0.827
+  },
+  "oracle:chroma_lowpass": {
+   "cer": 0.1254,
+   "word_f1": 0.8132,
+   "cer_vs_input": [
+    0.0056,
+    -0.0109,
+    0.0275
+   ]
+  },
+  "oracle:fft_notch_local": {
+   "cer": 0.1456,
+   "word_f1": 0.8029,
+   "cer_vs_input": [
+    0.0258,
+    -0.0009,
+    0.0572
+   ]
+  },
+  "product:fft_notch_local": {
+   "cer": 0.1288,
+   "word_f1": 0.8191,
+   "cer_vs_input": [
+    0.0479,
+    0.0084,
+    0.0953
+   ]
+  },
+  "product:none": {
+   "cer": 0.0808,
+   "word_f1": 0.8589
+  }
+ },
+ "detection": {
+  "detected_rate": 0.9,
+  "median_max_err_pct_diag": 0.05041318597214075,
+  "median_mean_err_px": 1.533743365272341,
+  "n": 10,
+  "success_rate": 0.9,
+  "success_rule": "every corner within 3% of the photo diagonal"
+ },
+ "seconds_per_photo_median": {
+  "fft_notch_local": {
+   "clean": 11.848500000000001,
+   "cleanup": 6.0145,
+   "detect": 1.534,
+   "rectify": 0.245,
+   "total": 18.386499999999998
+  },
+  "none": {
+   "clean": 0.1105,
+   "cleanup": 5.9925,
+   "detect": 1.534,
+   "rectify": 0.2665,
+   "total": 6.4655000000000005
+  }
+ },
+ "eval_minutes": 11.1,
+ "complete": true
+}

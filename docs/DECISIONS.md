@@ -297,3 +297,53 @@ One entry per decision: date, the decision, why, and the alternatives considered
   else in P9. If the fine-tune reads synthetic text clearly worse than the main model (CER higher, with a 95%
   confidence interval that excludes zero), this choice is revisited before any real-capture result is seen.
 
+## 2026-10-05: OCR evaluation setup (P9.1)
+
+- **Engines:** PaddleOCR 3.7.0 (PaddlePaddle 3.3.1, CPU) and Tesseract 5 (the scan pipeline's setup: page
+  mode 3, local Sauvola thresholding). PaddleOCR runs with its English defaults and with document orientation,
+  unwarping and text-line orientation off, so it can't straighten pages for some methods and not others.
+- **Isolation:** PaddleOCR is installed on Colab into its own folder (`pip install --target`) and runs in a worker
+  process (`eval/ocr_worker.py`, JSON lines), so its numpy/OpenCV never meet PyTorch's (plan C9 asked for a
+  separate venv; a target folder needs no `venv` support on Colab and gives the same isolation).
+- **Self-check and fallback:** every engine first reads one clean capture-kit page and must reach word F1 >= 0.9.
+  If PaddleOCR fails (install, start or self-check), it is retried without oneDNN, then replaced by RapidOCR
+  (the same PP-OCR models on ONNX Runtime). The summary records which engine actually ran and its versions.
+  Locally, Tesseract reads the clean self-check page with CER 0.3% (P3.4 threshold: below 3%).
+- **Scoring:** CER and WER (jiwer) need both texts in the same order: ground truth and OCR lines are ordered by
+  the same rule (rows by vertical overlap, then left to right). Word F1 ignores order. Normalisation: NFKC,
+  ASCII quotes and dashes, lower case, and stand-alone bullet symbols removed (bullets are drawn shapes with no
+  ground-truth text; OCR reads them as "*", "¢" or "°").
+- **Statistics:** means with 95% bootstrap intervals; method differences as paired bootstrap intervals over the
+  same images (10,000 resamples, seed 0).
+
+## 2026-10-05: Real-photo protocol and job order (P9.2-P9.4)
+
+- **Same geometry ("oracle" rows):** each method runs on the page's area of the original photo (+64 px, full
+  resolution); every output is straightened with the same marker homography to 1920x1080, evened out with the
+  scan pipeline's document clean-up, and the corner markers are painted over before OCR.
+- **Why the clean-up:** in the dry run on simulated photos, one photographed slide read with CER 0.92 without
+  it and 0.09 with it. Lighting failures like that would hide the differences between methods; every method
+  gets the same clean-up, so the comparison stays fair.
+- **The product ("product" rows):** `scan()` end to end per cleaner (none, local notch, final model). Screen
+  detection is scored against the page corners from the markers, with the P5 rule (every corner within 3% of
+  the photo diagonal). Each kind of row is compared with its own baseline (input / no cleaner).
+- **Dry run** (`results/checks/real_ocr_dryrun.json`, 10 simulated photos of capture-kit pages, laptop,
+  Tesseract): 10/10 matched to their page (median marker error 0.56 px); detection right on 90%; end to end,
+  no cleaner: CER 0.081 / word F1 0.859, local notch filter: CER 0.129 / word F1 0.819 (it hurts, as in P5);
+  11 minutes for the whole job.
+- **Privacy:** the results zips of jobs 0024/0025 carry tables and counts only, never the photos or images made
+  from them. Whether any of Ananya's photos appear in the report is her decision (plan C3.3).
+- **Breakdowns:** by screen, phone, page template and text size. Capture angle and moiré strength are not
+  broken down yet.
+- **Full UHDM test set:** the 400 test pairs outside dev100 are stored on Drive by job 0020 (`test_rest`) and
+  scored together with dev100 as `test500`, once. The neural networks (0021, T4) and the classical filters
+  (0022, CPU, about two hours) run as separate jobs so the slow CPU filters don't use GPU time.
+- **Job order:** 0019 (synthetic OCR) comes first and must be done before 0025, so the final-model check happens
+  before any real-photo result exists. 0024 waits until photos are on Drive (`requires: [real_captures/raw]`).
+- **Runner:** auto mode prefers jobs for the session's runtime, and a GPU session never takes a CPU job.
+
+## 2026-10-05: Results are generated (P9.5)
+
+- `python -m screenclean report` writes `docs/RESULTS.md` and its figures from the job summaries; sections whose
+  jobs haven't run say which job will fill them. No number in RESULTS.md is typed by hand.
+
