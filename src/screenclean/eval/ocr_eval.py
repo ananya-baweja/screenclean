@@ -130,33 +130,45 @@ class OcrScorer:
 
 def summarize(
     rows: Iterable[dict[str, Any]],
-    baseline: str | None,
+    baseline: str | dict[str, str] | None,
     pairs: Iterable[tuple[str, str]] = (),
-    group: str | None = None,
+    groups: Iterable[str] = (),
 ) -> dict[str, Any]:
     """Means with 95% bootstrap intervals per (engine, method), paired differences vs ``baseline``.
 
-    ``pairs`` adds paired comparisons (method a minus method b) per engine. ``group`` (a row
-    field) adds mean CER per group value, for breakdowns by screen, phone or template.
+    ``baseline`` is a method, or ``{method prefix: method}`` when rows of different kinds have
+    their own baseline (``{"oracle:": "oracle:Input", "product:": "product:none"}``). ``pairs``
+    adds paired comparisons (method a minus method b) per engine. ``groups`` (row fields) add
+    mean CER per value of each field, for breakdowns by screen, phone or template.
     """
+
+    def baseline_of(method: str) -> str | None:
+        if isinstance(baseline, dict):
+            return next((b for prefix, b in baseline.items() if method.startswith(prefix)), None)
+        return baseline
+
     table: dict[str, dict[str, dict[str, dict[str, float]]]] = defaultdict(lambda: defaultdict(dict))
-    groups: dict[tuple[str, str, str], list[float]] = defaultdict(list)
+    groups = tuple(groups)
+    by_group: dict[tuple[str, str, str, str], list[float]] = defaultdict(list)
     for r in rows:
         vals = {k: float(r[k]) for k in ("cer", "wer", "word_f1")}
         table[r["engine"]][r["method"]][r["key"]] = vals
-        if group:
-            groups[(r["engine"], r["method"], r.get(group, "?"))].append(vals["cer"])
+        for g in groups:
+            by_group[(r["engine"], g, r["method"], str(r.get(g, "?")))].append(vals["cer"])
 
     out: dict[str, Any] = {}
     for engine, methods in table.items():
-        base = methods.get(baseline, {}) if baseline else {}
         per: dict[str, Any] = {}
         for method, items in methods.items():
+            base_name = baseline_of(method)
+            base = methods.get(base_name, {}) if base_name else {}
             entry: dict[str, Any] = {"n": len(items)}
+            if base and method != base_name:
+                entry["baseline"] = base_name
             for metric in ("cer", "wer", "word_f1"):
                 values = {k: v[metric] for k, v in items.items()}
                 entry[metric] = bootstrap_mean(list(values.values())).as_dict()
-                if base and method != baseline and set(values) & set(base):
+                if base and method != base_name and set(values) & set(base):
                     entry[f"{metric}_vs_input"] = paired_by_key(
                         values, {k: v[metric] for k, v in base.items()}
                     ).as_dict()
@@ -177,12 +189,12 @@ def summarize(
                 )
         if comparisons:
             out[engine]["comparisons"] = comparisons
-        if group:
-            out[engine][f"cer_by_{group}"] = {
-                f"{m} | {g}": {"mean": float(np.mean(v)), "n": len(v)}
-                for (e, m, g), v in sorted(groups.items())
-                if e == engine
-            }
+        if groups:
+            cer_by: dict[str, dict[str, dict[str, Any]]] = {g: defaultdict(dict) for g in groups}
+            for (e, g, m, value), v in sorted(by_group.items()):
+                if e == engine:
+                    cer_by[g][m][value] = {"mean": float(np.mean(v)), "n": len(v)}
+            out[engine]["cer_by"] = {g: dict(d) for g, d in cer_by.items()}
     return out
 
 

@@ -4,7 +4,7 @@
   that only the worker puts on its path, so its numpy / OpenCV versions never meet PyTorch's.
 - **Tesseract 5** (``tesseract``): the scan pipeline's setup (local Sauvola thresholding).
 - **RapidOCR** (``rapidocr``): the same PP-OCR models on ONNX Runtime; used if PaddleOCR fails
-  to install, start or pass its self-check.
+  to install, start or pass its self-check, also with its CPU acceleration off (``paddle_safe``).
 
 Every engine reads one clean capture-kit page first (the self-check), and the result is
 recorded, so a broken install can't silently produce bad numbers.
@@ -37,7 +37,9 @@ PACKAGES = {
     "paddle": ["paddlepaddle==3.3.1", "paddleocr==3.7.0"],
     "rapidocr": ["rapidocr==3.9.2", "onnxruntime==1.30.0"],
 }
-FALLBACKS = {"paddle": ["rapidocr"]}
+PACKAGES["paddle_safe"] = PACKAGES["paddle"]
+PACKAGE_DIRS = {"paddle_safe": "paddle"}  # the same install
+FALLBACKS = {"paddle": ["paddle_safe", "rapidocr"]}
 
 
 class OcrEngineError(RuntimeError):
@@ -47,8 +49,8 @@ class OcrEngineError(RuntimeError):
 def install(engine: str, target: str | Path, timeout_s: float = 1800) -> dict[str, Any]:
     """``pip install --target`` the engine's pinned packages (once per folder)."""
     target = Path(target)
-    done = target / f".installed-{engine}"
-    if done.exists():
+    done, wanted = target / ".installed", " ".join(PACKAGES[engine]) + "\n"
+    if done.exists() and done.read_text(encoding="utf-8") == wanted:
         return {"ok": True, "seconds": 0.0, "cached": True}
     t0 = time.perf_counter()
     cmd = [sys.executable, "-m", "pip", "install", "-q", "--target", str(target), *PACKAGES[engine]]
@@ -58,7 +60,7 @@ def install(engine: str, target: str | Path, timeout_s: float = 1800) -> dict[st
         return {"ok": False, "seconds": round(time.perf_counter() - t0, 1), "error": "pip timed out"}
     info: dict[str, Any] = {"ok": res.returncode == 0, "seconds": round(time.perf_counter() - t0, 1)}
     if res.returncode == 0:
-        done.write_text(" ".join(PACKAGES[engine]) + "\n", encoding="utf-8")
+        done.write_text(wanted, encoding="utf-8")
     else:
         info["error"] = "\n".join((res.stderr or res.stdout).strip().splitlines()[-15:])
     return info
@@ -201,7 +203,7 @@ def open_engine(
         record["attempts"].append(attempt)
         packages_dir = None
         if packages_root is not None and candidate in PACKAGES:
-            packages_dir = Path(packages_root) / candidate
+            packages_dir = Path(packages_root) / PACKAGE_DIRS.get(candidate, candidate)
             attempt["install"] = install(candidate, packages_dir)
             if not attempt["install"]["ok"]:
                 continue

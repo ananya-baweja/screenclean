@@ -92,12 +92,13 @@ def test_summarize_pairs_and_intervals():
                     "word_f1": 1 - cer,
                 }
             )
-    out = summarize(rows, "Input", [("A", "B")], group=None)["tess"]
+    out = summarize(rows, "Input", [("A", "B")], groups=["method"])["tess"]
     a = out["methods"]["A"]
     assert a["n"] == 30 and a["cer_vs_input"]["mean"] == pytest.approx(-0.3)
     assert a["cer_vs_input"]["hi"] < 0  # clearly better than the input
     (cmp,) = out["comparisons"]
     assert cmp["cer_a_minus_b"]["mean"] == pytest.approx(0.1) and cmp["a_reads_worse"] is True
+    assert out["cer_by"]["method"]["B"]["B"]["n"] == 30
 
 
 @needs_tesseract
@@ -137,3 +138,18 @@ def test_eval_synth_ocr_end_to_end_and_resume(tmp_path, capsys):
     assert tess["Clean target (upper bound)"]["word_f1"]["mean"] > 0.95
     assert "cer_vs_input" in tess["chroma_lowpass"]
     assert summary["ocr"]["tesseract"]["comparisons"][0]["a"] == "chroma_lowpass"
+
+
+@pytest.mark.parametrize("name", ["synth_ocr", "real_ocr"])
+def test_committed_ocr_configs_are_consistent(name):
+    cfg = yaml.safe_load(
+        (Path(__file__).resolve().parents[1] / "configs" / "eval" / f"{name}.yaml").read_text()
+    )
+    labels = [m.get("label", m["name"]) for m in cfg["methods"]]
+    assert len(set(labels)) == len(labels)
+    names = labels
+    if "product_cleaners" in cfg:
+        assert all(c["method"] in labels for c in cfg["product_cleaners"] if "method" in c)
+        names = [f"oracle:{lb}" for lb in labels] + [f"product:{c['label']}" for c in cfg["product_cleaners"]]
+    for a, b in cfg["compare"]:  # a typo would silently drop the comparison
+        assert a in names and b in names, (a, b)

@@ -122,6 +122,13 @@ class PaddleEngine:
         }
 
 
+class PaddleSafeEngine(PaddleEngine):
+    """PaddleOCR without oneDNN (CPU acceleration that some Paddle releases break): slower, sturdier."""
+
+    def __init__(self, **options: Any):
+        super().__init__(**{"enable_mkldnn": False, **options})
+
+
 class RapidEngine:
     def __init__(self, **options: Any):
         try:
@@ -166,7 +173,12 @@ class TesseractEngine:
         }
 
 
-ENGINES = {"paddle": PaddleEngine, "rapidocr": RapidEngine, "tesseract": TesseractEngine}
+ENGINES = {
+    "paddle": PaddleEngine,
+    "paddle_safe": PaddleSafeEngine,
+    "rapidocr": RapidEngine,
+    "tesseract": TesseractEngine,
+}
 
 
 def serve(engine: Any, requests, replies) -> None:
