@@ -254,3 +254,46 @@ One entry per decision: date, the decision, why, and the alternatives considered
 - **SSIM on the GPU:** evaluating 7 models on 4K images with scikit-image's SSIM on Colab's 2-core CPU would take
   hours; the float64 PyTorch version gives identical numbers (tested) in well under a second per image.
 
+## 2026-10-04: What the fine-tune and the ablations showed (P8 results)
+
+- **Text fine-tune (0011, 11,000 iterations):** on synthetic text (300 test crops, job 0018) PSNR rose from
+  22.53 dB (main model) to 26.21 dB, SSIM 0.804 -> 0.893, LPIPS 0.222 -> 0.143. On UHDM dev100 (job 0017) it lost
+  0.17 dB (19.98 -> 19.81; worse on 68 of 100 images, by 0.19 dB at the median). Its own validation sets agree
+  (UHDM val 20.72 vs 20.86 for the main model).
+- **Ablations (8,000 iterations each, final weights, one run each):**
+
+  | Variant | dev100 PSNR | dev100 LPIPS | synthetic text PSNR |
+  |---|---|---|---|
+  | full (reference) | 19.32 | 0.337 | 21.73 |
+  | no FFT loss | 19.33 | 0.359 | 20.82 |
+  | plain U-Net (no wavelets, no dilation) | 19.26 | 0.346 | 21.53 |
+  | no dilation | 19.25 | 0.340 | 21.75 |
+  | simulator data only | 14.78 | 0.442 | 27.94 |
+
+  (copied from `results/tables/`, which are generated; input: dev100 17.10, text 19.37.)
+- **Readings:**
+  - *FFT loss:* no effect on dev100 PSNR, but without it LPIPS is worse (0.359 vs 0.337) and text PSNR drops
+    0.9 dB. It stays: it helps exactly where the product needs it (sharp text, fewer leftover stripes).
+  - *Wavelets and dilation:* differences of 0.06-0.07 dB on dev100 are too small to call with one run each
+    (seed-to-seed spread wasn't measured). The plain U-Net is also 0.2 dB behind on text. They stay; the report
+    calls them "no measurable effect at this budget", not a win.
+  - *Simulator only:* 2.3 dB **below the input** on real photos (better than the input on only 26 of 100), while
+    best of all on synthetic text. The samples show why: it removes the coloured pattern but also washes the
+    image out toward a flat white page. Trained only on pages, it learned that "clean" means "white background
+    with dark text". So the simulator alone doesn't transfer; mixed with real pairs it does help on text
+    (the fine-tune).
+
+## 2026-10-04: Final model = the text fine-tune (P9.0)
+
+- **Decision:** the final model is ScreenCleanNet base after the text fine-tune: `runs/0011_finetune_text/best.pt`
+  (iteration 11,000, EMA weights). It is the cleaner in the product evaluation (P9) and the model exported in P10.
+  The main model (`runs/0009_train_sc_base/best.pt`) stays in every comparison.
+- **Why:** the product reads text from photos of slides and documents. +3.7 dB on synthetic text pages against
+  -0.17 dB on natural UHDM photos is a clear trade for that use.
+- **What was used:** only development data: UHDM dev100 and the synthetic text test crops (simulator output, the
+  set the plan earmarked for this choice). The 500-pair UHDM test set and the real phone photos were not looked
+  at.
+- **Check still to come:** the plan also asks for OCR on synthetic text. Job 0019 measures it before anything
+  else in P9. If the fine-tune reads synthetic text clearly worse than the main model (CER higher, with a 95%
+  confidence interval that excludes zero), this choice is revisited before any real-capture result is seen.
+

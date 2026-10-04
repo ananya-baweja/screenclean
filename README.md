@@ -5,8 +5,8 @@
 [![CI](https://github.com/ananya-baweja/screenclean/actions/workflows/ci.yml/badge.svg)](https://github.com/ananya-baweja/screenclean/actions/workflows/ci.yml)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ananya-baweja/screenclean/blob/main/notebooks/colab_runner.ipynb)
 
-> **Status: in development.** The scan pipeline works end to end on a laptop CPU, with a classical
-> moiré filter. The trained model, web app and API are being built next.
+> **Status: in development.** The scan pipeline works end to end on a laptop CPU and the model is trained
+> (results below). Next: the OCR benchmark on real phone photos, ONNX export, the web app and the API.
 
 ## The problem
 
@@ -30,10 +30,18 @@ Under the hood:
 - OCR and export
 
 The model is compared with classical signal-processing baselines (chroma low-pass, FFT notch filters)
-and a published reference model. First result on UHDM dev100: **+2.88 dB** PSNR over the unprocessed photos
-(the best classical filter: +0.31 dB; the published ESDNet reference: +4.66 dB); see
-[results/tables/uhdm_dev100.md](results/tables/uhdm_dev100.md). The evaluation focuses on **OCR accuracy on real phone photos of
-screens**. See [docs/USE_CASES.md](docs/USE_CASES.md) for the user stories and target metrics.
+and a published reference model. Results so far, in PSNR gain over the unprocessed photos:
+
+| | UHDM dev100 (real 4K photos) | Synthetic text pages |
+|---|---|---|
+| ScreenCleanNet, final (text fine-tune) | +2.72 dB | **+6.85 dB** |
+| ScreenCleanNet, before the fine-tune | **+2.88 dB** | +3.17 dB |
+| Best classical filter (local FFT notch) | +0.31 dB | -0.27 dB |
+| ESDNet (published reference, authors' weights) | +4.66 dB | – |
+
+Full tables: [UHDM dev100](results/tables/uhdm_dev100.md), [synthetic text](results/tables/synth_test.md), with
+the ablations. The final evaluation focuses on **OCR accuracy on real phone photos of screens**. See
+[docs/USE_CASES.md](docs/USE_CASES.md) for the user stories and target metrics.
 
 ## Scan photos of screens
 
