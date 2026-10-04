@@ -18,6 +18,7 @@ task: train                     # a registered task name
 runtime: gpu                    # gpu | cpu
 config: configs/train/sc_base_uhdm.yaml
 depends_on: [0008_sanity_gpu]   # skipped until these jobs are done
+requires: [real_captures/raw]   # skipped until these Drive folders hold files (optional)
 max_minutes: 150                # checkpoint and stop gracefully before this
 resume: true
 attempt: 1                      # bump after fixing a failed job so `auto` picks it up again
@@ -40,7 +41,9 @@ While a job runs, tasks write a short `progress` note (with `progress_utc`) into
 each step. Drive shows it live. `job.log` stays open until the job ends, so Drive may show an old copy of it.
 
 `auto` picks the first job (sorted by file name) that isn't `done`, didn't fail at its current
-`attempt`, and whose `depends_on` jobs are all `done`.
+`attempt`, whose `depends_on` jobs are all `done` and whose `requires` folders on Drive hold files.
+A job for the session's runtime comes first: on a CPU runtime the next CPU job runs, on a GPU
+runtime the next GPU job (a CPU job runs there only when no GPU job is ready).
 
 ## Results
 

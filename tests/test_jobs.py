@@ -107,6 +107,33 @@ def test_failed_job_runs_again_after_attempt_bump(repo, tmp_path):
     assert jobs.select_job(jobs.load_queue(q), store)[0].id == "0001_a"
 
 
+def test_select_job_prefers_the_runtime_and_waits_for_files(repo, tmp_path):
+    q = repo / "jobs" / "queue"
+    write_spec(q, "0001_cpu", runtime="cpu")
+    write_spec(q, "0002_gpu", runtime="gpu")
+    write_spec(q, "0003_photos", runtime="cpu", requires=["real_captures/raw"])
+    layout = DriveLayout(tmp_path / "drive").ensure()
+    store, queue = jobs.StatusStore(layout), jobs.load_queue(q)
+    assert jobs.select_job(queue, store, runtime="gpu")[0].id == "0002_gpu"
+    assert jobs.select_job(queue, store, runtime="cpu")[0].id == "0001_cpu"
+    assert jobs.select_job(queue, store)[0].id == "0001_cpu"
+
+    store.set("0001_cpu", state="done")
+    store.set("0002_gpu", state="done")
+    spec, reasons = jobs.select_job(queue, store, runtime="cpu")
+    assert spec is None and "waiting for files in Google Drive: screenclean/real_captures/raw" in reasons[0]
+    (layout.root / "real_captures" / "raw" / "screen-a__phone-b").mkdir(parents=True)
+    assert jobs.select_job(queue, store)[0] is None  # empty folders don't count
+    (layout.root / "real_captures" / "raw" / "screen-a__phone-b" / "IMG_1.jpg").write_bytes(b"x")
+    assert jobs.select_job(queue, store, runtime="gpu")[0].id == "0003_photos"  # nothing else is ready
+
+
+def test_requires_must_be_a_list(repo):
+    path = write_spec(repo / "jobs" / "queue", "0001_x", requires="real_captures/raw")
+    with pytest.raises(jobs.SpecError, match="requires"):
+        jobs.load_spec(path)
+
+
 def test_hello_end_to_end(repo, tmp_path, capsys):
     write_spec(repo / "jobs" / "queue", "0001_hello", max_minutes=5)
     drive_root, marker = tmp_path / "drive", tmp_path / "last_zip.txt"

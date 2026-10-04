@@ -63,6 +63,7 @@ class JobSpec:
     runtime: str
     config: str | None = None
     depends_on: list[str] = field(default_factory=list)
+    requires: list[str] = field(default_factory=list)  # Drive folders that must hold files first
     max_minutes: float = 60
     resume: bool = True
     attempt: int = 1
@@ -97,6 +98,7 @@ def load_spec(path: str | Path) -> JobSpec:
         raise SpecError(f"{path.name}: missing fields {sorted(missing)}")
 
     data["depends_on"] = data.get("depends_on") or []
+    data["requires"] = data.get("requires") or []
     spec = JobSpec(**data)
     if spec.id != path.stem:
         raise SpecError(f"{path.name}: id {spec.id!r} must match the file name {path.stem!r}")
@@ -108,6 +110,8 @@ def load_spec(path: str | Path) -> JobSpec:
         raise SpecError(f"{path.name}: max_minutes must be a positive number")
     if not isinstance(spec.depends_on, list) or not all(isinstance(d, str) for d in spec.depends_on):
         raise SpecError(f"{path.name}: depends_on must be a list of job ids")
+    if not isinstance(spec.requires, list) or not all(isinstance(d, str) for d in spec.requires):
+        raise SpecError(f"{path.name}: requires must be a list of Drive folders")
     if not is_known_task(spec.task):
         raise SpecError(f"{path.name}: unknown task {spec.task!r}")
     return spec
@@ -183,6 +187,8 @@ TASK_MODULES: dict[str, str] = {
     "sim_realism": "screenclean.data.synthetic",
     "train": "screenclean.train.task",
     "eval_synth_ocr": "screenclean.eval.ocr_eval",
+    "ingest_real": "screenclean.eval.real_ocr",
+    "eval_real_ocr": "screenclean.eval.real_ocr",
 }
 
 
@@ -245,6 +251,7 @@ class StatusStore:
 
     def __init__(self, layout: DriveLayout):
         self.dir = layout.job_status
+        self.root = layout.root
 
     def path(self, job_id: str) -> Path:
         return self.dir / f"{job_id}.json"
@@ -261,14 +268,19 @@ class StatusStore:
         return status
 
 
+def _has_files(folder: Path) -> bool:
+    return folder.is_dir() and any(p.is_file() for p in folder.rglob("*"))
+
+
 def select_job(
-    queue: list[JobSpec], store: StatusStore, requested: str = "auto"
+    queue: list[JobSpec], store: StatusStore, requested: str = "auto", runtime: str | None = None
 ) -> tuple[JobSpec | None, list[str]]:
     """Choose the job to run and explain why other jobs were skipped.
 
-    ``requested`` is a job id (run it regardless of state) or ``"auto"``: the first
-    job that isn't done, didn't fail at its current ``attempt``, and whose
-    dependencies are all done.
+    ``requested`` is a job id (run it regardless of state) or ``"auto"``: the first job that
+    isn't done, didn't fail at its current ``attempt``, whose dependencies are all done and
+    whose ``requires`` folders on Drive hold files. Given the ``runtime``, a runnable job for
+    that runtime comes first, so a CPU session picks the CPU jobs and a GPU session the GPU jobs.
     """
     if requested != "auto":
         for spec in queue:
@@ -276,7 +288,7 @@ def select_job(
                 return spec, []
         raise SpecError(f"no job named {requested!r} in the queue")
 
-    reasons = []
+    reasons, runnable = [], []
     for spec in queue:
         status = store.get(spec.id)
         state = status.get("state")
@@ -289,8 +301,15 @@ def select_job(
         if waiting:
             reasons.append(f"{spec.id}: waiting for {', '.join(waiting)}")
             continue
-        return spec, reasons
-    return None, reasons
+        missing = [r for r in spec.requires if not _has_files(store.root / r)]
+        if missing:
+            reasons.append(f"{spec.id}: waiting for files in Google Drive: screenclean/{', '.join(missing)}")
+            continue
+        runnable.append(spec)
+    if not runnable:
+        return None, reasons
+    same = [s for s in runnable if s.runtime == runtime]
+    return (same or runnable)[0], reasons
 
 
 def detect_runtime() -> str:
@@ -455,14 +474,14 @@ def run(
     repo_root = Path(repo_root)
     layout = DriveLayout(Path(drive_root)).ensure()
     queue = load_queue(repo_root / "jobs" / "queue")
-    spec, reasons = select_job(queue, StatusStore(layout), requested)
+    runtime = runtime or detect_runtime()
+    spec, reasons = select_job(queue, StatusStore(layout), requested, runtime)
     if spec is None:
         print("Nothing to run right now.")
         for r in reasons or ["every job in the queue is done"]:
             print(f"  - {r}")
         return EXIT_OK
 
-    runtime = runtime or detect_runtime()
     if spec.runtime == "gpu" and runtime == "cpu":
         print(
             f"Job {spec.id} needs a GPU, but this runtime has none.\n"
