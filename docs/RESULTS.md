@@ -7,7 +7,15 @@ Intervals are 95% paired-bootstrap confidence intervals (10,000 resamples, seed 
 
 ### Full test set (500 pairs; used once)
 
-*Pending: job `0021/0022_eval_test500` (the 500-pair UHDM test set).*
+| Method | PSNR (dB) ↑ | Δ PSNR vs input | SSIM ↑ | LPIPS ↓ | s / image | Images |
+|---|---|---|---|---|---|---|
+| Input (no cleaning) | 17.12 | – | 0.5089 | 0.5314 | 0.10 | 500 |
+| ScreenCleanNet (before fine-tune) | 20.15 | +3.04 | 0.7581 | 0.3012 | 2.42 | 500 |
+| ScreenCleanNet (final) | 19.95 | +2.83 | 0.7483 | 0.3116 | 2.43 | 500 |
+| fft_notch_local | 17.46 | +0.35 | 0.5392 | – | 16.20 | 500 |
+| fft_notch | 17.19 | +0.07 | 0.5105 | – | 15.18 | 500 |
+| chroma_lowpass | 17.14 | +0.03 | 0.5112 | – | 0.96 | 500 |
+| ESDNet (reference) | 22.12 | +5.00 | 0.7949 | 0.2524 | 1.33 | 500 |
 
 ### dev100 (100 test pairs used during development)
 
@@ -48,7 +56,45 @@ Each variant trained from scratch for 8,000 iterations and scored on its final w
 
 ## 4. OCR on synthetic text crops
 
-*Pending: job `0019_eval_synth_ocr` (PaddleOCR and Tesseract on the synthetic text crops).*
+Engines: paddle_safe 3.7.0 (fallback for paddle); tesseract 5.3.4
+
+*Not masked to the ground truth (job 0019): OCR also read words cut at the crop edges,
+which the ground truth leaves out, so every CER here is inflated. Kept for the record;
+see job 0026.*
+
+**paddle_safe**
+
+| Method | CER ↓ [95% CI] | Δ CER vs baseline [95% CI] | pooled CER ↓ | Word F1 ↑ [95% CI] | Pages |
+|---|---|---|---|---|---|
+| Input (no cleaning) | 1.120 [0.900, 1.376] | – | – | 0.733 [0.712, 0.754] | 284 |
+| Clean target (upper bound) | 1.131 [0.908, 1.388] | +0.010 [-0.004, +0.026] | – | 0.748 [0.729, 0.767] | 284 |
+| fft_notch_local | 1.115 [0.896, 1.370] | -0.005 [-0.012, +0.001] | – | 0.734 [0.713, 0.753] | 284 |
+| ESDNet (reference) | 1.130 [0.908, 1.385] | +0.010 [-0.005, +0.026] | – | 0.720 [0.701, 0.738] | 284 |
+| ScreenCleanNet (before fine-tune) | 1.129 [0.906, 1.386] | +0.009 [-0.004, +0.022] | – | 0.740 [0.722, 0.758] | 284 |
+| ScreenCleanNet (final) | 1.129 [0.908, 1.385] | +0.009 [-0.006, +0.025] | – | 0.744 [0.726, 0.761] | 284 |
+| Ablation: simulator data only | 1.134 [0.911, 1.391] | +0.014 [-0.001, +0.030] | – | 0.750 [0.731, 0.767] | 284 |
+
+- ScreenCleanNet (final) minus ScreenCleanNet (before fine-tune): CER +0.000 [-0.011, +0.016], word F1 +0.004 [-0.000, +0.008] (not worse)
+- ScreenCleanNet (final) minus fft_notch_local: CER +0.014 [+0.002, +0.029], word F1 +0.010 [+0.002, +0.019] (reads worse)
+- ScreenCleanNet (final) minus ESDNet (reference): CER -0.001 [-0.016, +0.016], word F1 +0.024 [+0.014, +0.035] (not worse)
+
+**tesseract**
+
+| Method | CER ↓ [95% CI] | Δ CER vs baseline [95% CI] | pooled CER ↓ | Word F1 ↑ [95% CI] | Pages |
+|---|---|---|---|---|---|
+| Input (no cleaning) | 1.190 [0.997, 1.421] | – | – | 0.574 [0.544, 0.604] | 284 |
+| Clean target (upper bound) | 1.266 [1.040, 1.528] | +0.076 [-0.036, +0.219] | – | 0.652 [0.629, 0.674] | 284 |
+| fft_notch_local | 1.225 [1.015, 1.475] | +0.035 [-0.019, +0.120] | – | 0.567 [0.537, 0.596] | 284 |
+| ESDNet (reference) | 1.291 [1.084, 1.530] | +0.101 [-0.058, +0.266] | – | 0.498 [0.467, 0.530] | 284 |
+| ScreenCleanNet (before fine-tune) | 1.320 [1.078, 1.598] | +0.130 [+0.009, +0.281] | – | 0.607 [0.580, 0.633] | 284 |
+| ScreenCleanNet (final) | 1.341 [1.094, 1.622] | +0.151 [+0.033, +0.301] | – | 0.619 [0.594, 0.643] | 284 |
+| Ablation: simulator data only | 1.301 [1.061, 1.579] | +0.111 [+0.008, +0.245] | – | 0.623 [0.599, 0.646] | 284 |
+
+- ScreenCleanNet (final) minus ScreenCleanNet (before fine-tune): CER +0.022 [-0.058, +0.107], word F1 +0.012 [-0.003, +0.028] (not worse)
+- ScreenCleanNet (final) minus fft_notch_local: CER +0.116 [+0.027, +0.232], word F1 +0.052 [+0.029, +0.076] (reads worse)
+- ScreenCleanNet (final) minus ESDNet (reference): CER +0.050 [-0.053, +0.182], word F1 +0.120 [+0.090, +0.151] (not worse)
+
+![OCR on synthetic text](../results/figures/ocr_synth.png)
 
 ## 5. OCR on real phone photos (same geometry for every method)
 
@@ -60,7 +106,13 @@ Each variant trained from scratch for 8,000 iterations and scored on its final w
 
 ## 7. Size and speed
 
-*Pending: job `0023_efficiency` (parameters, FLOPs, T4 and CPU latency).*
+| Model | Parameters | GFLOPs 1280x720 | T4 ms 1280x720 | CPU s 1280x720 | GFLOPs 1920x1080 | T4 ms 1920x1080 | CPU s 1920x1080 |
+|---|---|---|---|---|---|---|---|
+| ScreenCleanNet (final) | 4.65 M | 183 | 233 | 15.05 | 415 | 537 | 39.02 |
+| ScreenCleanNet tiny (architecture only) | 0.79 M | 34 | 92 | 4.61 | 78 | 208 | 13.28 |
+| ESDNet (reference) | 5.93 M | 505 | 130 | 10.04 | 1119 | 300 | 23.96 |
+
+GPU: Tesla T4 (fp16); CPU: 2 threads (fp32). latency = image in -> image out (median); GPU fp16, CPU fp32.
 
 ## Figures
 

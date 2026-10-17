@@ -1,7 +1,10 @@
 # Job 0019: OCR on the 300 synthetic text test crops (P4), every method x two OCR engines (T4).
 # Runs first in P9: it installs and self-checks the OCR engines, and tells whether the text fine-tune
 # (the final model, docs/DECISIONS.md P9.0) also *reads* better than the main model ("compare").
-# Ground truth = the text lines fully inside each crop. PaddleOCR uses its defaults for English with
+# Ground truth = the whole words fully inside each crop; everything else (words cut at the crop edges) is
+# painted over before OCR (mask_to_truth), the same for every method. Job 0019 ran without the mask and its
+# CERs are inflated (docs/DECISIONS.md); job 0026 repeats it with the mask. Crops with fewer than
+# min_ref_chars characters of ground truth are skipped. PaddleOCR uses its defaults for English with
 # document orientation, unwarping and text-line orientation off; if it fails its self-check it is retried
 # without oneDNN, then replaced by RapidOCR (eval/ocr.py).
 split: data/synth_v1/test
@@ -9,6 +12,8 @@ local_dir: /content/ocr_eval
 engines: [paddle, tesseract]
 ocr_packages: /content/ocr_packages
 stop_margin_min: 10
+mask_to_truth: true
+min_ref_chars: 20
 methods:
   - {name: identity, label: "Input (no cleaning)"}
   - {name: target, label: "Clean target (upper bound)"}

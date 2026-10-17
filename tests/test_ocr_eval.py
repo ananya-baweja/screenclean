@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 from screenclean import jobs
 from screenclean.data import shards
 from screenclean.eval import tesseract
-from screenclean.eval.ocr_eval import summarize, synth_truth
+from screenclean.eval.ocr_eval import keep_only, summarize, synth_truth, truth_mask
 from screenclean.render.fonts import matplotlib_font_dir
 from screenclean.utils.io import encode_jpeg
 
@@ -34,6 +34,8 @@ def _text_crop(lines: list[str]) -> tuple[np.ndarray, list[dict]]:
         x0, y0, x1, y1 = draw.textbbox((x, y), text, font=font)
         draw.text((x, y), text, font=font, fill=(20, 20, 30))
         records.append({"text": text, "quad": [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], "partial": False})
+    # text that isn't in the ground truth (like a word cut at a crop's edge): the mask must hide it
+    draw.text((30, 40), "Unrelated header words", font=font, fill=(20, 20, 30))
     return np.asarray(img, np.float32) / 255.0, records
 
 
@@ -75,6 +77,18 @@ def test_synth_truth_reads_lines_in_order():
     }
     assert synth_truth(record) == "first\nsecond"
     assert synth_truth({}) == ""
+
+
+def test_truth_mask_keeps_only_ground_truth_words():
+    img, records = _text_crop(LINES[0])
+    mask = truth_mask({"lines": records}, img.shape[:2], pad=3)
+    (x0, y0), (x1, y1) = records[0]["quad"][0], records[0]["quad"][2]
+    assert mask[int(y0) : int(y1), int(x0) : int(x1)].all() and mask[int(y0) - 3, int(x0)]
+    assert not mask[40:70, 30:300].any()  # the unrelated header
+    kept = keep_only(img, mask)
+    assert np.array_equal(kept[mask], img[mask]) and np.allclose(
+        kept[50, 100], np.median(img.reshape(-1, 3), 0)
+    )
 
 
 def test_summarize_pairs_and_intervals():
@@ -134,7 +148,9 @@ def test_eval_synth_ocr_end_to_end_and_resume(tmp_path, capsys):
     assert summary["complete"] and summary["skipped_without_text"] == 1
     assert summary["engines"]["tesseract"]["engine"] == "tesseract"
     tess = summary["ocr"]["tesseract"]["methods"]
-    assert tess["Clean target (upper bound)"]["cer"]["mean"] < 0.05
+    assert summary["masked_to_truth"] is True
+    assert tess["Clean target (upper bound)"]["cer"]["mean"] < 0.05  # the header outside the truth is hidden
+    assert tess["Clean target (upper bound)"]["cer_pooled"] < 0.05
     assert tess["Clean target (upper bound)"]["word_f1"]["mean"] > 0.95
     assert "cer_vs_input" in tess["chroma_lowpass"]
     assert summary["ocr"]["tesseract"]["comparisons"][0]["a"] == "chroma_lowpass"

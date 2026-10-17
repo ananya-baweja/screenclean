@@ -2,7 +2,7 @@ id: 0025_eval_real_ocr
 task: eval_real_ocr
 runtime: gpu
 config: configs/eval/real_ocr.yaml
-depends_on: [0019_eval_synth_ocr, 0024_ingest_real]
+depends_on: [0019_eval_synth_ocr, 0024_ingest_real, 0026_eval_synth_ocr_masked]
 max_minutes: 150
 resume: true
 attempt: 1

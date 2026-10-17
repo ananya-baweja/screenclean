@@ -101,13 +101,15 @@ def ocr_tables(ocr: dict[str, Any], methods: list[str] | None = None) -> list[st
         lines += [
             f"**{engine}**",
             "",
-            "| Method | CER ↓ [95% CI] | Δ CER vs baseline [95% CI] | Word F1 ↑ [95% CI] | Pages |",
-            "|---|---|---|---|---|",
+            "| Method | CER ↓ [95% CI] | Δ CER vs baseline [95% CI] | pooled CER ↓ | Word F1 ↑ [95% CI] "
+            "| Pages |",
+            "|---|---|---|---|---|---|",
         ]
         for m in order:
             e = per[m]
             delta = _ci(e["cer_vs_input"], signed=True) if "cer_vs_input" in e else "–"
-            lines.append(f"| {m} | {_ci(e['cer'])} | {delta} | {_ci(e['word_f1'])} | {e['n']} |")
+            pooled = f"{e['cer_pooled']:.3f}" if "cer_pooled" in e else "–"
+            lines.append(f"| {m} | {_ci(e['cer'])} | {delta} | {pooled} | {_ci(e['word_f1'])} | {e['n']} |")
         lines.append("")
         for c in data.get("comparisons", []):
             verdict = "reads worse" if c["a_reads_worse"] else "not worse"
@@ -379,8 +381,18 @@ def build_report(repo_root: Path) -> list[Path]:
     md += ["## 4. OCR on synthetic text crops", ""]
     synth = find_job(s, "eval_synth_ocr")
     if synth:
-        md += [f"Engines: {_engines(synth)}", ""] + ocr_tables(synth["ocr"])
-        if p := fig_ocr(synth["ocr"], figs / "ocr_synth.png", "OCR errors on 300 synthetic text crops"):
+        md += [f"Engines: {_engines(synth)}", ""]
+        if not synth.get("masked_to_truth"):
+            md += [
+                "*Not masked to the ground truth (job 0019): OCR also read words cut at the crop edges,",
+                "which the ground truth leaves out, so every CER here is inflated. Kept for the record;",
+                "see job 0026.*",
+                "",
+            ]
+        md += ocr_tables(synth["ocr"], synth.get("methods"))
+        if p := fig_ocr(
+            synth["ocr"], figs / "ocr_synth.png", "OCR errors on synthetic text crops", synth.get("methods")
+        ):
             written.append(p)
             md += ["![OCR on synthetic text](../results/figures/ocr_synth.png)", ""]
     else:
@@ -494,7 +506,8 @@ def _engines(summary: dict[str, Any]) -> str:
             for k, v in (rec.get("versions") or {}).items()
             if k in ("paddleocr", "tesseract", "rapidocr")
         }
-        note = f"{used} {', '.join(str(v) for v in versions.values())}".strip() if used else f"{name} failed"
+        shown = [str(v) if str(v).startswith(str(used)) else f"{used} {v}" for v in versions.values()]
+        note = (", ".join(shown) or str(used)) if used else f"{name} failed"
         if used and used != name:
             note += f" (fallback for {name})"
         parts.append(note)

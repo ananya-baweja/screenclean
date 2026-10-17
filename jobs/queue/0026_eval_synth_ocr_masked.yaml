@@ -1,0 +1,9 @@
+id: 0026_eval_synth_ocr_masked
+task: eval_synth_ocr
+runtime: gpu
+config: configs/eval/synth_ocr.yaml
+max_minutes: 120
+resume: true
+attempt: 1
+drive_subdir: jobs/0026_eval_synth_ocr_masked
+notes: "0019 again, with everything outside the ground-truth words painted over before OCR (0019's CERs were inflated by words cut at crop edges); T4, ~30 min"

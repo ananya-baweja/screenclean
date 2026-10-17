@@ -6,9 +6,12 @@ to a CSV so an interrupted job resumes, and summarise with bootstrap confidence 
 (``eval/stats.py``).
 
 Colab task ``eval_synth_ocr``: every method on the synthetic text test crops (P4), whose ground
-truth is the text of the lines fully inside each crop. It runs first in P9: it checks that the
-OCR engines install and read correctly, and whether the text fine-tune also reads better than
-the main model (the final-model check of P9.0). The real-photo benchmark is in ``eval/real_ocr.py``.
+truth is the whole words fully inside each crop. Crops cut words at their edges, and OCR reads
+those pieces too, which the ground truth can't contain; so before OCR everything outside the
+ground-truth words is painted over (``mask_to_truth``), the same for every method. It runs first
+in P9: it checks that the OCR engines install and read correctly, and whether the text fine-tune
+also reads better than the main model (the final-model check of P9.0). The real-photo benchmark
+is in ``eval/real_ocr.py``.
 """
 
 from __future__ import annotations
@@ -21,6 +24,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
+import cv2
 import numpy as np
 
 from screenclean.eval.evaluate import build_fn, resolve_methods
@@ -150,9 +154,14 @@ def summarize(
     table: dict[str, dict[str, dict[str, dict[str, float]]]] = defaultdict(lambda: defaultdict(dict))
     groups = tuple(groups)
     by_group: dict[tuple[str, str, str, str], list[float]] = defaultdict(list)
+    chars: dict[tuple[str, str], list[tuple[float, float]]] = defaultdict(list)
     for r in rows:
         vals = {k: float(r[k]) for k in ("cer", "wer", "word_f1")}
         table[r["engine"]][r["method"]][r["key"]] = vals
+        if r.get("ref_chars") not in (None, ""):
+            chars[(r["engine"], r["method"])].append(
+                (vals["cer"] * float(r["ref_chars"]), float(r["ref_chars"]))
+            )
         for g in groups:
             by_group[(r["engine"], g, r["method"], str(r.get(g, "?")))].append(vals["cer"])
 
@@ -165,6 +174,8 @@ def summarize(
             entry: dict[str, Any] = {"n": len(items)}
             if base and method != base_name:
                 entry["baseline"] = base_name
+            if pooled := chars.get((engine, method)):
+                entry["cer_pooled"] = sum(e for e, _ in pooled) / max(sum(n for _, n in pooled), 1.0)
             for metric in ("cer", "wer", "word_f1"):
                 values = {k: v[metric] for k, v in items.items()}
                 entry[metric] = bootstrap_mean(list(values.values())).as_dict()
@@ -219,6 +230,23 @@ def synth_truth(record: dict[str, Any]) -> str:
     return ordered_text((ln["text"], quad_box(ln["quad"])) for ln in record.get("lines", []))
 
 
+def truth_mask(record: dict[str, Any], shape: tuple[int, int], pad: int = 3) -> np.ndarray:
+    """Where the ground-truth words are (their quadrilaterals, grown by ``pad`` pixels)."""
+    mask = np.zeros(shape, np.uint8)
+    for ln in record.get("lines", []):
+        cv2.fillPoly(mask, [np.round(np.asarray(ln["quad"], np.float32)).astype(np.int32)], 1)
+    if pad:
+        mask = cv2.dilate(mask, np.ones((2 * pad + 1, 2 * pad + 1), np.uint8))
+    return mask.astype(bool)
+
+
+def keep_only(img: np.ndarray, mask: np.ndarray) -> np.ndarray:
+    """``img`` with everything outside ``mask`` set to the image's median colour (its background)."""
+    out = img.copy()
+    out[~mask] = np.median(img.reshape(-1, img.shape[-1]), axis=0)
+    return out
+
+
 def _run_method(method: dict[str, Any], moire: np.ndarray, gt: np.ndarray) -> tuple[np.ndarray, float]:
     t0 = time.perf_counter()
     out = gt if method["fn"] is None else method["fn"](moire)
@@ -242,21 +270,24 @@ def eval_synth_ocr_task(ctx: JobContext) -> TaskResult:
         done = {(r["key"], r["method"], r["engine"]) for r in read_rows(rows_path)}
         scorer = OcrScorer(engines, local / "tmp", done)
         state, message, no_text = "done", "", set()
+        min_chars = int(cfg.get("min_ref_chars", 1))
         for i, (shard, sid, index) in enumerate(items):
             if not any(scorer.pending(sid, m["label"]) for m in methods):
                 continue
             record = read_meta(shard, index, sid) or {}
             truth = synth_truth(record)
-            if not truth:
+            if len(truth.replace(" ", "").replace("\n", "")) < min_chars:  # too little text to score
                 no_text.add(sid)
                 continue
             moire, gt = decode_pair(
                 read_member(shard, *index[f"{sid}.moire.jpg"]), read_member(shard, *index[f"{sid}.gt.jpg"])
             )
+            mask = truth_mask(record, gt.shape[:2]) if cfg.get("mask_to_truth", True) else None
             new_rows = []
             for m in methods:
                 if scorer.pending(sid, m["label"]):
                     out, secs = _run_method(m, to_float01(moire), to_float01(gt))
+                    out = out if mask is None else keep_only(out, mask)
                     new_rows += scorer.score(
                         out, truth, {"key": sid, "method": m["label"], "method_seconds": secs}
                     )
@@ -274,7 +305,8 @@ def eval_synth_ocr_task(ctx: JobContext) -> TaskResult:
     summary = {
         "split": cfg["split"],
         "n_items": len(items),
-        "skipped_without_text": len(no_text),
+        "skipped_without_text": len(no_text),  # fewer than min_ref_chars characters of ground truth
+        "masked_to_truth": bool(cfg.get("mask_to_truth", True)),
         "engines": engine_records,
         "methods": [m["label"] for m in methods],
         "complete": state == "done"
