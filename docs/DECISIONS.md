@@ -359,7 +359,10 @@ One entry per decision: date, the decision, why, and the alternatives considered
   which PyTorch runs inefficiently without compilation. P10 (ONNX Runtime export) measures whether that changes.
 - **PaddleOCR on Colab (job 0019):** the default CPU path failed on the self-check page ("ConvertPirAttribute2Runtime
   Attribute not support", a oneDNN problem in this Paddle release); the planned retry with oneDNN off worked
-  (self-check CER 0.0, about 2 s per crop). Results are labelled `paddle_safe`.
+  (self-check CER 0.0) but took a median 5.6 s per 512 px crop (Tesseract: 0.5 s). Results are labelled
+  `paddle_safe`. From job 0026 on, PaddleOCR runs as `paddle_fast`: also without oneDNN, with the mobile text
+  detector (PP-OCRv5_mobile_det) and 2 threads to match Colab's 2 CPUs; if that fails its self-check, the run
+  falls back to `paddle_safe` (proven on Colab), then RapidOCR.
 - **Job 0019's CERs are inflated:** the synthetic ground truth holds only whole words inside each crop, but OCR also
   reads the pieces of words cut at the crop edges. Even the clean target averaged CER 1.13 (median 0.58), and the
   extra text hid the differences between methods. Fix: before OCR, everything outside the ground-truth words is

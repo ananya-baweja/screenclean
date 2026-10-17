@@ -37,9 +37,9 @@ PACKAGES = {
     "paddle": ["paddlepaddle==3.3.1", "paddleocr==3.7.0"],
     "rapidocr": ["rapidocr==3.9.2", "onnxruntime==1.30.0"],
 }
-PACKAGES["paddle_safe"] = PACKAGES["paddle"]
-PACKAGE_DIRS = {"paddle_safe": "paddle"}  # the same install
-FALLBACKS = {"paddle": ["paddle_safe", "rapidocr"]}
+PACKAGES["paddle_safe"] = PACKAGES["paddle_fast"] = PACKAGES["paddle"]
+PACKAGE_DIRS = {"paddle_safe": "paddle", "paddle_fast": "paddle"}  # the same install
+FALLBACKS = {"paddle": ["paddle_safe", "rapidocr"], "paddle_fast": ["paddle_safe", "rapidocr"]}
 
 
 class OcrEngineError(RuntimeError):

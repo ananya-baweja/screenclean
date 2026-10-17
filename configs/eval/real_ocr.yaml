@@ -4,12 +4,12 @@
 #    document clean-up (oracle_cleanup), markers painted over, then OCR.
 # 2. "product:" rows: scan() end to end (find the screen, clean, straighten, document clean-up), per cleaner.
 # Screen detection is scored against the marker corners. Two OCR engines; ground truth from
-# capture_kit/pages.json. About 2 minutes per photo, so ~150 photos take two or three runs; it resumes.
+# capture_kit/pages.json. A few minutes per photo (PaddleOCR on the CPU is the slow part); it resumes.
 captures: real_captures/processed/captures.json
 raw_dir: real_captures/raw
 kit_dir: capture_kit
 local_dir: /content/real_ocr
-engines: [paddle, tesseract]
+engines: [paddle_fast, tesseract]  # PaddleOCR: mobile detector, no oneDNN, 2 threads
 ocr_packages: /content/ocr_packages
 crop_margin: 64
 oracle_cleanup: true

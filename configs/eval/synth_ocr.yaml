@@ -9,7 +9,7 @@
 # without oneDNN, then replaced by RapidOCR (eval/ocr.py).
 split: data/synth_v1/test
 local_dir: /content/ocr_eval
-engines: [paddle, tesseract]
+engines: [paddle_fast, tesseract]  # PaddleOCR: mobile detector, no oneDNN, 2 threads
 ocr_packages: /content/ocr_packages
 stop_margin_min: 10
 mask_to_truth: true

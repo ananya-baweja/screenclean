@@ -14,8 +14,9 @@ Protocol, one JSON object per line:
   (``"error"`` instead of ``"lines"`` if that image failed);
 - closing the input stops the worker.
 
-Engines: ``paddle`` (PaddleOCR 3.x), ``rapidocr`` (the same PP-OCR models on ONNX Runtime;
-the fallback) and ``tesseract`` (the project's Tesseract setup, as in the scan pipeline).
+Engines: ``paddle`` (PaddleOCR 3.x; ``paddle_safe`` without oneDNN, ``paddle_fast`` also with the
+mobile detector), ``rapidocr`` (the same PP-OCR models on ONNX Runtime; the last fallback) and
+``tesseract`` (the project's Tesseract setup, as in the scan pipeline).
 """
 
 from __future__ import annotations
@@ -129,6 +130,14 @@ class PaddleSafeEngine(PaddleEngine):
         super().__init__(**{"enable_mkldnn": False, **options})
 
 
+class PaddleFastEngine(PaddleSafeEngine):
+    """PaddleSafe with the mobile text detector and 2 threads (Colab has 2 CPUs): the server detector
+    without oneDNN took ~6 s per 512 px crop."""
+
+    def __init__(self, **options: Any):
+        super().__init__(**{"text_detection_model_name": "PP-OCRv5_mobile_det", "cpu_threads": 2, **options})
+
+
 class RapidEngine:
     def __init__(self, **options: Any):
         try:
@@ -176,6 +185,7 @@ class TesseractEngine:
 ENGINES = {
     "paddle": PaddleEngine,
     "paddle_safe": PaddleSafeEngine,
+    "paddle_fast": PaddleFastEngine,
     "rapidocr": RapidEngine,
     "tesseract": TesseractEngine,
 }
