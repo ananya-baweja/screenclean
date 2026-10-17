@@ -1,0 +1,52 @@
+job:
+  id: 0019_eval_synth_ocr
+  task: eval_synth_ocr
+  runtime: gpu
+  config: configs/eval/synth_ocr.yaml
+  depends_on: []
+  requires: []
+  max_minutes: 120
+  resume: true
+  attempt: 1
+  drive_subdir: jobs/0019_eval_synth_ocr
+  notes: OCR (PaddleOCR + Tesseract) on the 300 synthetic text crops, every method;
+    checks the final-model choice (T4, ~60 min)
+config:
+  split: data/synth_v1/test
+  local_dir: /content/ocr_eval
+  engines:
+  - paddle
+  - tesseract
+  ocr_packages: /content/ocr_packages
+  stop_margin_min: 10
+  methods:
+  - name: identity
+    label: Input (no cleaning)
+  - name: target
+    label: Clean target (upper bound)
+  - name: fft_notch_local
+    params_from: params/baselines.yaml
+  - name: esdnet_ref
+    label: ESDNet (reference)
+    repo_sha: fa70a92d3d4f35d5c4e3fa7a54e3b2e5b995f1cd
+    weights:
+      id: 1HT_ubcAYRqzFIJ46XuPhrulJk2YFBIEl
+      bytes: 23895301
+    weights_cache: models/esdnet_uhdm.pth
+    fp16: true
+  - name: scnet
+    label: ScreenCleanNet (before fine-tune)
+    checkpoint: runs/0009_train_sc_base/best.pt
+  - name: scnet
+    label: ScreenCleanNet (final)
+    checkpoint: runs/0011_finetune_text/best.pt
+  - name: scnet
+    label: 'Ablation: simulator data only'
+    checkpoint: runs/0016_abl_sim_only/last.pt
+  compare:
+  - - ScreenCleanNet (final)
+    - ScreenCleanNet (before fine-tune)
+  - - ScreenCleanNet (final)
+    - fft_notch_local
+  - - ScreenCleanNet (final)
+    - ESDNet (reference)

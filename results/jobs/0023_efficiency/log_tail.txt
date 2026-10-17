@@ -1,0 +1,39 @@
+2026-10-06 12:51:40,762 INFO screenclean.jobs: Starting 0023_efficiency (task=efficiency, runtime=gpu, attempt=1, resuming=False)
+2026-10-06 12:51:41,203 INFO screenclean.models.runner: ScreenCleanNet (final) ready on cuda: 4.65 M parameters, iteration 11000, fp16=True, tile=None
+2026-10-06 12:51:50,418 INFO screenclean.jobs: progress: ScreenCleanNet (final) on cuda at 1280x720: done
+2026-10-06 12:51:50,433 INFO screenclean.eval.efficiency: {'label': 'ScreenCleanNet (final)', 'params_m': 4.65, 'gflops_1280x720': 183.2, 'gpu_ms_1280x720': 233.1, 'gpu_peak_gb_1280x720': 0.91}
+2026-10-06 12:52:03,546 INFO screenclean.jobs: progress: ScreenCleanNet (final) on cuda at 1920x1080: done
+2026-10-06 12:52:03,561 INFO screenclean.eval.efficiency: {'label': 'ScreenCleanNet (final)', 'params_m': 4.65, 'gflops_1280x720': 183.2, 'gpu_ms_1280x720': 233.1, 'gpu_peak_gb_1280x720': 0.91, 'gflops_1920x1080': 415.2, 'gpu_ms_1920x1080': 535.3, 'gpu_peak_gb_1920x1080': 2.06}
+2026-10-06 12:52:03,717 INFO screenclean.models.runner: ScreenCleanNet (final) ready on cpu: 4.65 M parameters, iteration 11000, fp16=False, tile=None
+2026-10-06 12:53:07,118 INFO screenclean.jobs: progress: ScreenCleanNet (final) on cpu at 1280x720: done
+2026-10-06 12:53:07,142 INFO screenclean.eval.efficiency: {'label': 'ScreenCleanNet (final)', 'params_m': 4.65, 'gflops_1280x720': 183.2, 'gpu_ms_1280x720': 233.1, 'gpu_peak_gb_1280x720': 0.91, 'gflops_1920x1080': 415.2, 'gpu_ms_1920x1080': 535.3, 'gpu_peak_gb_1920x1080': 2.06, 'modes_cuda': {'full': 48}, 'cpu_s_1280x720': 15.35}
+2026-10-11 16:44:27,384 INFO screenclean.jobs: Starting 0023_efficiency (task=efficiency, runtime=gpu, attempt=1, resuming=False)
+2026-10-11 16:44:31,352 INFO screenclean.models.runner: ScreenCleanNet (final) ready on cuda: 4.65 M parameters, iteration 11000, fp16=True, tile=None
+2026-10-11 16:44:46,648 INFO screenclean.jobs: progress: ScreenCleanNet (final) on cuda at 1280x720: done
+2026-10-11 16:44:46,672 INFO screenclean.eval.efficiency: {'label': 'ScreenCleanNet (final)', 'params_m': 4.65, 'gflops_1280x720': 183.2, 'gpu_ms_1280x720': 233.4, 'gpu_peak_gb_1280x720': 0.91}
+2026-10-11 16:44:59,922 INFO screenclean.jobs: progress: ScreenCleanNet (final) on cuda at 1920x1080: done
+2026-10-11 16:44:59,938 INFO screenclean.eval.efficiency: {'label': 'ScreenCleanNet (final)', 'params_m': 4.65, 'gflops_1280x720': 183.2, 'gpu_ms_1280x720': 233.4, 'gpu_peak_gb_1280x720': 0.91, 'gflops_1920x1080': 415.2, 'gpu_ms_1920x1080': 537.0, 'gpu_peak_gb_1920x1080': 2.06}
+2026-10-11 16:45:00,088 INFO screenclean.models.runner: ScreenCleanNet (final) ready on cpu: 4.65 M parameters, iteration 11000, fp16=False, tile=None
+2026-10-11 16:46:03,108 INFO screenclean.jobs: progress: ScreenCleanNet (final) on cpu at 1280x720: done
+2026-10-11 16:46:03,129 INFO screenclean.eval.efficiency: {'label': 'ScreenCleanNet (final)', 'params_m': 4.65, 'gflops_1280x720': 183.2, 'gpu_ms_1280x720': 233.4, 'gpu_peak_gb_1280x720': 0.91, 'gflops_1920x1080': 415.2, 'gpu_ms_1920x1080': 537.0, 'gpu_peak_gb_1920x1080': 2.06, 'modes_cuda': {'full': 48}, 'cpu_s_1280x720': 15.05}
+2026-10-11 16:48:38,194 INFO screenclean.jobs: progress: ScreenCleanNet (final) on cpu at 1920x1080: done
+2026-10-11 16:48:38,206 INFO screenclean.eval.efficiency: {'label': 'ScreenCleanNet (final)', 'params_m': 4.65, 'gflops_1280x720': 183.2, 'gpu_ms_1280x720': 233.4, 'gpu_peak_gb_1280x720': 0.91, 'gflops_1920x1080': 415.2, 'gpu_ms_1920x1080': 537.0, 'gpu_peak_gb_1920x1080': 2.06, 'modes_cuda': {'full': 48}, 'cpu_s_1280x720': 15.05, 'cpu_s_1920x1080': 39.02}
+2026-10-11 16:48:40,892 INFO screenclean.jobs: progress: ScreenCleanNet tiny (architecture only) on cuda at 1280x720: done
+2026-10-11 16:48:40,916 INFO screenclean.eval.efficiency: {'label': 'ScreenCleanNet tiny (architecture only)', 'params_m': 0.786, 'gflops_1280x720': 34.3, 'gpu_ms_1280x720': 91.5, 'gpu_peak_gb_1280x720': 0.45}
+2026-10-11 16:48:46,285 INFO screenclean.jobs: progress: ScreenCleanNet tiny (architecture only) on cuda at 1920x1080: done
+2026-10-11 16:48:46,302 INFO screenclean.eval.efficiency: {'label': 'ScreenCleanNet tiny (architecture only)', 'params_m': 0.786, 'gflops_1280x720': 34.3, 'gpu_ms_1280x720': 91.5, 'gpu_peak_gb_1280x720': 0.45, 'gflops_1920x1080': 77.9, 'gpu_ms_1920x1080': 207.9, 'gpu_peak_gb_1920x1080': 1.05}
+2026-10-11 16:49:02,845 INFO screenclean.jobs: progress: ScreenCleanNet tiny (architecture only) on cpu at 1280x720: done
+2026-10-11 16:49:02,860 INFO screenclean.eval.efficiency: {'label': 'ScreenCleanNet tiny (architecture only)', 'params_m': 0.786, 'gflops_1280x720': 34.3, 'gpu_ms_1280x720': 91.5, 'gpu_peak_gb_1280x720': 0.45, 'gflops_1920x1080': 77.9, 'gpu_ms_1920x1080': 207.9, 'gpu_peak_gb_1920x1080': 1.05, 'modes_cuda': {'full': 48}, 'cpu_s_1280x720': 4.61}
+2026-10-11 16:49:55,115 INFO screenclean.jobs: progress: ScreenCleanNet tiny (architecture only) on cpu at 1920x1080: done
+2026-10-11 16:49:55,144 INFO screenclean.eval.efficiency: {'label': 'ScreenCleanNet tiny (architecture only)', 'params_m': 0.786, 'gflops_1280x720': 34.3, 'gpu_ms_1280x720': 91.5, 'gpu_peak_gb_1280x720': 0.45, 'gflops_1920x1080': 77.9, 'gpu_ms_1920x1080': 207.9, 'gpu_peak_gb_1920x1080': 1.05, 'modes_cuda': {'full': 48}, 'cpu_s_1280x720': 4.61, 'cpu_s_1920x1080': 13.28}
+2026-10-11 16:50:00,043 INFO screenclean.baselines.esdnet_ref: ESDNet reference ready on cuda: 5.93 M parameters, fp16=True
+2026-10-11 16:50:03,966 INFO screenclean.jobs: progress: ESDNet (reference) on cuda at 1280x720: done
+2026-10-11 16:50:03,983 INFO screenclean.eval.efficiency: {'label': 'ESDNet (reference)', 'params_m': 5.934, 'gflops_1280x720': 504.6, 'gpu_ms_1280x720': 130.4, 'gpu_peak_gb_1280x720': 0.58}
+2026-10-11 16:50:11,671 INFO screenclean.jobs: progress: ESDNet (reference) on cuda at 1920x1080: done
+2026-10-11 16:50:11,726 INFO screenclean.eval.efficiency: {'label': 'ESDNet (reference)', 'params_m': 5.934, 'gflops_1280x720': 504.6, 'gpu_ms_1280x720': 130.4, 'gpu_peak_gb_1280x720': 0.58, 'gflops_1920x1080': 1118.9, 'gpu_ms_1920x1080': 299.5, 'gpu_peak_gb_1920x1080': 1.25}
+2026-10-11 16:50:11,956 INFO screenclean.baselines.esdnet_ref: ESDNet reference ready on cpu: 5.93 M parameters, fp16=False
+2026-10-11 16:50:52,482 INFO screenclean.jobs: progress: ESDNet (reference) on cpu at 1280x720: done
+2026-10-11 16:50:52,498 INFO screenclean.eval.efficiency: {'label': 'ESDNet (reference)', 'params_m': 5.934, 'gflops_1280x720': 504.6, 'gpu_ms_1280x720': 130.4, 'gpu_peak_gb_1280x720': 0.58, 'gflops_1920x1080': 1118.9, 'gpu_ms_1920x1080': 299.5, 'gpu_peak_gb_1920x1080': 1.25, 'modes_cuda': {'full': 48}, 'cpu_s_1280x720': 10.04}
+2026-10-11 16:52:26,551 INFO screenclean.jobs: progress: ESDNet (reference) on cpu at 1920x1080: done
+2026-10-11 16:52:26,564 INFO screenclean.eval.efficiency: {'label': 'ESDNet (reference)', 'params_m': 5.934, 'gflops_1280x720': 504.6, 'gpu_ms_1280x720': 130.4, 'gpu_peak_gb_1280x720': 0.58, 'gflops_1920x1080': 1118.9, 'gpu_ms_1920x1080': 299.5, 'gpu_peak_gb_1920x1080': 1.25, 'modes_cuda': {'full': 48}, 'cpu_s_1280x720': 10.04, 'cpu_s_1920x1080': 23.96}
+2026-10-11 16:52:26,567 INFO screenclean.jobs: Job 0023_efficiency ended as done after 479.2 s

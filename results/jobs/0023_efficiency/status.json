@@ -1,0 +1,15 @@
+{
+  "attempt": 1,
+  "elapsed_min": 8.0,
+  "elapsed_s": 479.2,
+  "error": null,
+  "finished_utc": "2026-10-11T16:52:26+00:00",
+  "id": "0023_efficiency",
+  "progress": "ESDNet (reference) on cpu at 1920x1080: done",
+  "progress_utc": "2026-10-11T16:52:26+00:00",
+  "runtime": "gpu",
+  "started_utc": "2026-10-11T16:44:27+00:00",
+  "state": "done",
+  "task": "efficiency",
+  "updated_utc": "2026-10-11T16:52:26+00:00"
+}

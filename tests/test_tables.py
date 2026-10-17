@@ -80,3 +80,15 @@ def test_tables_merge_jobs_and_mark_reference(tmp_path, capsys):
     assert "**fft_notch**: k=4 (from params/x)" in text
     assert "**ESDNet (reference)**: authors' pretrained weights" in text
     assert "40 images at full resolution" in text
+
+
+def test_rows_of_the_same_images_keep_fields_from_older_jobs(tmp_path):
+    _summary(
+        tmp_path,
+        "0021_eval",
+        {"Input": {**_m("identity", 17.1), "lpips": 0.52}},
+        split="data/uhdm_v1/test500",
+    )
+    _summary(tmp_path, "0022_eval", {"Input": _m("identity", 17.1)}, split="data/uhdm_v1/test500")
+    (row,) = collect(tmp_path / "results" / "jobs", "uhdm_v1/test500")
+    assert row["job"] == "0022_eval" and row["lpips"] == 0.52

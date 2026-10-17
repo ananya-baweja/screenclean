@@ -1,0 +1,42 @@
+job:
+  id: 0021_eval_test500_models
+  task: eval
+  runtime: gpu
+  config: configs/eval/test500_models.yaml
+  depends_on:
+  - 0020_prepare_uhdm_test
+  requires: []
+  max_minutes: 150
+  resume: true
+  attempt: 1
+  drive_subdir: jobs/0021_eval_test500_models
+  notes: 'Final UHDM evaluation, all 500 test pairs: input, ESDNet reference, both
+    ScreenCleanNet models, LPIPS (T4, ~70 min)'
+config:
+  split:
+  - data/uhdm_v1/dev100
+  - data/uhdm_v1/test_rest
+  split_name: data/uhdm_v1/test500
+  local_dir: /content/eval_data
+  sample_images: 4
+  lpips: true
+  stop_margin_min: 10
+  methods:
+  - name: identity
+    label: Input (no cleaning)
+  - name: esdnet_ref
+    label: ESDNet (reference)
+    repo_sha: fa70a92d3d4f35d5c4e3fa7a54e3b2e5b995f1cd
+    weights:
+      id: 1HT_ubcAYRqzFIJ46XuPhrulJk2YFBIEl
+      bytes: 23895301
+    weights_cache: models/esdnet_uhdm.pth
+    fp16: true
+    tile: 1024
+    overlap: 64
+  - name: scnet
+    label: ScreenCleanNet (before fine-tune)
+    checkpoint: runs/0009_train_sc_base/best.pt
+  - name: scnet
+    label: ScreenCleanNet (final)
+    checkpoint: runs/0011_finetune_text/best.pt

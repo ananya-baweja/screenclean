@@ -1,0 +1,78 @@
+{
+  "attempt": 1,
+  "complete": true,
+  "dataset_params": {
+    "format": "original JPEGs",
+    "n_test_pairs": 500,
+    "seed": 0,
+    "source": "UHDM test"
+  },
+  "elapsed_s": 6688.5,
+  "git_sha": "aff4ab2c8edec49ee1c7c2cb3827676c3b829a02",
+  "id": "0022_eval_test500_classical",
+  "methods": {
+    "Input (no cleaning)": {
+      "n": 500,
+      "name": "identity",
+      "params": {},
+      "params_source": "config",
+      "psnr": 17.11703813679599,
+      "reference": false,
+      "seconds": 0.09645300173002806,
+      "ssim": 0.5089078957296584
+    },
+    "chroma_lowpass": {
+      "n": 500,
+      "name": "chroma_lowpass",
+      "params": {
+        "sigma": 8
+      },
+      "params_source": "params/baselines.yaml (job 0003_tune_notch)",
+      "psnr": 17.14280930604678,
+      "psnr_gain_vs_input": 0.025771169250791006,
+      "reference": false,
+      "seconds": 0.9635765302639947,
+      "ssim": 0.5111907201848745
+    },
+    "fft_notch": {
+      "n": 500,
+      "name": "fft_notch",
+      "params": {
+        "channels": "ycc",
+        "k": 3,
+        "r0": 0.08,
+        "sigma": 4
+      },
+      "params_source": "params/baselines.yaml (job 0003_tune_notch)",
+      "psnr": 17.1890797233571,
+      "psnr_gain_vs_input": 0.0720415865611135,
+      "reference": false,
+      "seconds": 15.175181687195998,
+      "ssim": 0.5104574196457254
+    },
+    "fft_notch_local": {
+      "n": 500,
+      "name": "fft_notch_local",
+      "params": {
+        "channels": "y",
+        "k": 4,
+        "r0": 0.1,
+        "sigma": 2
+      },
+      "params_source": "params/baselines.yaml (job 0003_tune_notch)",
+      "psnr": 17.462323208160313,
+      "psnr_gain_vs_input": 0.34528507136432796,
+      "reference": false,
+      "seconds": 16.200944383495884,
+      "ssim": 0.5392448123664604
+    }
+  },
+  "n_images": 500,
+  "split": "data/uhdm_v1/test500",
+  "splits": [
+    "data/uhdm_v1/dev100",
+    "data/uhdm_v1/test_rest"
+  ],
+  "state": "done",
+  "task": "eval"
+}

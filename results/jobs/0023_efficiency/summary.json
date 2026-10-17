@@ -1,0 +1,77 @@
+{
+  "attempt": 1,
+  "cpu_threads": 2,
+  "elapsed_s": 479.2,
+  "git_sha": "aff4ab2c8edec49ee1c7c2cb3827676c3b829a02",
+  "gpu": "Tesla T4",
+  "id": "0023_efficiency",
+  "notes": "latency = image in -> image out (median); GPU fp16, CPU fp32",
+  "rows": [
+    {
+      "cpu_s_1280x720": 15.05,
+      "cpu_s_1920x1080": 39.02,
+      "gflops_1280x720": 183.2,
+      "gflops_1920x1080": 415.2,
+      "gpu_ms_1280x720": 233.4,
+      "gpu_ms_1920x1080": 537.0,
+      "gpu_peak_gb_1280x720": 0.91,
+      "gpu_peak_gb_1920x1080": 2.06,
+      "label": "ScreenCleanNet (final)",
+      "modes_cpu": {
+        "full": 8
+      },
+      "modes_cuda": {
+        "full": 48
+      },
+      "params_m": 4.65
+    },
+    {
+      "cpu_s_1280x720": 4.61,
+      "cpu_s_1920x1080": 13.28,
+      "gflops_1280x720": 34.3,
+      "gflops_1920x1080": 77.9,
+      "gpu_ms_1280x720": 91.5,
+      "gpu_ms_1920x1080": 207.9,
+      "gpu_peak_gb_1280x720": 0.45,
+      "gpu_peak_gb_1920x1080": 1.05,
+      "label": "ScreenCleanNet tiny (architecture only)",
+      "modes_cpu": {
+        "full": 8
+      },
+      "modes_cuda": {
+        "full": 48
+      },
+      "params_m": 0.786
+    },
+    {
+      "cpu_s_1280x720": 10.04,
+      "cpu_s_1920x1080": 23.96,
+      "gflops_1280x720": 504.6,
+      "gflops_1920x1080": 1118.9,
+      "gpu_ms_1280x720": 130.4,
+      "gpu_ms_1920x1080": 299.5,
+      "gpu_peak_gb_1280x720": 0.58,
+      "gpu_peak_gb_1920x1080": 1.25,
+      "label": "ESDNet (reference)",
+      "modes_cpu": {
+        "full": 8
+      },
+      "modes_cuda": {
+        "full": 48
+      },
+      "params_m": 5.934
+    }
+  ],
+  "sizes": {
+    "1280x720": [
+      720,
+      1280
+    ],
+    "1920x1080": [
+      1080,
+      1920
+    ]
+  },
+  "state": "done",
+  "task": "efficiency"
+}

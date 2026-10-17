@@ -1,0 +1,15 @@
+{
+  "attempt": 1,
+  "elapsed_min": 111.5,
+  "elapsed_s": 6688.5,
+  "error": null,
+  "finished_utc": "2026-10-11T16:22:08+00:00",
+  "id": "0022_eval_test500_classical",
+  "progress": "image 128/128 (test/0499)",
+  "progress_utc": "2026-10-11T16:22:08+00:00",
+  "runtime": "cpu",
+  "started_utc": "2026-10-11T14:30:40+00:00",
+  "state": "done",
+  "task": "eval",
+  "updated_utc": "2026-10-11T16:22:08+00:00"
+}

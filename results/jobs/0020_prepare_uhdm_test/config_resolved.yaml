@@ -1,0 +1,32 @@
+job:
+  id: 0020_prepare_uhdm_test
+  task: prepare_uhdm
+  runtime: cpu
+  config: configs/data/uhdm_test_rest.yaml
+  depends_on: []
+  requires: []
+  max_minutes: 90
+  resume: true
+  attempt: 1
+  drive_subdir: jobs/0020_prepare_uhdm_test
+  notes: The 400 UHDM test pairs outside dev100, as original JPEGs on Drive (~4.7
+    GB, CPU, ~20 min)
+config:
+  phases:
+  - test_rest
+  test_rest:
+    pairs_per_shard: 25
+    drive_gb: 5.0
+  source:
+    url: https://huggingface.co/datasets/leegwang/uhdm/resolve/9b06328be55fbc609c6bb1d60ddc3fdab179c4b2/uhdm.zip
+    train_prefix: train/
+    test_prefix: test/
+  drive_out: data/uhdm_v1
+  local_dir: /content/uhdm_work
+  seed: 0
+  crop: 512
+  jpeg_quality: 95
+  stop_margin_min: 10
+  download_workers: 8
+  download_retries: 6
+  download_backoff_s: 5

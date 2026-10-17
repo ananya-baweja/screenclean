@@ -1,0 +1,60 @@
+{
+  "attempt": 1,
+  "counts": {
+    "uhdm_dev100": 100,
+    "uhdm_test": 500,
+    "uhdm_test_rest": 400,
+    "uhdm_train": 4300,
+    "uhdm_val": 200
+  },
+  "drive_free_gb": 5.7,
+  "elapsed_s": 332.6,
+  "git_sha": "aff4ab2c8edec49ee1c7c2cb3827676c3b829a02",
+  "id": "0020_prepare_uhdm_test",
+  "phase_seconds": {
+    "phase_test_rest": 308.5
+  },
+  "problems": {
+    "test": []
+  },
+  "source": {
+    "archive_gb": 44.78,
+    "downloaded_mb": 4736.9,
+    "index_seconds": 1.8,
+    "location": "https://huggingface.co/datasets/leegwang/uhdm/resolve/9b06328be55fbc609c6bb1d60ddc3fdab179c4b2/uhdm.zip",
+    "mb_per_s": 15.2,
+    "members": 11000
+  },
+  "splits": {
+    "dev100": {
+      "complete": true,
+      "gb": 1.17,
+      "planned_shards": 4,
+      "samples": 100,
+      "shards": 4
+    },
+    "test_rest": {
+      "complete": true,
+      "gb": 4.55,
+      "planned_shards": 16,
+      "samples": 400,
+      "shards": 16
+    },
+    "train": {
+      "complete": true,
+      "gb": 2.5,
+      "planned_shards": 11,
+      "samples": 12900,
+      "shards": 11
+    },
+    "val": {
+      "complete": true,
+      "gb": 0.08,
+      "planned_shards": 1,
+      "samples": 400,
+      "shards": 1
+    }
+  },
+  "state": "done",
+  "task": "prepare_uhdm"
+}

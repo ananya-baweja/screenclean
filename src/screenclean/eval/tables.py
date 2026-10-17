@@ -43,7 +43,17 @@ def collect(results_dir: Path, split_key: str) -> list[dict[str, Any]]:
         for label, m in s.get("methods", {}).items():
             prev = rows.get(label)
             if prev is None or m.get("n", 0) >= prev["n"]:
-                rows[label] = {"label": label, "job": s["id"], "complete": s.get("complete", False), **m}
+                # same images in an older job: keep the fields the newer one lacks (e.g. LPIPS for the input)
+                kept = (
+                    {k: v for k, v in prev.items() if k not in m} if prev and m.get("n") == prev["n"] else {}
+                )
+                rows[label] = {
+                    **kept,
+                    "label": label,
+                    "job": s["id"],
+                    "complete": s.get("complete", False),
+                    **m,
+                }
     return sorted(
         rows.values(), key=lambda r: (r["name"] != "identity", r.get("reference", False), -r["psnr"])
     )

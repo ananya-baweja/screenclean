@@ -1,0 +1,36 @@
+2026-10-06 16:34:23,093 INFO screenclean.jobs: Starting 0020_prepare_uhdm_test (task=prepare_uhdm, runtime=cpu, attempt=1, resuming=False)
+2026-10-06 16:34:25,428 INFO screenclean.data.prepare_uhdm: source opened: {'location': 'https://huggingface.co/datasets/leegwang/uhdm/resolve/9b06328be55fbc609c6bb1d60ddc3fdab179c4b2/uhdm.zip', 'members': 11000, 'archive_gb': 44.78, 'index_seconds': 1.8}
+2026-10-06 16:34:25,430 INFO screenclean.data.prepare_uhdm: test: 500 pairs (0 unmatched files)
+2026-10-06 16:34:43,622 INFO screenclean.data.shards: test_rest-00000.tar (1/16): 25 samples, 320 MB, 18 s
+2026-10-06 16:34:43,623 INFO screenclean.jobs: progress: test_rest shard 1/16 done
+2026-10-06 16:35:01,577 INFO screenclean.data.shards: test_rest-00001.tar (2/16): 25 samples, 289 MB, 18 s
+2026-10-06 16:35:01,577 INFO screenclean.jobs: progress: test_rest shard 2/16 done
+2026-10-06 16:35:19,681 INFO screenclean.data.shards: test_rest-00002.tar (3/16): 25 samples, 291 MB, 18 s
+2026-10-06 16:35:19,683 INFO screenclean.jobs: progress: test_rest shard 3/16 done
+2026-10-06 16:35:36,556 INFO screenclean.data.shards: test_rest-00003.tar (4/16): 25 samples, 279 MB, 17 s
+2026-10-06 16:35:36,558 INFO screenclean.jobs: progress: test_rest shard 4/16 done
+2026-10-06 16:35:52,999 INFO screenclean.data.shards: test_rest-00004.tar (5/16): 25 samples, 285 MB, 16 s
+2026-10-06 16:35:53,000 INFO screenclean.jobs: progress: test_rest shard 5/16 done
+2026-10-06 16:36:14,736 INFO screenclean.data.shards: test_rest-00005.tar (6/16): 25 samples, 311 MB, 22 s
+2026-10-06 16:36:14,737 INFO screenclean.jobs: progress: test_rest shard 6/16 done
+2026-10-06 16:36:36,254 INFO screenclean.data.shards: test_rest-00006.tar (7/16): 25 samples, 308 MB, 21 s
+2026-10-06 16:36:36,255 INFO screenclean.jobs: progress: test_rest shard 7/16 done
+2026-10-06 16:36:56,326 INFO screenclean.data.shards: test_rest-00007.tar (8/16): 25 samples, 298 MB, 20 s
+2026-10-06 16:36:56,327 INFO screenclean.jobs: progress: test_rest shard 8/16 done
+2026-10-06 16:37:15,080 INFO screenclean.data.shards: test_rest-00008.tar (9/16): 25 samples, 285 MB, 19 s
+2026-10-06 16:37:15,081 INFO screenclean.jobs: progress: test_rest shard 9/16 done
+2026-10-06 16:37:35,028 INFO screenclean.data.shards: test_rest-00009.tar (10/16): 25 samples, 332 MB, 20 s
+2026-10-06 16:37:35,029 INFO screenclean.jobs: progress: test_rest shard 10/16 done
+2026-10-06 16:37:53,246 INFO screenclean.data.shards: test_rest-00010.tar (11/16): 25 samples, 312 MB, 18 s
+2026-10-06 16:37:53,247 INFO screenclean.jobs: progress: test_rest shard 11/16 done
+2026-10-06 16:38:15,801 INFO screenclean.data.shards: test_rest-00011.tar (12/16): 25 samples, 330 MB, 23 s
+2026-10-06 16:38:15,802 INFO screenclean.jobs: progress: test_rest shard 12/16 done
+2026-10-06 16:38:34,584 INFO screenclean.data.shards: test_rest-00012.tar (13/16): 25 samples, 311 MB, 19 s
+2026-10-06 16:38:34,585 INFO screenclean.jobs: progress: test_rest shard 13/16 done
+2026-10-06 16:38:53,094 INFO screenclean.data.shards: test_rest-00013.tar (14/16): 25 samples, 293 MB, 18 s
+2026-10-06 16:38:53,095 INFO screenclean.jobs: progress: test_rest shard 14/16 done
+2026-10-06 16:39:11,658 INFO screenclean.data.shards: test_rest-00014.tar (15/16): 25 samples, 292 MB, 19 s
+2026-10-06 16:39:11,658 INFO screenclean.jobs: progress: test_rest shard 15/16 done
+2026-10-06 16:39:31,745 INFO screenclean.data.shards: test_rest-00015.tar (16/16): 25 samples, 344 MB, 20 s
+2026-10-06 16:39:31,746 INFO screenclean.jobs: progress: test_rest shard 16/16 done
+2026-10-06 16:39:55,736 INFO screenclean.jobs: Job 0020_prepare_uhdm_test ended as done after 332.6 s

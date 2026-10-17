@@ -1,0 +1,32 @@
+job:
+  id: 0022_eval_test500_classical
+  task: eval
+  runtime: cpu
+  config: configs/eval/test500_classical.yaml
+  depends_on:
+  - 0020_prepare_uhdm_test
+  requires: []
+  max_minutes: 150
+  resume: true
+  attempt: 1
+  drive_subdir: jobs/0022_eval_test500_classical
+  notes: 'Final UHDM evaluation, all 500 test pairs: the classical filters (CPU, ~2
+    h, may take two runs)'
+config:
+  split:
+  - data/uhdm_v1/dev100
+  - data/uhdm_v1/test_rest
+  split_name: data/uhdm_v1/test500
+  local_dir: /content/eval_data
+  sample_images: 4
+  workers: 2
+  stop_margin_min: 10
+  methods:
+  - name: identity
+    label: Input (no cleaning)
+  - name: chroma_lowpass
+    params_from: params/baselines.yaml
+  - name: fft_notch
+    params_from: params/baselines.yaml
+  - name: fft_notch_local
+    params_from: params/baselines.yaml
