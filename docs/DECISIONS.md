@@ -347,3 +347,26 @@ One entry per decision: date, the decision, why, and the alternatives considered
 - `python -m screenclean report` writes `docs/RESULTS.md` and its figures from the job summaries; sections whose
   jobs haven't run say which job will fill them. No number in RESULTS.md is typed by hand.
 
+## 2026-10-17: First P9 results, and the synthetic OCR benchmark repeated with a mask
+
+- **UHDM test set, all 500 pairs (jobs 0021/0022, used once):** final model 19.95 dB (+2.83 over the input), the
+  model before the fine-tune 20.15 (+3.04), best classical filter +0.35, ESDNet reference 22.12 (+5.00). The
+  ESDNet paper reports 22.12 dB on UHDM, so the reference run reproduces it. dev100 was representative (final
+  model +2.72 there).
+- **Speed (job 0023, image in -> image out):** at 1920x1080 the final model needs 415 GFLOPs but takes 537 ms on
+  the T4 and 39 s on 2 CPU threads; ESDNet needs 1119 GFLOPs and takes 300 ms and 24 s. Fewer FLOPs did not mean
+  faster: our blocks are many small memory-bound operations (depth-wise and dilated convolutions, norms, gates),
+  which PyTorch runs inefficiently without compilation. P10 (ONNX Runtime export) measures whether that changes.
+- **PaddleOCR on Colab (job 0019):** the default CPU path failed on the self-check page ("ConvertPirAttribute2Runtime
+  Attribute not support", a oneDNN problem in this Paddle release); the planned retry with oneDNN off worked
+  (self-check CER 0.0, about 2 s per crop). Results are labelled `paddle_safe`.
+- **Job 0019's CERs are inflated:** the synthetic ground truth holds only whole words inside each crop, but OCR also
+  reads the pieces of words cut at the crop edges. Even the clean target averaged CER 1.13 (median 0.58), and the
+  extra text hid the differences between methods. Fix: before OCR, everything outside the ground-truth words is
+  painted with the background colour (the same for every method), crops with under 20 characters of ground
+  truth are skipped, and a pooled CER (all errors / all characters) is reported next to the mean. Job 0026
+  repeats 0019 this way; 0019 stays in the record.
+- **P9.0 check, first pass:** in 0019 the final model was not worse than the model before the fine-tune with
+  either engine (CER difference +0.000 [-0.011, +0.016] PaddleOCR, +0.022 [-0.058, +0.107] Tesseract; word F1 a
+  little higher with both). 0026 repeats the check with clean measurements, and the real-photo job waits for it.
+
