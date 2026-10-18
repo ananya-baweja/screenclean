@@ -373,3 +373,18 @@ One entry per decision: date, the decision, why, and the alternatives considered
   either engine (CER difference +0.000 [-0.011, +0.016] PaddleOCR, +0.022 [-0.058, +0.107] Tesseract; word F1 a
   little higher with both). 0026 repeats the check with clean measurements, and the real-photo job waits for it.
 
+
+## 2026-10-18: 40 real photos instead of 120-160
+
+- **Decision (Ananya's):** 40 photos: 2 screens x 20 pages, one photo per page, taken in blocks of 5 pages from
+  one position (straight on, angled, farther, 2x zoom; `docs/capture_guide.md`). The slideshow turns the pages by
+  itself (key A), so shooting takes about 20 minutes.
+- **Why it is enough:** in the dry run the per-photo paired CER differences between methods had a spread (SD) of
+  about 0.03-0.07, so 40 photos give 95% intervals of about +-0.01 to +-0.02; 150 photos would give about +-0.01,
+  for four times the effort. PaddleOCR on Colab's CPU makes job 0025 take a few minutes per photo, so 40 photos
+  also keep it to a few hours of Colab time.
+- **What it costs:** the screen-detection success rate is known to about +-11 points instead of +-6; with one phone
+  there is no comparison between phones; "by screen" compares two screens.
+- **What it adds:** the shooting position follows from the page number, so results are now also broken down by
+  position (`shot` in jobs 0025: OCR and detection), which the plan wanted (capture angle) and the old free-form
+  plan couldn't provide.

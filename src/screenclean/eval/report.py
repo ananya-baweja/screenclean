@@ -121,6 +121,29 @@ def ocr_tables(ocr: dict[str, Any], methods: list[str] | None = None) -> list[st
     return lines
 
 
+def breakdown_tables(ocr: dict[str, Any], field: str, methods: list[str]) -> list[str]:
+    """Mean CER per value of a row field (screen, shot, template...) for a few methods, per engine."""
+    lines = []
+    for engine, data in ocr.items():
+        by = data.get("cer_by", {}).get(field, {})
+        shown = [m for m in methods if m in by]
+        if not shown:
+            continue
+        values = sorted({v for m in shown for v in by[m]})
+        names = [m.split(":", 1)[-1] for m in shown]
+        lines += [
+            f"*{engine}, mean CER by {field}*",
+            "",
+            "| " + field + " | " + " | ".join(names) + " | photos |",
+        ]
+        lines.append("|---" * (len(shown) + 2) + "|")
+        for v in values:
+            cells = [f"{by[m][v]['mean']:.3f}" if v in by[m] else "–" for m in shown]
+            lines.append(f"| {v} | " + " | ".join(cells) + f" | {by[shown[0]].get(v, {}).get('n', 0)} |")
+        lines.append("")
+    return lines
+
+
 # --------------------------------------------------------------------------- figures
 
 
@@ -408,6 +431,9 @@ def build_report(repo_root: Path) -> list[Path]:
             for e, d in real["ocr"].items()
         }  # fmt: skip
         md += [f"{real['n_photos']} photos. Engines: {_engines(real)}", ""] + ocr_tables(oracle)
+        pair = ["oracle:Input (no cleaning)", "oracle:ScreenCleanNet (final)"]
+        for field in ("shot", "screen", "template"):
+            md += breakdown_tables(real["ocr"], field, pair)
         if p := fig_ocr(oracle, figs / "ocr_real.png", f"OCR errors on {real['n_photos']} real phone photos"):
             written.append(p)
             md += ["![OCR on real photos](../results/figures/ocr_real.png)", ""]
@@ -419,8 +445,13 @@ def build_report(repo_root: Path) -> list[Path]:
         md += [
             f"- Screen found: {d['detected_rate']:.0%} of photos; corners right ({d['success_rule']}): "
             f"**{d['success_rate']:.0%}**; median corner error {d['median_mean_err_px']:.1f} px.",
-            "",
         ]
+        if by_shot := d.get("success_rate_by_shot"):
+            md.append(
+                "- Corners right by shooting position: "
+                + ", ".join(f"{k} {v:.0%}" for k, v in by_shot.items())
+            )
+        md.append("")
         product = {
             e: {**v, "methods": {k: x for k, x in v["methods"].items() if k.startswith("product:")},
                 "comparisons": [c for c in v.get("comparisons", []) if c["a"].startswith("product:")]}

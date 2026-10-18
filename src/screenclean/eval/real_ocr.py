@@ -56,6 +56,15 @@ log = logging.getLogger(__name__)
 
 PAGE_SIZE = (1920, 1080)
 SUCCESS = 0.03  # detection success: every corner within 3% of the photo diagonal (as in P5)
+# The capture guide shoots each run of 20 pages in blocks of 5 from one position, so the page number
+# says how a photo was taken (if the guide was followed): pages 1-5 and 21-25 straight on, and so on.
+SHOTS = ("straight", "angle", "far", "zoom 2x")
+
+
+def planned_shot(page_id: int) -> str:
+    return SHOTS[(page_id % 20) // 5]
+
+
 ROW_FIELDS = [
     "key",
     "kind",
@@ -66,12 +75,14 @@ ROW_FIELDS = [
     "page_id",
     "template",
     "size",
+    "shot",
     *SCORE_FIELDS,
 ]
 DETECT_FIELDS = [
     "key",
     "screen",
     "phone",
+    "shot",
     "detected",
     "mean_err_px",
     "max_err_px",
@@ -85,7 +96,8 @@ TIME_FIELDS = ["key", "cleaner", "detect", "clean", "rectify", "cleanup", "total
 
 
 def load_pages(kit_dir: str | Path) -> dict[int, dict[str, Any]]:
-    """Capture-kit pages by id, each with ``truth`` (text in reading order) and ``size`` (body size)."""
+    """Capture-kit pages by id: ``truth`` (text in reading order), ``template``, ``size`` (body text size)
+    and ``shot`` (how the capture guide says to photograph it)."""
     meta = json.loads((Path(kit_dir) / "pages.json").read_text(encoding="utf-8"))
     pages = {}
     for p in meta["pages"]:
@@ -95,6 +107,7 @@ def load_pages(kit_dir: str | Path) -> dict[int, dict[str, Any]]:
             "truth": ordered_text((ln["text"], tuple(ln["box"])) for ln in p["lines"]),
             "template": p["template"],
             "size": "<16 px" if body < 16 else "16-24 px" if body <= 24 else ">24 px",
+            "shot": planned_shot(p["page_id"]),
         }
     return pages
 
@@ -229,7 +242,7 @@ def eval_real_ocr_task(ctx: JobContext) -> TaskResult:
                 continue
             page = pages[cap["page_id"]]
             info = {"screen": cap["screen"], "phone": cap["phone"], "page_id": cap["page_id"],
-                    "template": page["template"], "size": page["size"]}  # fmt: skip
+                    "template": page["template"], "size": page["size"], "shot": page["shot"]}  # fmt: skip
             photo = read_image(raw / key)
             h, w = photo.shape[:2]
             truth_corners = np.asarray(cap["page_corners_px"], np.float32)
@@ -312,7 +325,7 @@ def eval_real_ocr_task(ctx: JobContext) -> TaskResult:
         "engines": engine_records,
         "methods": [m["label"] for m in methods],
         "product_cleaners": [c[0] for c in cleaners],
-        "ocr": summarize(rows, baseline, pairs, groups=("screen", "phone", "template", "size")),
+        "ocr": summarize(rows, baseline, pairs, groups=("screen", "phone", "template", "size", "shot")),
         "complete": state == "done"
         and all(not scorer.pending(c["file"], f"oracle:{m['label']}") for c in photos for m in methods),
     }
@@ -325,6 +338,11 @@ def eval_real_ocr_task(ctx: JobContext) -> TaskResult:
             "success_rule": f"every corner within {SUCCESS:.0%} of the photo diagonal",
             "median_mean_err_px": float(np.median([float(r["mean_err_px"]) for r in det_rows])),
             "median_max_err_pct_diag": float(np.median(errs)),
+            "success_rate_by_shot": {
+                shot: float(np.mean([r["success"] == "True" for r in det_rows if r.get("shot") == shot]))
+                for shot in SHOTS
+                if any(r.get("shot") == shot for r in det_rows)
+            },
         }
     time_rows = _read_csv(time_path)
     if time_rows:

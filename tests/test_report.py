@@ -73,3 +73,39 @@ def test_report_fills_what_exists_and_names_what_is_pending(tmp_path):
     assert "| no FFT loss | 19.30 | +0.00 | 0.360 |" in text
     names = {p.name for p in written}
     assert {"RESULTS.md", "ablations.png", "ocr_synth.png", "psnr_vs_params.png"} <= names
+
+
+def test_report_real_photo_sections(tmp_path):
+    rows = [
+        {"key": f"p{i}", "method": m, "engine": "tesseract", "cer": c, "wer": c, "word_f1": 1 - c,
+         "screen": "laptop" if i < 4 else "tv", "shot": "straight" if i % 2 else "angle", "template": "doc"}
+        for i in range(8)
+        for m, c in (("oracle:Input (no cleaning)", 0.3), ("oracle:ScreenCleanNet (final)", 0.1),
+                     ("product:none", 0.2), ("product:ScreenCleanNet (final)", 0.1))
+    ]  # fmt: skip
+    ocr = summarize(
+        rows,
+        {"oracle:": "oracle:Input (no cleaning)", "product:": "product:none"},
+        [("product:ScreenCleanNet (final)", "product:none")],
+        groups=("screen", "shot", "template"),
+    )
+    detection = {
+        "n": 8,
+        "detected_rate": 1.0,
+        "success_rate": 0.75,
+        "success_rule": "every corner within 3%",
+        "median_mean_err_px": 4.2,
+        "success_rate_by_shot": {"straight": 1.0, "angle": 0.5},
+    }
+    _write(tmp_path, "0025_eval_real_ocr", {
+        "task": "eval_real_ocr", "n_photos": 8, "engines": {"tesseract": {"engine": "tesseract"}},
+        "ocr": ocr, "detection": detection, "seconds_per_photo": {"none": {"total": 6.5, "clean": 0.1}},
+    })  # fmt: skip
+    build_report(tmp_path)
+    text = (tmp_path / "docs" / "RESULTS.md").read_text(encoding="utf-8")
+    assert "8 photos" in text and "*Pending: job `0025" not in text
+    assert "*tesseract, mean CER by shot*" in text and "| angle | 0.300 | 0.100 | 4 |" in text
+    assert "corners right (every corner within 3%): **75%**" in text
+    assert "Corners right by shooting position: straight 100%, angle 50%" in text
+    assert "product:ScreenCleanNet (final) minus product:none" in text
+    assert "| none | 6.5 | 0.1 |" in text

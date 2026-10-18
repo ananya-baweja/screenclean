@@ -33,6 +33,15 @@ def test_pages_truth_and_marker_zones():
     pages = load_pages(KIT)
     assert len(pages) == 40 and pages[0]["truth"].startswith("The research group")
     assert {p["size"] for p in pages.values()} <= {"<16 px", "16-24 px", ">24 px"}
+    assert [pages[k]["shot"] for k in (0, 4, 5, 12, 19, 20, 39)] == [
+        "straight",
+        "straight",
+        "angle",
+        "far",
+        "zoom 2x",
+        "straight",
+        "zoom 2x",
+    ]
     page = read_image(KIT / "pages" / "page_000.png")
     painted = paint_over(page, marker_zones())
     assert np.abs(painted[:150, :150] - painted[75, 75]).max() == 0  # top-left marker gone
@@ -101,7 +110,8 @@ def test_ingest_and_eval_real_ocr_end_to_end(tmp_path, capsys):
         "cer_vs_input" in tess["methods"]["product:chroma"]
         and "baseline" not in tess["methods"]["product:none"]
     )
-    assert set(tess["cer_by"]) == {"screen", "phone", "template", "size"}
+    assert set(tess["cer_by"]) == {"screen", "phone", "template", "size", "shot"}
+    assert set(summary["detection"]["success_rate_by_shot"]) == {"straight"}  # pages 1 and 3
     assert set(summary["seconds_per_photo"]) == {"none", "chroma"}
     assert summary["complete"]
 

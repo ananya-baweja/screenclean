@@ -56,28 +56,51 @@ INDEX_HTML = """<!doctype html>
 <div id="hint"></div>
 <script>
   const N = __N_PAGES__;
-  let i = 0;
+  let i = 0, auto = null, every = 6, typed = "";
   const img = document.getElementById("page"), hint = document.getElementById("hint");
   let timer = null;
   const name = k => "pages/page_" + String(k).padStart(3, "0") + ".png";
-  function show() {
-    img.src = name(i);
-    new Image().src = name((i + 1) % N);  // preload the next page
-    hint.textContent = "Page " + (i + 1) + " / " + N + "   \\u2190 \\u2192 to move, F for full-screen";
+  function flash(text) {
+    hint.textContent = text;
     hint.style.opacity = 1;
     clearTimeout(timer);
     timer = setTimeout(() => hint.style.opacity = 0, 1500);  // the hint must not be in the photos
   }
+  function status() {
+    return "Page " + (i + 1) + " / " + N + (auto
+      ? "   turning every " + every + " s (A stops, + / - change the speed)"
+      : "   \\u2190 \\u2192 move, A turns pages by itself, a number + Enter jumps, F full-screen");
+  }
+  function show(withHint) {
+    img.src = name(i);
+    new Image().src = name((i + 1) % N);  // preload the next page
+    if (withHint) flash(status());  // automatic turns show no hint: every page is ready to photograph
+  }
+  function step(d) { i = (i + d + N) % N; show(!auto); }
+  function setAuto(on) {
+    clearInterval(auto);
+    auto = on ? setInterval(() => step(1), every * 1000) : null;
+    flash(status());
+  }
   document.addEventListener("keydown", e => {
-    if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { i = (i + 1) % N; show(); }
-    else if (e.key === "ArrowLeft" || e.key === "PageUp") { i = (i + N - 1) % N; show(); }
+    if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") step(1);
+    else if (e.key === "ArrowLeft" || e.key === "PageUp") step(-1);
+    else if (e.key === "a" || e.key === "A") setAuto(!auto);
+    else if (e.key === "+" || e.key === "=") { every += 1; if (auto) setAuto(true); else flash(status()); }
+    else if (e.key === "-") { every = Math.max(2, every - 1); if (auto) setAuto(true); else flash(status()); }
+    else if (/^[0-9]$/.test(e.key)) { typed += e.key; flash("Go to page " + typed + " (Enter)"); }
+    else if (e.key === "Enter" && typed) {
+      const k = parseInt(typed, 10);
+      typed = "";
+      if (k >= 1 && k <= N) { i = k - 1; show(true); } else flash("No page " + k);
+    }
     else if (e.key === "f" || e.key === "F") {
       if (document.fullscreenElement) document.exitFullscreen();
       else document.documentElement.requestFullscreen();
     }
   });
-  img.addEventListener("click", () => { i = (i + 1) % N; show(); });
-  show();
+  img.addEventListener("click", () => step(1));
+  show(true);
 </script>
 </body>
 </html>
@@ -104,7 +127,16 @@ def build_kit(out_dir: str | Path, n_pages: int = N_PAGES, seed: int = SEED) -> 
         "pages": pages,
     }
     (out_dir / "pages.json").write_text(json.dumps(meta, indent=1) + "\n", encoding="utf-8", newline="\n")
-    (out_dir / "index.html").write_text(
-        INDEX_HTML.replace("__N_PAGES__", str(n_pages)), encoding="utf-8", newline="\n"
-    )
+    write_index(out_dir, n_pages)
     return meta
+
+
+def index_html(n_pages: int = N_PAGES) -> str:
+    return INDEX_HTML.replace("__N_PAGES__", str(n_pages))
+
+
+def write_index(out_dir: str | Path, n_pages: int = N_PAGES) -> Path:
+    """Write only the slideshow (the pages stay as they are)."""
+    path = Path(out_dir) / "index.html"
+    path.write_text(index_html(n_pages), encoding="utf-8", newline="\n")
+    return path

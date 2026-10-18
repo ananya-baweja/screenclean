@@ -264,3 +264,16 @@ def test_ingest_synthetic_captures(tmp_path, renderer):
     assert len(rows) == 4 and set(rows[0]) == set(real_captures.FIELDS)
     caps = json.loads((tmp_path / "out" / "captures.json").read_text())
     assert len(caps[0]["page_corners_px"]) == 4 and len(caps[0]["H"]) == 3
+
+
+def test_committed_slideshow_matches_generator():
+    """Rewrite it with ``write_index("capture_kit")`` from ``screenclean.render.capture_kit``."""
+    from pathlib import Path
+
+    from screenclean.render.capture_kit import index_html
+
+    committed = (Path(__file__).resolve().parents[1] / "capture_kit" / "index.html").read_text(
+        encoding="utf-8"
+    )
+    assert committed == index_html()
+    assert "setAuto" in committed and "Go to page" in committed  # automatic turns and jump-to-page
